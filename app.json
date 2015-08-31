@@ -1,0 +1,24 @@
+{
+  "name": "Strap",
+  "description": "Bootstrap a minimal OS X development system",
+  "website": "https://github.com/mikemcquaid/strap",
+  "repository": "https://github.com/mikemcquaid/strap",
+  "keywords": ["ruby", "strap"],
+  "success_url": "/",
+  "env": {
+    "GITHUB_KEY": {
+      "description": "The GitHub.com Application Client ID."
+    },
+    "GITHUB_SECRET": {
+      "description": "The GitHub.com Application Client Secret."
+    },
+    "SESSION_SECRET": {
+      "description": "The secret used for cookie session storage",
+      "generator": "secret"
+    },
+    "WEB_CONCURRENCY": {
+      "description": "The number of Unicorn (web server) processes to run.",
+      "required": false
+    }
+  }
+}
