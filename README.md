@@ -11,7 +11,7 @@ Strap is a script to bootstrap a minimal OS X development system. This does not 
 - Installs [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle) (for `bundler`-like `Brewfile` support)
 - Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
 - Installs [Homebrew Cask](https://github.com/caskroom/homebrew-cask) (for installing graphical software)
-- Forwards `localhost` port `8080` to `80` (for running web servers as an unprivileged user)
+- Forwards `localhost` port `80` to `8080` (for running web servers as an unprivileged user)
 - Disables Java in Safari (for better security)
 - Adds a `Found this computer?` message to the login screen (for machine recovery)
 - Enables full-disk encryption and saves the FileVault Recovery Key to the Desktop (for better security)
