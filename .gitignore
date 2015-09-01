@@ -1,0 +1,7 @@
+/.env
+/.bundle/
+/.vagrant/
+/bin/*
+!/bin/strap.sh
+/vendor/
+Vagrantfile
