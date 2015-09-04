@@ -150,8 +150,8 @@ if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
   sudo defaults write /Library/Preferences/com.apple.loginwindow \
     LoginwindowText \
     "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL."
-  logk
 fi
+logk
 
 # Check and enable full-disk encryption.
 logn "Checking full-disk encryption status:"
