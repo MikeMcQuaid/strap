@@ -125,16 +125,20 @@ brew bundle --file=/tmp/Brewfile.strap
 rm -f /tmp/Brewfile.strap
 logk
 
-# Use pf packet filter to forward port 80.
-logn "Forwarding local port 80 to 8080:"
-echo 'rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 8080' \
-  | sudo tee /etc/pf.anchors/dev.github >/dev/null
-grep $Q "dev.github" /etc/pf.conf || {
-  echo 'anchor "dev.github"' \
-    | sudo tee -a /etc/pf.conf >/dev/null
-  echo 'load anchor "dev.github" from "/etc/pf.anchors/dev.github"' \
-    | sudo tee -a /etc/pf.conf >/dev/null
+# Use pf packet filter to forward ports 80 and 443.
+logn "Forwarding local ports 80 to 8080 and 443 to 8443:"
+cat <<EOF | sudo tee /etc/pf.anchors/dev.strap >/dev/null
+rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 8080
+rdr pass inet proto tcp from any to any port 443 -> 127.0.0.1 port 8443
+EOF
+grep $Q "dev.strap" /etc/pf.conf || {
+  newline=$'\n'
+  sudo sed -i "" \
+    -e "s/rdr-anchor.*/&\\${newline}rdr-anchor \"dev.strap\"/" \
+    -e "s|load anchor.*|&\\${newline}load anchor \"dev.strap\" from \"/etc/pf.anchors/dev.strap\"|" \
+    "/etc/pf.conf"
 }
+sudo pfctl -f /etc/pf.conf -e 2>/dev/null
 logk
 
 # Set some basic security settings.
