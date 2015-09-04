@@ -31,6 +31,8 @@ To Strap your system:
   <li>Delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a></li>
   <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
 </ol>
+
+<a href="https://github.com/mikemcquaid/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="http://aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
 EOS
   erb :root
 end
