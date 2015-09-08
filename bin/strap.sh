@@ -71,16 +71,16 @@ fi
 if [ -n "$STRAP_GIT_EMAIL" ] && ! git config --global user.email >/dev/null; then
   git config --global user.email "$STRAP_GIT_EMAIL"
 
-  if [ -n "$STRAP_GIT_TOKEN" ] && which git-credential-osxkeychain &>/dev/null
+  if [ -n "$STRAP_GIT_TOKEN" ] && which git-credential-osxkeychain 2>/dev/null 2>&1
   then
     if [ "$(git config --global credential.helper)" != "osxkeychain" ]
     then
       git config --global credential.helper osxkeychain
     fi
 
-    if [ -z "$(echo "protocol=https\nhost=github.com" | git credential-osxkeychain get)" ]
+    if [ -z "$(printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain get)" ]
     then
-      echo "protocol=https\nhost=github.com\nusername=$STRAP_GIT_EMAIL\npassword=$STRAP_GIT_TOKEN\n" \
+      printf "protocol=https\nhost=github.com\nusername=$STRAP_GIT_EMAIL\npassword=$STRAP_GIT_TOKEN\n" \
         | git credential-osxkeychain store
     fi
   fi
@@ -99,7 +99,7 @@ done
 sudo chown root:admin "$HOMEBREW_PREFIX"
 
 # Download Homebrew.
-pushd $HOMEBREW_PREFIX >/dev/null
+export GIT_DIR="$HOMEBREW_PREFIX/.git" GIT_WORK_TREE="$HOMEBREW_PREFIX"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/homebrew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
@@ -107,7 +107,7 @@ git rev-parse --verify --quiet origin/master >/dev/null || {
   git fetch $Q origin master:refs/remotes/origin/master --no-tags --depth=1
   git reset $Q --hard origin/master
 }
-popd >/dev/null
+unset GIT_DIR GIT_WORK_TREE
 logk
 
 # Install Homebrew Bundle, Cask, Services and Versions tap.
@@ -132,13 +132,13 @@ rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 8080
 rdr pass inet proto tcp from any to any port 443 -> 127.0.0.1 port 8443
 EOF
 grep $Q "dev.strap" /etc/pf.conf || {
-  newline=$'\n'
-  sudo sed -i "" \
-    -e "s/rdr-anchor.*/&\\${newline}rdr-anchor \"dev.strap\"/" \
-    -e "s|load anchor.*|&\\${newline}load anchor \"dev.strap\" from \"/etc/pf.anchors/dev.strap\"|" \
-    "/etc/pf.conf"
+  sudo perl -pi \
+    -e 's/(rdr-anchor.*)/\1\nrdr-anchor "dev.strap"/g;' \
+    -e 's|(load anchor.*)|\1\nload anchor "dev.strap" from "/etc/pf.anchors/dev.strap"|g' \
+    /etc/pf.conf
 }
-sudo pfctl -f /etc/pf.conf -e 2>/dev/null
+sudo pfctl -f /etc/pf.conf 2>/dev/null
+sudo pfctl -e 2>/dev/null || true
 logk
 
 # Set some basic security settings.
