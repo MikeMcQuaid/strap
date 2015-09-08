@@ -17,7 +17,8 @@ STDIN_FILE_DESCRIPTOR="0"
 
 STRAP_GIT_NAME=
 STRAP_GIT_EMAIL=
-STRAP_GIT_TOKEN=
+STRAP_GITHUB_USER=
+STRAP_GITHUB_TOKEN=
 
 abort() { echo "!!! $@" >&2; exit 1; }
 log()   { echo "--> $@"; }
@@ -64,28 +65,28 @@ DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
 
 # Setup Git
 logn "Configuring Git:"
-if [ -n "$STRAP_GIT_NAME" ] && ! git config --global user.name >/dev/null; then
+if [ -n "$STRAP_GIT_NAME" ] && ! git config user.name >/dev/null; then
   git config --global user.name "$STRAP_GIT_NAME"
 fi
 
-if [ -n "$STRAP_GIT_EMAIL" ] && ! git config --global user.email >/dev/null; then
+if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
   git config --global user.email "$STRAP_GIT_EMAIL"
-
-  if [ -n "$STRAP_GIT_TOKEN" ] && which git-credential-osxkeychain 2>/dev/null 2>&1
-  then
-    if [ "$(git config --global credential.helper)" != "osxkeychain" ]
-    then
-      git config --global credential.helper osxkeychain
-    fi
-
-    if [ -z "$(printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain get)" ]
-    then
-      printf "protocol=https\nhost=github.com\nusername=$STRAP_GIT_EMAIL\npassword=$STRAP_GIT_TOKEN\n" \
-        | git credential-osxkeychain store
-    fi
-  fi
 fi
 
+if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ] \
+  && which git-credential-osxkeychain 2>/dev/null 2>&1
+then
+  if [ "$(git config credential.helper)" != "osxkeychain" ]
+  then
+    git config --global credential.helper osxkeychain
+  fi
+
+  if [ -z "$(printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain get)" ]
+  then
+    printf "protocol=https\nhost=github.com\nusername=$STRAP_GITHUB_USER\npassword=$STRAP_GITHUB_TOKEN\n" \
+      | git credential-osxkeychain store
+  fi
+fi
 logk
 
 # Setup Homebrew directories and permissions.
