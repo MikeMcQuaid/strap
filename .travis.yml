@@ -20,3 +20,5 @@ script:
   - STRAP_CI=1 STRAP_DEBUG=1 ./bin/strap.sh
   - brew install --build-from-source etl
   - brew cask install flux
+  - brew install checkbashisms
+  - checkbashisms --posix --force --extra ./bin/strap.sh
