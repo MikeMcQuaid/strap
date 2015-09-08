@@ -44,9 +44,10 @@ get "/strap.sh" do
   content_type = params["text"] ? "text/plain" : "application/octet-stream"
 
   content = IO.read(File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh"))
-  content.gsub!(/^STRAP_GIT_NAME=$/,  "STRAP_GIT_NAME='#{auth["info"]["name"]}'")
+  content.gsub!(/^STRAP_GIT_NAME=$/, "STRAP_GIT_NAME='#{auth["info"]["name"]}'")
   content.gsub!(/^STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
-  content.gsub!(/^STRAP_GIT_TOKEN=$/, "STRAP_GIT_TOKEN='#{auth["credentials"]["token"]}'")
+  content.gsub!(/^STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
+  content.gsub!(/^STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
 
   erb content, content_type: content_type
 end
