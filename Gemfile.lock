@@ -7,6 +7,8 @@ GEM
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.10)
+    foreman (0.78.0)
+      thor (~> 0.19.1)
     formatador (0.2.5)
     guard (2.12.9)
       formatador (>= 0.2.4)
@@ -87,9 +89,13 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
+  foreman
   guard
   guard-process
   octokit
   omniauth-github
   sinatra
   unicorn
+
+BUNDLED WITH
+   1.10.6
