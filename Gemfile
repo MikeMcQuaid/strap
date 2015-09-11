@@ -8,6 +8,7 @@ gem "unicorn"
 gem "octokit"
 
 group :development do
+  gem "foreman"
   gem "guard"
   gem "guard-process"
   gem "awesome_print"

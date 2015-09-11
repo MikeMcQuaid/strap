@@ -74,7 +74,7 @@ if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
 fi
 
 if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ] \
-  && which git-credential-osxkeychain 2>/dev/null 2>&1
+  && git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
 then
   if [ "$(git config credential.helper)" != "osxkeychain" ]
   then

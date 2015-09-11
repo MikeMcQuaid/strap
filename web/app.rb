@@ -15,7 +15,9 @@ end
 
 get "/auth/github/callback" do
   session[:auth] = request.env["omniauth.auth"]
-  redirect to "/"
+  return_to = session.delete :return_to
+  return_to = "/" if !return_to || return_to.empty?
+  redirect to return_to
 end
 
 get "/" do
@@ -39,7 +41,13 @@ end
 
 get "/strap.sh" do
   auth = session[:auth]
-  redirect to "/auth/github" unless auth
+
+  unless auth
+    query = request.query_string
+    query = "?#{query}" if query && !query.empty?
+    session[:return_to] = "#{request.path}#{query}"
+    redirect to "/auth/github"
+  end
 
   content_type = params["text"] ? "text/plain" : "application/octet-stream"
 
