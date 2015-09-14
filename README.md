@@ -1,8 +1,6 @@
 # Strap
 Strap is a script to bootstrap a minimal OS X development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every OS X developer will want.
 
-[![Build Status](https://travis-ci.org/mikemcquaid/strap.svg)](https://travis-ci.org/mikemcquaid/strap)
-
 ## Features
 - Installs the Xcode Command Line Tools (for compilers and Unix tools)
 - Agree to the Xcode license (for using compilers without prompts)
@@ -47,10 +45,12 @@ Alternatively, to deploy to [Heroku](https://www.heroku.com) click:
 - `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run.
 
 ## Status
-Still in active development. Aiming for a stable release for the OS X El Capitan (10.11) release.
+Stable and in active development.
+
+[![Build Status](https://travis-ci.org/mikemcquaid/strap.svg)](https://travis-ci.org/mikemcquaid/strap)
 
 ## Contact
-[@mikemcquaid](https://github.com/mikemcquaid)
+[Mike McQuaid](mailto:mike@mikemcquaid.com)
 
 ## License
 Strap is licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
