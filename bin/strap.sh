@@ -127,6 +127,17 @@ brew bundle --file=/tmp/Brewfile.strap
 rm -f /tmp/Brewfile.strap
 logk
 
+# Install suplemental brew packages if needed
+if [ -f ./strap_homebrew_packages.list ]; then
+  log "Found a homebrew package list, installing ..."
+  
+  packages=`cat ./strap_homebrew_packages`
+  
+  for i in $packages; do
+    brew install $i
+  done
+fi
+
 # Use pf packet filter to forward ports 80 and 443.
 logn "Forwarding local ports 80 to 8080 and 443 to 8443:"
 cat <<EOF | sudo tee /etc/pf.anchors/dev.strap >/dev/null
