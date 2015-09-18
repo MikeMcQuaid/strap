@@ -139,8 +139,34 @@ grep $Q "dev.strap" /etc/pf.conf || {
     -e 's|(load anchor.*)|\1\nload anchor "dev.strap" from "/etc/pf.anchors/dev.strap"|g' \
     /etc/pf.conf
 }
-sudo pfctl -f /etc/pf.conf 2>/dev/null
-sudo pfctl -e 2>/dev/null || true
+cat <<EOF | sudo tee /Library/LaunchDaemons/dev.strap.pf.plist >/dev/null
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer/DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.strap.pf.plist</string>
+  <key>Program</key>
+  <string>/sbin/pfctl</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/sbin/pfctl</string>
+    <string>-e</string>
+    <string>-f</string>
+    <string>/etc/pf.conf</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>ServiceDescription</key>
+  <string>FreeBSD Packet Filter (pf) daemon</string>
+  <key>StandardErrorPath</key>
+  <string>/var/log/pf.log</string>
+  <key>StandardOutPath</key>
+  <string>/var/log/pf.log</string>
+</dict>
+</plist>
+EOF
+sudo launchctl load /Library/LaunchDaemons/dev.strap.pf.plist 2>/dev/null
 logk
 
 # Set some basic security settings.
