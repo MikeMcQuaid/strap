@@ -1,10 +1,15 @@
 # Force OS X.
 language: objective-c
 os: osx
+env: OSX=10.10
+osx_image: xcode7
+rvm:
+  - system
 matrix:
   include:
-    - osx_image: xcode7 # 10.10
-    - osx_image: xcode6.1 # 10.9
+    - env: OSX=10.9
+      osx_image: beta-xcode6.2
+      rvm: system
 
 # Remove things Strap installs (so we can test installing them from scratch).
 before_install:
