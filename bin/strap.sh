@@ -95,9 +95,9 @@ HOMEBREW_PREFIX="/usr/local"
 HOMEBREW_CACHE="/Library/Caches/Homebrew"
 for dir in "$HOMEBREW_PREFIX" "$HOMEBREW_CACHE"; do
   [ -d "$dir" ] || sudo mkdir -p "$dir"
-  sudo chmod -R g+rwx "$dir"
+  sudo chmod g+rwx "$dir"
 done
-sudo chgrp -R admin "$HOMEBREW_PREFIX" "$HOMEBREW_CACHE"
+sudo chgrp admin "$HOMEBREW_PREFIX" "$HOMEBREW_CACHE"
 sudo chown root "$HOMEBREW_PREFIX"
 
 # Download Homebrew.
