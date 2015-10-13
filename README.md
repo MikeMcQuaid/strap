@@ -17,6 +17,7 @@ Strap is a script to bootstrap a minimal OS X development system. This does not 
 - Forwards `localhost` port `80` to `8080` and `443` to `8443` (for running web servers as an unprivileged user)
 - Installs the latest OS X software updates (for better security)
 - A simple web application to set Git's name, email and GitHub token
+- Mostly idempotent (the slow bit is rerunning `brew update`)
 
 ## Usage
 Open https://osx-strap.herokuapp.com in your web browser.
