@@ -4,6 +4,25 @@
 set -e
 
 [ "$1" = "--debug" ] && STRAP_DEBUG="1"
+STRAP_SUCCESS=""
+
+cleanup() {
+  rm -f "$CLT_PLACEHOLDER" "$STRAP_BREWFILE"
+  if [ -z "$STRAP_SUCCESS" ]; then
+    if [ -n "$STRAP_STEP" ]; then
+      echo "!!! $STRAP_STEP FAILED" >&2
+    else
+      echo "!!! FAILED" >&2
+    fi
+    if [ -z "$STRAP_DEBUG" ]; then
+      echo "!!! Run '$0 --debug' for debugging output." >&2
+      echo "!!! If you're stuck: file an issue with debugging output at:" >&2
+      echo "!!!   https://github.com/mikemcquaid/strap/issues/new" >&2
+    fi
+  fi
+}
+
+trap "cleanup" EXIT
 
 if [ -n "$STRAP_DEBUG" ]; then
   set -x
@@ -20,10 +39,10 @@ STRAP_GIT_EMAIL=
 STRAP_GITHUB_USER=
 STRAP_GITHUB_TOKEN=
 
-abort() { echo "!!! $@" >&2; exit 1; }
-log()   { echo "--> $@"; }
-logn()  { printf -- "--> $@ "; }
-logk()  { echo "OK"; }
+abort() { STRAP_STEP="";   echo "!!! $@" >&2; exit 1; }
+log()   { STRAP_STEP="$@"; echo "--> $@"; }
+logn()  { STRAP_STEP="$@"; printf -- "--> $@ "; }
+logk()  { STRAP_STEP="";   echo "OK"; }
 
 sw_vers -productVersion | grep $Q -E "^10.(9|10|11)" || {
   abort "Run Strap on Mac OS X 10.9/10/11."
@@ -116,14 +135,15 @@ log "Installing Homebrew taps and extensions:"
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 brew update
 brew tap | grep -i $Q Homebrew/bundle || brew tap Homebrew/bundle
-cat > /tmp/Brewfile.strap <<EOF
+STRAP_BREWFILE="/tmp/Brewfile.strap"
+cat > "$STRAP_BREWFILE" <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/services'
 tap 'homebrew/versions'
 brew 'caskroom/cask/brew-cask'
 EOF
-brew bundle --file=/tmp/Brewfile.strap
-rm -f /tmp/Brewfile.strap
+brew bundle --file="$STRAP_BREWFILE"
+rm -f "$STRAP_BREWFILE"
 logk
 
 # Use pf packet filter to forward ports 80 and 443.
@@ -223,4 +243,5 @@ fi
 # Revoke sudo access again.
 sudo -k
 
+STRAP_SUCCESS="1"
 log 'Finished! Install additional software with `brew install` and `brew cask install`.'
