@@ -57,6 +57,43 @@ sudo -k
 sudo /usr/bin/true
 logk
 
+# Set some basic security settings.
+logn "Configuring security settings:"
+defaults write com.apple.Safari \
+  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
+  -bool false
+defaults write com.apple.Safari \
+  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles \
+  -bool false
+defaults write com.apple.screensaver askForPassword -int 1
+defaults write com.apple.screensaver askForPasswordDelay -int 0
+sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
+
+if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
+  sudo defaults write /Library/Preferences/com.apple.loginwindow \
+    LoginwindowText \
+    "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL."
+fi
+logk
+
+# Check and enable full-disk encryption.
+logn "Checking full-disk encryption status:"
+if fdesetup status | grep $Q -E "FileVault is (On|Off, but will be enabled after the next restart)."; then
+  logk
+elif [ -n "$STRAP_CI" ]; then
+  echo
+  logn "Skipping full-disk encryption for CI"
+elif [ -n "$STRAP_INTERACTIVE" ]; then
+  echo
+  logn "Enabling full-disk encryption on next reboot:"
+  sudo fdesetup enable -user "$USER" \
+    | tee ~/Desktop/"FileVault Recovery Key.txt"
+  logk
+else
+  echo
+  abort 'Run `sudo fdesetup enable -user "$USER"` to enable full-disk encryption.'
+fi
+
 # Install the Xcode Command Line Tools if Xcode isn't installed.
 DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
 [ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] && {
@@ -187,43 +224,6 @@ cat <<EOF | sudo tee /Library/LaunchDaemons/dev.strap.pf.plist >/dev/null
 EOF
 sudo launchctl load /Library/LaunchDaemons/dev.strap.pf.plist 2>/dev/null
 logk
-
-# Set some basic security settings.
-logn "Configuring security settings:"
-defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
-  -bool false
-defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles \
-  -bool false
-defaults write com.apple.screensaver askForPassword -int 1
-defaults write com.apple.screensaver askForPasswordDelay -int 0
-sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
-
-if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
-  sudo defaults write /Library/Preferences/com.apple.loginwindow \
-    LoginwindowText \
-    "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL."
-fi
-logk
-
-# Check and enable full-disk encryption.
-logn "Checking full-disk encryption status:"
-if fdesetup status | grep $Q -E "FileVault is (On|Off, but will be enabled after the next restart)."; then
-  logk
-elif [ -n "$STRAP_CI" ]; then
-  echo
-  logn "Skipping full-disk encryption for CI"
-elif [ -n "$STRAP_INTERACTIVE" ]; then
-  echo
-  logn "Enabling full-disk encryption on next reboot:"
-  sudo fdesetup enable -user "$USER" \
-    | tee ~/Desktop/"FileVault Recovery Key.txt"
-  logk
-else
-  echo
-  abort 'Run `sudo fdesetup enable -user "$USER"` to enable full-disk encryption.'
-fi
 
 # Check and install any remaining software updates.
 logn "Checking for software updates:"
