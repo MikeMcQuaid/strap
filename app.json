@@ -13,7 +13,7 @@
       "description": "The GitHub.com Application Client Secret."
     },
     "SESSION_SECRET": {
-      "description": "The secret used for cookie session storage",
+      "description": "The secret used for cookie session storage.",
       "generator": "secret"
     },
     "WEB_CONCURRENCY": {
