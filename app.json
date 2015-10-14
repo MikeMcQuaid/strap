@@ -19,6 +19,10 @@
     "WEB_CONCURRENCY": {
       "description": "The number of Unicorn (web server) processes to run (defaults to 3).",
       "required": false
+    },
+    "STRAP_ISSUES_URL": {
+      "description": "The URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).",
+      "required": false
     }
   }
 }

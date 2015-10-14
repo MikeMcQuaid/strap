@@ -6,6 +6,8 @@ require "awesome_print" if ENV["RACK_ENV"] == "development"
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"]
+STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
+            "https://github.com/mikemcquaid/strap/issues/new"
 
 set :sessions, secret: SESSION_SECRET
 
@@ -29,7 +31,7 @@ To Strap your system:
 <ol>
   <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user (or <a href="/strap.sh?text=1">view it</a> first). This will prompt for access to your email, public and private repositories. This used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
   <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.</li>
-  <li>If something failed run Strap with more debugging output in Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code></li>
+  <li>If something failed run Strap with more debugging output in Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a></li>
   <li>Delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a></li>
   <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
 </ol>
@@ -56,6 +58,7 @@ get "/strap.sh" do
   content.gsub!(/^STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
   content.gsub!(/^STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
   content.gsub!(/^STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
+  content.gsub!(/^STRAP_ISSUES_URL=.*$/, "STRAP_ISSUES_URL='#{STRAP_ISSUES_URL}'")
 
   erb content, content_type: content_type
 end
