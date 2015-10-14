@@ -17,7 +17,7 @@
       "generator": "secret"
     },
     "WEB_CONCURRENCY": {
-      "description": "The number of Unicorn (web server) processes to run.",
+      "description": "The number of Unicorn (web server) processes to run (defaults to 3).",
       "required": false
     }
   }
