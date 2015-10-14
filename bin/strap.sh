@@ -17,7 +17,7 @@ cleanup() {
     if [ -z "$STRAP_DEBUG" ]; then
       echo "!!! Run '$0 --debug' for debugging output." >&2
       echo "!!! If you're stuck: file an issue with debugging output at:" >&2
-      echo "!!!   https://github.com/mikemcquaid/strap/issues/new" >&2
+      echo "!!!   $STRAP_ISSUES_URL" >&2
     fi
   fi
 }
@@ -38,6 +38,7 @@ STRAP_GIT_NAME=
 STRAP_GIT_EMAIL=
 STRAP_GITHUB_USER=
 STRAP_GITHUB_TOKEN=
+STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
 
 abort() { STRAP_STEP="";   echo "!!! $@" >&2; exit 1; }
 log()   { STRAP_STEP="$@"; echo "--> $@"; }

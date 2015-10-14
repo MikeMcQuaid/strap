@@ -45,7 +45,8 @@ Alternatively, to deploy to [Heroku](https://www.heroku.com) click:
 - `GITHUB_KEY`: the GitHub.com Application Client ID..
 - `GITHUB_SECRET`: the GitHub.com Application Client Secret..
 - `SESSION_SECRET`: the secret used for cookie session storage.
-- `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run.
+- `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run (defaults to 3).
+- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).
 
 ## Status
 Stable and in active development.
