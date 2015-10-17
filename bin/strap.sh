@@ -39,6 +39,7 @@ STRAP_GIT_EMAIL=
 STRAP_GITHUB_USER=
 STRAP_GITHUB_TOKEN=
 STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
+STRAP_BREWFILE_REPO='hombrew-brewfile'
 
 abort() { STRAP_STEP="";   echo "!!! $@" >&2; exit 1; }
 log()   { STRAP_STEP="$@"; echo "--> $@"; }
@@ -183,6 +184,37 @@ EOF
 brew bundle --file="$STRAP_BREWFILE"
 rm -f "$STRAP_BREWFILE"
 logk
+
+# Get remote Brewfile
+logn "Getting .Brewfile from github:"
+if [ -n "$STRAP_GITHUB_TOKEN" ] ; then
+  FILE="https://api.github.com/repos/$STRAP_GITHUB_USER/$STRAP_BREWFILE_REPO/contents/.Brewfile"
+  STATUS_CODE=$(curl --header "Authorization: token $STRAP_GITHUB_TOKEN" \
+       --header 'Accept: application/vnd.github.v3.raw' \
+       --silent \
+       --output $HOME/.Brewfile \
+       --write-out "%{http_code}" \
+       --location \
+       $FILE)
+
+  if [ "$STATUS_CODE" -eq 200 ]; then
+    logk
+  else
+    echo "not found"
+  fi
+else
+  echo "skipped"
+fi
+
+# Install global dependencies
+logn "Installing global Homebrew bundle:"
+if [ -f $HOME/.Brewfile ]; then
+  echo ""
+  brew bundle --global
+  logk
+else
+  echo "skipped"
+fi
 
 # Use pf packet filter to forward ports 80 and 443.
 logn "Forwarding local ports 80 to 8080 and 443 to 8443:"

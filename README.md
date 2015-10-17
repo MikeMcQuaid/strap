@@ -14,6 +14,7 @@ Strap is a script to bootstrap a minimal OS X development system. This does not 
 - Installs [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle) (for `bundler`-like `Brewfile` support)
 - Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
 - Installs [Homebrew Cask](https://github.com/caskroom/homebrew-cask) (for installing graphical software)
+- Gets a `.Brewfile` from users github repo `homebrew-brewfile` and put it at `$HOME` then run `brew bundle --global` to install those dependencies
 - Forwards `localhost` port `80` to `8080` and `443` to `8443` (for running web servers as an unprivileged user)
 - Installs the latest OS X software updates (for better security)
 - A simple web application to set Git's name, email and GitHub token
