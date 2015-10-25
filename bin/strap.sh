@@ -256,8 +256,12 @@ fi
 # Symlink .Brewfile
 if [ ! -s $HOME/.Brewfile ]; then
   logn "Symlinking ~/.homebrew-brewfile/.Brewfile to ~/homebrew-brewfile/.Brewfile:"
-  ln -s $HOME/.homebrew-brewfile/.Brewfile $HOME/.Brewfile
-  logk
+  if [ -f $HOME/.homebrew-brewfile/.Brewfile ]; then
+    ln -s $HOME/.homebrew-brewfile/.Brewfile $HOME/.Brewfile
+    logk
+  else
+    echo "not found"
+  fi
 fi
 
 # Install global dependencies
