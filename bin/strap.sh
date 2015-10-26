@@ -251,24 +251,20 @@ if [ -d ~/.homebrew-brewfile ]; then
 else
   logn "Cloning user Brewfile from GitHub:"
   REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
-  STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL)
+  STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL/blob/master/.Brewfile)
   if [ "$STATUS_CODE" -eq 200 ]; then
      git clone $REPO_URL ~/.homebrew-brewfile
      logk
   else
-     echo "repo not found"
+     echo "not found"
   fi
 fi
 
 # Symlink .Brewfile
 if [ ! -s ~/.Brewfile ]; then
   logn "Symlinking user Brewfile from ~/.homebrew-brewfile/.Brewfile to ~/.Brewfile:"
-  if [ -f ~/.homebrew-brewfile/.Brewfile ]; then
-    ln -s ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
-    logk
-  else
-    echo "not found"
-  fi
+  ln -s ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
+  logk
 fi
 
 # Install global dependencies
