@@ -248,6 +248,7 @@ sudo -k
 if [ -d ~/.homebrew-brewfile ]; then
   logn "Updating user Brewfile from GitHub:"
   cd ~/.homebrew-brewfile; git pull
+  logk
 else
   logn "Cloning user Brewfile from GitHub:"
   REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
@@ -261,9 +262,9 @@ else
 fi
 
 # Symlink .Brewfile
-if [ ! -s ~/.Brewfile ]; then
+if [ -f ~/.homebrew-brewfile/.Brewfile ]; then
   logn "Symlinking user Brewfile from ~/.homebrew-brewfile/.Brewfile to ~/.Brewfile:"
-  ln -s ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
+  ln -sf ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
   logk
 fi
 
