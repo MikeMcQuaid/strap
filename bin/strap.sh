@@ -245,19 +245,19 @@ fi
 sudo -k
 
 # Get remote Brewfile
-if [ -d $HOME/.homebrew-brewfile ]; then
-  logn "Updating homebrew-brewfile from github:"
-  cd $HOME/.homebrew-brewfile; git pull
+if [ -d ~/.homebrew-brewfile ]; then
+  logn "Updating user Brewfile from GitHub:"
+  cd ~/.homebrew-brewfile; git pull
 else
-  logn
+  logn "Cloning user Brewfile from GitHub:"
   git clone https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile ~/.homebrew-brewfile
 fi
 
 # Symlink .Brewfile
-if [ ! -s $HOME/.Brewfile ]; then
-  logn "Symlinking ~/.homebrew-brewfile/.Brewfile to ~/homebrew-brewfile/.Brewfile:"
-  if [ -f $HOME/.homebrew-brewfile/.Brewfile ]; then
-    ln -s $HOME/.homebrew-brewfile/.Brewfile $HOME/.Brewfile
+if [ ! -s ~/.Brewfile ]; then
+  logn "Symlinking user Brewfile from ~/.homebrew-brewfile/.Brewfile to ~/.Brewfile:"
+  if [ -f ~/.homebrew-brewfile/.Brewfile ]; then
+    ln -s ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
     logk
   else
     echo "not found"
@@ -265,7 +265,7 @@ if [ ! -s $HOME/.Brewfile ]; then
 fi
 
 # Install global dependencies
-logn "Installing global Homebrew bundle:"
+logn "Installing from user Brewfile:"
 if [ -f $HOME/.Brewfile ]; then
   echo ""
   brew bundle --global
