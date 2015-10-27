@@ -190,12 +190,13 @@ cat <<EOF | sudo tee /etc/pf.anchors/dev.strap >/dev/null
 rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 8080
 rdr pass inet proto tcp from any to any port 443 -> 127.0.0.1 port 8443
 EOF
-grep $Q "dev.strap" /etc/pf.conf || {
-  sudo perl -pi \
-    -e 's/(rdr-anchor.*)/\1\nrdr-anchor "dev.strap"/g;' \
-    -e 's|(load anchor.*)|\1\nload anchor "dev.strap" from "/etc/pf.anchors/dev.strap"|g' \
-    /etc/pf.conf
-}
+sudo rm -f /etc/pf.anchors/dev.github 2>/dev/null
+sudo perl -pi \
+  -e 's/(rdr-anchor|load anchor) "dev\.(github|strap)"( from "\/etc\/pf.anchors\/dev\.(github|strap)")?\n//g;' \
+  -e 's/(rdr-anchor.*)/\1\nrdr-anchor "dev.strap"/g;' \
+  -e 's|(load anchor.*)|\1\nload anchor "dev.strap" from "/etc/pf.anchors/dev.strap"|g;' \
+  /etc/pf.conf
+sudo launchctl unload /Library/LaunchDaemons/dev.strap.pf.plist 2>/dev/null || true
 cat <<EOF | sudo tee /Library/LaunchDaemons/dev.strap.pf.plist >/dev/null
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer/DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
