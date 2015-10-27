@@ -245,24 +245,23 @@ fi
 sudo -k
 
 # Get remote Brewfile
-if [ -d ~/.homebrew-brewfile ]; then
+if [ -d "~/.homebrew-brewfile" ]; then
   logn "Updating user Brewfile from GitHub:"
-  cd ~/.homebrew-brewfile; git pull
+  cd ~/.homebrew-brewfile
+  git pull -q
   logk
 else
   logn "Cloning user Brewfile from GitHub:"
   REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
-  STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL/blob/master/.Brewfile)
+  STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL/blob/HEAD/.Brewfile)
   if [ "$STATUS_CODE" -eq 200 ]; then
-     git clone $REPO_URL ~/.homebrew-brewfile
-     logk
-  else
-     echo "not found"
+    git clone -q $REPO_URL ~/.homebrew-brewfile
+    logk
   fi
 fi
 
 # Symlink .Brewfile
-if [ -f ~/.homebrew-brewfile/.Brewfile ]; then
+if [ -f "~/.homebrew-brewfile/.Brewfile" ]; then
   logn "Symlinking user Brewfile from ~/.homebrew-brewfile/.Brewfile to ~/.Brewfile:"
   ln -sf ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
   logk
@@ -270,8 +269,8 @@ fi
 
 # Install global dependencies
 logn "Installing from user Brewfile:"
-if [ -f $HOME/.Brewfile ]; then
-  echo ""
+if [ -f "~/.Brewfile" ]; then
+  log ""
   brew bundle --global
   logk
 else
