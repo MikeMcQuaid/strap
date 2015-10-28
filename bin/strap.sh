@@ -244,41 +244,21 @@ fi
 # Revoke sudo access again.
 sudo -k
 
-# User brewfile
+# Install from user brewfile
 if [ -n "$STRAP_GITHUB_USER" ]; then
-
-  # Get remote Brewfile
-  if [ ! -d "$HOME/.homebrew-brewfile" ]; then
-    REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
-    STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL/blob/HEAD/.Brewfile)
-    if [ "$STATUS_CODE" -eq 200 ]; then
-      logn "Cloning user Brewfile from GitHub:"
-      git clone -q $REPO_URL ~/.homebrew-brewfile
-      logk
-
+  REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
+  STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL/blob/HEAD/.Brewfile)
+  if [ "$STATUS_CODE" -eq 200 ]; then
+    logn "Installing from user Brewfile on GitHub:"
+    if [ ! -d "$HOME/.homebrew-brewfile" ]; then
+      git clone $Q $REPO_URL ~/.homebrew-brewfile
+    else
+      cd ~/.homebrew-brewfile
+      git pull $Q
     fi
-  else
-    logn "Updating user Brewfile from GitHub:"
-    cd ~/.homebrew-brewfile
-    git pull -q
-    logk
-  fi
-
-  # Symlink .Brewfile
-  if [ -f "$HOME/.homebrew-brewfile/.Brewfile" ]; then
-    logn "Symlinking user Brewfile from ~/.homebrew-brewfile/.Brewfile to ~/.Brewfile:"
     ln -sf ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
-    logk
-  fi
-
-  # Install user brewfile
-  logn "Installing from user Brewfile:"
-  if [ -f "$HOME/.Brewfile" ]; then
-    log ""
     brew bundle --global
     logk
-  else
-    echo "skipped"
   fi
 fi
 
