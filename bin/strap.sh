@@ -171,10 +171,13 @@ sudo chmod g+rwx "$HOMEBREW_PREFIX"/* "$HOMEBREW_PREFIX"/.??*
 unset GIT_DIR GIT_WORK_TREE
 logk
 
+export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+log "Updating Homebrew:"
+brew update
+logk
+
 # Install Homebrew Bundle, Cask, Services and Versions tap.
 log "Installing Homebrew taps and extensions:"
-export PATH="$HOMEBREW_PREFIX/bin:$PATH"
-brew update
 brew tap | grep -i $Q Homebrew/bundle || brew tap Homebrew/bundle
 STRAP_BREWFILE="/tmp/Brewfile.strap"
 cat > "$STRAP_BREWFILE" <<EOF
