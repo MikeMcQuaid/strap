@@ -110,15 +110,18 @@ DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
 }
 
 # Check if the Xcode license is agreed to and agree if not.
-/usr/bin/xcrun clang 2>&1 | grep $Q license && {
-  if [ -n "$STRAP_INTERACTIVE" ]; then
-    logn "Asking for Xcode license confirmation:"
-    sudo xcodebuild -license
-    logk
-  else
-    abort 'Run `sudo xcodebuild -license` to agree to the Xcode license.'
+xcode_license() {
+  if /usr/bin/xcrun clang 2>&1 | grep $Q license; then
+    if [ -n "$STRAP_INTERACTIVE" ]; then
+      logn "Asking for Xcode license confirmation:"
+      sudo xcodebuild -license
+      logk
+    else
+      abort 'Run `sudo xcodebuild -license` to agree to the Xcode license.'
+    fi
   fi
 }
+xcode_license
 
 # Setup Git
 logn "Configuring Git:"
@@ -236,6 +239,7 @@ else
   log "Installing software updates:"
   if [ -z "$STRAP_CI" ]; then
     sudo softwareupdate --install --all
+    xcode_license
   else
     echo "Skipping software updates for CI"
   fi
