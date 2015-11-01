@@ -249,5 +249,23 @@ fi
 # Revoke sudo access again.
 sudo -k
 
+# Install from user brewfile
+if [ -n "$STRAP_GITHUB_USER" ]; then
+  REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
+  STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL/blob/HEAD/.Brewfile)
+  if [ "$STATUS_CODE" -eq 200 ]; then
+    logn "Installing from user Brewfile on GitHub:"
+    if [ ! -d "$HOME/.homebrew-brewfile" ]; then
+      git clone $Q $REPO_URL ~/.homebrew-brewfile
+    else
+      cd ~/.homebrew-brewfile
+      git pull $Q
+    fi
+    ln -sf ~/.homebrew-brewfile/.Brewfile ~/.Brewfile
+    brew bundle --global
+    logk
+  fi
+fi
+
 STRAP_SUCCESS="1"
 log 'Finished! Install additional software with `brew install` and `brew cask install`.'
