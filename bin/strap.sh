@@ -3,10 +3,23 @@
 #/ Install development dependencies on Mac OS X.
 set -e
 
+# Keep sudo timestamp updated while Strap is running.
+if [ "$1" = "--sudo-wait" ]; then
+  set +x
+  WAIT_PID="$2"
+  while ps -p "$WAIT_PID" 2>&1 >/dev/null; do
+    sudo -v
+    sleep 1
+  done
+  sudo -k
+  exit 0
+fi
+
 [ "$1" = "--debug" ] && STRAP_DEBUG="1"
 STRAP_SUCCESS=""
 
 cleanup() {
+  sudo -k
   rm -f "$CLT_PLACEHOLDER" "$STRAP_BREWFILE"
   if [ -z "$STRAP_SUCCESS" ]; then
     if [ -n "$STRAP_STEP" ]; then
@@ -56,6 +69,7 @@ groups | grep $Q admin || abort "Add $USER to the admin group."
 log "Enter your password (for sudo access):"
 sudo -k
 sudo /usr/bin/true
+sudo "$0" --sudo-wait "$$" &
 logk
 
 # Set some basic security settings.
