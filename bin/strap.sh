@@ -5,7 +5,6 @@ set -e
 
 # Keep sudo timestamp updated while Strap is running.
 if [ "$1" = "--sudo-wait" ]; then
-  set +x
   WAIT_PID="$2"
   while ps -p "$WAIT_PID" 2>&1 >/dev/null; do
     sudo -v
@@ -53,6 +52,8 @@ STRAP_GITHUB_USER=
 STRAP_GITHUB_TOKEN=
 STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
 
+STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$0"
+
 abort() { STRAP_STEP="";   echo "!!! $@" >&2; exit 1; }
 log()   { STRAP_STEP="$@"; echo "--> $@"; }
 logn()  { STRAP_STEP="$@"; printf -- "--> $@ "; }
@@ -69,7 +70,7 @@ groups | grep $Q admin || abort "Add $USER to the admin group."
 log "Enter your password (for sudo access):"
 sudo -k
 sudo /usr/bin/true
-sudo "$0" --sudo-wait "$$" &
+sudo "$STRAP_FULL_PATH" --sudo-wait "$$" &
 logk
 
 # Set some basic security settings.
