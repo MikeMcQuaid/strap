@@ -4,4 +4,4 @@ cd "$(dirname "$0")/.."
 
 script/bootstrap
 
-foreman start
+bundle exec foreman start

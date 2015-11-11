@@ -5,3 +5,4 @@
 !/bin/strap.sh
 /vendor/
 Vagrantfile
+strap.sh
