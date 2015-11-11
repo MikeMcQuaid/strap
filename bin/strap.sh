@@ -5,12 +5,10 @@ set -e
 
 # Keep sudo timestamp updated while Strap is running.
 if [ "$1" = "--sudo-wait" ]; then
-  WAIT_PID="$2"
-  while ps -p "$WAIT_PID" 2>&1 >/dev/null; do
+  while true; do
     sudo -v
     sleep 1
   done
-  sudo -k
   exit 0
 fi
 
@@ -18,6 +16,10 @@ fi
 STRAP_SUCCESS=""
 
 cleanup() {
+  set +e
+  if [ -n "$STRAP_SUDO_WAIT_PID" ]; then
+    sudo kill "$STRAP_SUDO_WAIT_PID"
+  fi
   sudo -k
   rm -f "$CLT_PLACEHOLDER" "$STRAP_BREWFILE"
   if [ -z "$STRAP_SUCCESS" ]; then
@@ -52,7 +54,7 @@ STRAP_GITHUB_USER=
 STRAP_GITHUB_TOKEN=
 STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
 
-STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$0"
+STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 
 abort() { STRAP_STEP="";   echo "!!! $@" >&2; exit 1; }
 log()   { STRAP_STEP="$@"; echo "--> $@"; }
@@ -70,7 +72,10 @@ groups | grep $Q admin || abort "Add $USER to the admin group."
 log "Enter your password (for sudo access):"
 sudo -k
 sudo /usr/bin/true
-sudo "$STRAP_FULL_PATH" --sudo-wait "$$" &
+[ -f "$STRAP_FULL_PATH" ]
+sudo bash "$STRAP_FULL_PATH" --sudo-wait &
+STRAP_SUDO_WAIT_PID="$!"
+ps -p "$STRAP_SUDO_WAIT_PID" 2>&1 >/dev/null
 logk
 
 # Set some basic security settings.
@@ -263,9 +268,6 @@ else
   fi
   logk
 fi
-
-# Revoke sudo access again.
-sudo -k
 
 if [ -n "$STRAP_GITHUB_USER" ]; then
   REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"

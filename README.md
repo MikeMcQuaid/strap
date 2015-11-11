@@ -27,7 +27,7 @@ Alternatively, to run Strap locally run:
 ```bash
 git clone https://github.com/mikemcquaid/strap
 cd strap
-./bin/strap.sh # or ./bin/strap.sh --debug for more debugging output
+bash bin/strap.sh # or bash bin/strap.sh --debug for more debugging output
 ```
 
 Alternatively, to run the web application locally run:
