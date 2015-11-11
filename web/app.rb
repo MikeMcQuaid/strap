@@ -24,6 +24,10 @@ get "/auth/github/callback" do
 end
 
 get "/" do
+  if request.scheme == "http" && ENV["RACK_ENV"] != "development"
+    redirect to "https://#{request.host}#{request.fullpath}"
+  end
+
   @title = "Strap"
   @text = <<-EOS
 Strap is a script to bootstrap a minimal OS X development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every OS X developer will want.
