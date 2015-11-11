@@ -1,11 +1,12 @@
 require "sinatra"
 require "omniauth-github"
 require "octokit"
+require "securerandom"
 require "awesome_print" if ENV["RACK_ENV"] == "development"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
-SESSION_SECRET = ENV["SESSION_SECRET"]
+SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
             "https://github.com/mikemcquaid/strap/issues/new"
 
@@ -23,6 +24,10 @@ get "/auth/github/callback" do
 end
 
 get "/" do
+  if request.scheme == "http" && ENV["RACK_ENV"] != "development"
+    redirect to "https://#{request.host}#{request.fullpath}"
+  end
+
   @title = "Strap"
   @text = <<-EOS
 Strap is a script to bootstrap a minimal OS X development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every OS X developer will want.
@@ -44,21 +49,24 @@ end
 get "/strap.sh" do
   auth = session[:auth]
 
-  unless auth
+  if !auth && GITHUB_KEY && GITHUB_SECRET
     query = request.query_string
     query = "?#{query}" if query && !query.empty?
     session[:return_to] = "#{request.path}#{query}"
     redirect to "/auth/github"
   end
 
+  content = IO.read(File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh"))
+  content.gsub!(/^STRAP_ISSUES_URL=.*$/, "STRAP_ISSUES_URL='#{STRAP_ISSUES_URL}'")
+
   content_type = params["text"] ? "text/plain" : "application/octet-stream"
 
-  content = IO.read(File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh"))
-  content.gsub!(/^STRAP_GIT_NAME=$/, "STRAP_GIT_NAME='#{auth["info"]["name"]}'")
-  content.gsub!(/^STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
-  content.gsub!(/^STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
-  content.gsub!(/^STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
-  content.gsub!(/^STRAP_ISSUES_URL=.*$/, "STRAP_ISSUES_URL='#{STRAP_ISSUES_URL}'")
+  if auth
+    content.gsub!(/^STRAP_GIT_NAME=$/, "STRAP_GIT_NAME='#{auth["info"]["name"]}'")
+    content.gsub!(/^STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
+    content.gsub!(/^STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
+    content.gsub!(/^STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
+  end
 
   erb content, content_type: content_type
 end

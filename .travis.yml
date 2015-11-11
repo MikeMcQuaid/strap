@@ -3,30 +3,22 @@ language: objective-c
 os: osx
 env: OSX=10.11
 osx_image: osx10.11
-rvm:
-  - system
+rvm: 2.1.7
 matrix:
   include:
     - env: OSX=10.10
       osx_image: xcode7
-      rvm: system
     - env: OSX=10.9
       osx_image: beta-xcode6.2
-      rvm: system
+
+install:
+  - ./script/bootstrap
 
 # Remove things Strap installs (so we can test installing them from scratch).
-before_install:
+before_script:
   - sudo rm -rf /usr/local/* /usr/local/.??* /Applications/Xcode.app /Library/Developer/CommandLineTools /opt/homebrew-cask/Caskroom
   - sudo pkgutil --forget com.apple.pkg.CLTools_Executables
 
-# Empty (to avoid Bundler).
-install:
-  -
-
 # Install Strap and then test installing packages works.
 script:
-  - STRAP_CI=1 STRAP_DEBUG=1 ./bin/strap.sh
-  - brew install --build-from-source etl
-  - brew cask install flux
-  - brew install checkbashisms
-  - checkbashisms --posix --force --extra ./bin/strap.sh
+  - ./script/cibuild

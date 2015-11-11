@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+cd "$(dirname "$0")/.."
+
+cleanup() {
+  if [ -n "$SERVER_PID" ]; then
+    kill "$SERVER_PID"
+  fi
+}
+
+trap "cleanup" EXIT
+
+script/bootstrap
+bundle exec foreman check
+script/server &
+SERVER_PID="$!"
+sleep 5
+curl -O http://localhost:5000/strap.sh
+kill "$SERVER_PID"
+wait "$SERVER_PID" || true
+SERVER_PID=
+
+export STRAP_CI=1
+export STRAP_DEBUG=1
+bash strap.sh
+
+brew install --build-from-source etl
+brew cask install flux
+brew install checkbashisms
+
+checkbashisms --posix --force --extra strap.sh
