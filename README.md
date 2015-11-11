@@ -34,8 +34,7 @@ Alternatively, to run the web application locally run:
 ```bash
 git clone https://github.com/mikemcquaid/strap
 cd strap
-bundle install
-GITHUB_KEY="..." GITHUB_SECRET="..." foreman start
+GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
 ```
 
 Alternatively, to deploy to [Heroku](https://www.heroku.com) click:
