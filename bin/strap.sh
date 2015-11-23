@@ -250,7 +250,7 @@ cat <<EOF | sudo tee /Library/LaunchDaemons/dev.strap.pf.plist >/dev/null
 </dict>
 </plist>
 EOF
-sudo launchctl load /Library/LaunchDaemons/dev.strap.pf.plist 2>/dev/null
+sudo launchctl load -w /Library/LaunchDaemons/dev.strap.pf.plist 2>/dev/null
 logk
 
 # Check and install any remaining software updates.
