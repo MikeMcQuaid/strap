@@ -153,6 +153,11 @@ if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
   git config --global user.email "$STRAP_GIT_EMAIL"
 fi
 
+# Squelch git 2.x warning message when pushing
+if ! git config push.default >/dev/null; then
+  git config --global push.default simple
+fi
+
 if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ] \
   && git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
 then
