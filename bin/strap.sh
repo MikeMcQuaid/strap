@@ -6,7 +6,8 @@ set -e
 # Keep sudo timestamp updated while Strap is running.
 if [ "$1" = "--sudo-wait" ]; then
   while true; do
-    sudo -v
+    mkdir -p "/var/db/sudo/$SUDO_USER"
+    touch "/var/db/sudo/$SUDO_USER"
     sleep 1
   done
   exit 0
