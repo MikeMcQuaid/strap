@@ -154,6 +154,10 @@ if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
   git config --global user.email "$STRAP_GIT_EMAIL"
 fi
 
+if [ -n "$STRAP_GITHUB_USER" ]&& ! git config github.user >/dev/null; then
+  git config --global github.user "$STRAP_GITHUB_USER"
+fi
+
 # Squelch git 2.x warning message when pushing
 if ! git config push.default >/dev/null; then
   git config --global push.default simple
