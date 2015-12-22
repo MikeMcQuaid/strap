@@ -154,7 +154,7 @@ if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
   git config --global user.email "$STRAP_GIT_EMAIL"
 fi
 
-if [ -n "$STRAP_GITHUB_USER" ]&& ! git config github.user >/dev/null; then
+if [ -n "$STRAP_GITHUB_USER" ]; then
   git config --global github.user "$STRAP_GITHUB_USER"
 fi
 
@@ -170,12 +170,9 @@ then
   then
     git config --global credential.helper osxkeychain
   fi
-
-  if [ -z "$(printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain get)" ]
-  then
-    printf "protocol=https\nhost=github.com\nusername=$STRAP_GITHUB_USER\npassword=$STRAP_GITHUB_TOKEN\n" \
-      | git credential-osxkeychain store
-  fi
+  printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
+  printf "protocol=https\nhost=github.com\nusername=$STRAP_GITHUB_USER\npassword=$STRAP_GITHUB_TOKEN\n" \
+        | git credential-osxkeychain store
 fi
 logk
 
