@@ -205,13 +205,11 @@ logk
 
 # Install Homebrew Bundle, Cask, Services and Versions tap.
 log "Installing Homebrew taps and extensions:"
-brew tap | grep -i $Q Homebrew/bundle || brew tap Homebrew/bundle
 STRAP_BREWFILE="/tmp/Brewfile.strap"
 cat > "$STRAP_BREWFILE" <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/services'
 tap 'homebrew/versions'
-brew 'caskroom/cask/brew-cask'
 EOF
 brew bundle --file="$STRAP_BREWFILE"
 rm -f "$STRAP_BREWFILE"
