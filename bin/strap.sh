@@ -22,7 +22,7 @@ cleanup() {
     sudo kill "$STRAP_SUDO_WAIT_PID"
   fi
   sudo -k
-  rm -f "$CLT_PLACEHOLDER"
+  rm -f "$CLT_PLACEHOLDER" "$STRAP_BREWFILE"
   if [ -z "$STRAP_SUCCESS" ]; then
     if [ -n "$STRAP_STEP" ]; then
       echo "!!! $STRAP_STEP FAILED" >&2
@@ -205,11 +205,14 @@ logk
 
 # Install Homebrew Bundle, Cask, Services and Versions tap.
 log "Installing Homebrew taps and extensions:"
-cat | brew bundle --file=- <<EOF
+STRAP_BREWFILE="/tmp/Brewfile.strap"
+cat > "$STRAP_BREWFILE" <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/services'
 tap 'homebrew/versions'
 EOF
+brew bundle --file="$STRAP_BREWFILE"
+rm -f "$STRAP_BREWFILE"
 logk
 
 # Use pf packet filter to forward ports 80 and 443.
