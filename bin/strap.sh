@@ -144,7 +144,7 @@ xcode_license() {
 }
 xcode_license
 
-# Setup Git
+# Setup Git configuration.
 logn "Configuring Git:"
 if [ -n "$STRAP_GIT_NAME" ] && ! git config user.name >/dev/null; then
   git config --global user.name "$STRAP_GIT_NAME"
@@ -163,6 +163,7 @@ if ! git config push.default >/dev/null; then
   git config --global push.default simple
 fi
 
+# Setup GitHub HTTPS credentials.
 if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ] \
   && git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
 then
@@ -198,6 +199,7 @@ sudo chmod g+rwx "$HOMEBREW_PREFIX"/* "$HOMEBREW_PREFIX"/.??*
 unset GIT_DIR GIT_WORK_TREE
 logk
 
+# Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 log "Updating Homebrew:"
 brew update
