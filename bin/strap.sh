@@ -205,7 +205,7 @@ logk
 
 # Install Homebrew Bundle, Cask, Services and Versions tap.
 log "Installing Homebrew taps and extensions:"
-cat | brew bundle --file=- <<EOF
+brew bundle --file=- <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/services'
 tap 'homebrew/versions'
