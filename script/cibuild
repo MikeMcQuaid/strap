@@ -24,8 +24,8 @@ export STRAP_CI=1
 export STRAP_DEBUG=1
 bash strap.sh
 
-brew install --build-from-source etl
+brew install --build-from-source libffi
 brew cask install flux
-brew install checkbashisms
+brew install shellcheck
 
-checkbashisms --posix --force --extra strap.sh
+shellcheck strap.sh

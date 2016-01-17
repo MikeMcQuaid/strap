@@ -57,9 +57,9 @@ STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
 
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 
-abort() { STRAP_STEP="";   echo "!!! $@" >&2; exit 1; }
-log()   { STRAP_STEP="$@"; echo "--> $@"; }
-logn()  { STRAP_STEP="$@"; printf -- "--> $@ "; }
+abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
+log()   { STRAP_STEP="$*"; echo "--> $*"; }
+logn()  { STRAP_STEP="$*"; printf -- "--> $* "; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 
 sw_vers -productVersion | grep $Q -E "^10.(9|10|11)" || {
@@ -76,7 +76,7 @@ sudo /usr/bin/true
 [ -f "$STRAP_FULL_PATH" ]
 sudo bash "$STRAP_FULL_PATH" --sudo-wait &
 STRAP_SUDO_WAIT_PID="$!"
-ps -p "$STRAP_SUDO_WAIT_PID" 2>&1 >/dev/null
+ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
 logk
 
 # Set some basic security settings.
@@ -113,7 +113,7 @@ elif [ -n "$STRAP_INTERACTIVE" ]; then
   logk
 else
   echo
-  abort 'Run `sudo fdesetup enable -user "$USER"` to enable full-disk encryption.'
+  abort "Run 'sudo fdesetup enable -user \"$USER\"' to enable full-disk encryption."
 fi
 
 # Install the Xcode Command Line Tools if Xcode isn't installed.
@@ -138,13 +138,13 @@ xcode_license() {
       sudo xcodebuild -license
       logk
     else
-      abort 'Run `sudo xcodebuild -license` to agree to the Xcode license.'
+      abort "Run 'sudo xcodebuild -license' to agree to the Xcode license."
     fi
   fi
 }
 xcode_license
 
-# Setup Git
+# Setup Git configuration.
 logn "Configuring Git:"
 if [ -n "$STRAP_GIT_NAME" ] && ! git config user.name >/dev/null; then
   git config --global user.name "$STRAP_GIT_NAME"
@@ -163,6 +163,7 @@ if ! git config push.default >/dev/null; then
   git config --global push.default simple
 fi
 
+# Setup GitHub HTTPS credentials.
 if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ] \
   && git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
 then
@@ -171,7 +172,8 @@ then
     git config --global credential.helper osxkeychain
   fi
   printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
-  printf "protocol=https\nhost=github.com\nusername=$STRAP_GITHUB_USER\npassword=$STRAP_GITHUB_TOKEN\n" \
+  printf "protocol=https\nhost=github.com\nusername=%s\npassword=%s\n" \
+        "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
         | git credential-osxkeychain store
 fi
 logk
@@ -182,7 +184,7 @@ HOMEBREW_PREFIX="/usr/local"
 HOMEBREW_CACHE="/Library/Caches/Homebrew"
 for dir in "$HOMEBREW_PREFIX" "$HOMEBREW_CACHE"; do
   [ -d "$dir" ] || sudo mkdir -p "$dir"
-  sudo chown -R $USER:admin "$dir"
+  sudo chown -R "$USER:admin" "$dir"
 done
 
 # Download Homebrew.
@@ -198,6 +200,7 @@ sudo chmod g+rwx "$HOMEBREW_PREFIX"/* "$HOMEBREW_PREFIX"/.??*
 unset GIT_DIR GIT_WORK_TREE
 logk
 
+# Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 log "Updating Homebrew:"
 brew update
@@ -295,4 +298,4 @@ if [ -f "$HOME/.Brewfile" ]; then
 fi
 
 STRAP_SUCCESS="1"
-log 'Finished! Install additional software with `brew install` and `brew cask install`.'
+log "Finished! Install additional software with 'brew install' and 'brew cask install'."
