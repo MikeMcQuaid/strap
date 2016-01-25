@@ -90,6 +90,7 @@ defaults write com.apple.Safari \
 defaults write com.apple.screensaver askForPassword -int 1
 defaults write com.apple.screensaver askForPasswordDelay -int 0
 sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
+sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
 
 if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
   sudo defaults write /Library/Preferences/com.apple.loginwindow \
@@ -235,14 +236,11 @@ cat <<EOF | sudo tee /Library/LaunchDaemons/dev.strap.pf.plist >/dev/null
 <dict>
   <key>Label</key>
   <string>dev.strap.pf.plist</string>
-  <key>Program</key>
-  <string>/sbin/pfctl</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/sbin/pfctl</string>
-    <string>-e</string>
-    <string>-f</string>
-    <string>/etc/pf.conf</string>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>ipconfig waitall &amp;&amp; /sbin/pfctl -e -f /etc/pf.conf</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
