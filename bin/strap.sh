@@ -296,4 +296,4 @@ if [ -f "$HOME/.Brewfile" ]; then
 fi
 
 STRAP_SUCCESS="1"
-log "Finished! Install additional software with 'brew install' and 'brew cask install'."
+log "Your system is now Strap'd!"
