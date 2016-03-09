@@ -274,7 +274,9 @@ fi
 
 if [ -n "$STRAP_GITHUB_USER" ]; then
   REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
-  STATUS_CODE=$(curl --silent --write-out "%{http_code}" --output /dev/null $REPO_URL/blob/HEAD/Brewfile)
+  REPO_API_URL="https://api.github.com/repos/$STRAP_GITHUB_USER/homebrew-brewfile"
+  STATUS_CODE=$(curl -u $STRAP_GITHUB_USER:$STRAP_GITHUB_TOKEN --silent --write-out "%{http_code}" --output /dev/null $REPO_API_URL/contents/Brewfile)
+
   if [ "$STATUS_CODE" -eq 200 ]; then
     logn "Fetching user Brewfile from GitHub:"
     if [ ! -d "$HOME/.homebrew-brewfile" ]; then
