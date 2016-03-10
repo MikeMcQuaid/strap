@@ -23,6 +23,10 @@
     "STRAP_ISSUES_URL": {
       "description": "The URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).",
       "required": false
+    },
+    "STRAP_BEFORE_INSTALL": {
+      "description": "Instructions displayed in the web application for users to follow before installing Strap (will be wrapped in `<li>` tags)..",
+      "required": false
     }
   }
 }

@@ -9,6 +9,7 @@ GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
             "https://github.com/mikemcquaid/strap/issues/new"
+STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 
 set :sessions, secret: SESSION_SECRET
 
@@ -28,12 +29,17 @@ get "/" do
     redirect to "https://#{request.host}#{request.fullpath}"
   end
 
+  before_install_list_item = if STRAP_BEFORE_INSTALL
+    "<li>#{STRAP_BEFORE_INSTALL}</li>"
+  end
+
   @title = "Strap"
   @text = <<-EOS
 Strap is a script to bootstrap a minimal OS X development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every OS X developer will want.
 
 To Strap your system:
 <ol>
+  #{before_install_list_item}
   <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user (or <a href="/strap.sh?text=1">view it</a> first). This will prompt for access to your email, public and private repositories. This is used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
   <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.</li>
   <li>If something failed, run Strap with more debugging output in Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a></li>
