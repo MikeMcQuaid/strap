@@ -117,9 +117,10 @@ else
   abort "Run 'sudo fdesetup enable -user \"$USER\"' to enable full-disk encryption."
 fi
 
-# Install the Xcode Command Line Tools if Xcode isn't installed.
+# Install the Xcode Command Line Tools.
 DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
-[ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] && {
+[ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] \
+                        || ! [ -f "/usr/include/iconv.h" ] && {
   log "Installing the Xcode Command Line Tools:"
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo touch "$CLT_PLACEHOLDER"
@@ -128,6 +129,16 @@ DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
                 awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | head -n1)
   sudo softwareupdate -i "$CLT_PACKAGE"
   sudo rm -f "$CLT_PLACEHOLDER"
+  if ! [ -f "/usr/include/iconv.h" ]; then
+    if [ -n "$STRAP_INTERACTIVE" ]; then
+      echo
+      logn "Requesting user install of Xcode Command Line Tools:"
+      xcode-select --install
+    else
+      echo
+      abort "Run 'xcode-select --install' to install the Xcode Command Line Tools."
+    fi
+  fi
   logk
 }
 
