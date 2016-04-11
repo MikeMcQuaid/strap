@@ -204,10 +204,8 @@ export GIT_DIR="$HOMEBREW_PREFIX/.git" GIT_WORK_TREE="$HOMEBREW_PREFIX"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/brew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-git rev-parse --verify --quiet origin/master >/dev/null || {
-  git fetch $Q origin master:refs/remotes/origin/master --no-tags --depth=1
-  git reset $Q --hard origin/master
-}
+git fetch $Q origin master:refs/remotes/origin/master --no-tags --depth=1
+git reset $Q --hard origin/master
 sudo chmod g+rwx "$HOMEBREW_PREFIX"/* "$HOMEBREW_PREFIX"/.??*
 unset GIT_DIR GIT_WORK_TREE
 logk
