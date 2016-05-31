@@ -108,7 +108,7 @@ elif [ -n "$STRAP_CI" ]; then
   logn "Skipping full-disk encryption for CI"
 elif [ -n "$STRAP_INTERACTIVE" ]; then
   echo
-  logn "Enabling full-disk encryption on next reboot:"
+  log "Enabling full-disk encryption on next reboot:"
   sudo fdesetup enable -user "$USER" \
     | tee ~/Desktop/"FileVault Recovery Key.txt"
   logk
