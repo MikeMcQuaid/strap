@@ -193,22 +193,18 @@ then
 fi
 logk
 
-# Setup Homebrew directories and permissions.
+# Setup Homebrew directory and permissions.
 logn "Installing Homebrew:"
 HOMEBREW_PREFIX="/usr/local"
-HOMEBREW_CACHE="/Library/Caches/Homebrew"
-for dir in "$HOMEBREW_PREFIX" "$HOMEBREW_CACHE"; do
-  [ -d "$dir" ] || sudo mkdir -p "$dir"
-  sudo chown -R "$USER:admin" "$dir"
-done
+[ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
+sudo chown -R "$USER:admin" "$HOMEBREW_PREFIX"
 
 # Download Homebrew.
 export GIT_DIR="$HOMEBREW_PREFIX/.git" GIT_WORK_TREE="$HOMEBREW_PREFIX"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/brew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-git fetch $Q origin master:refs/remotes/origin/master \
-  --no-tags --depth=1 --force --update-shallow
+git fetch $Q --no-tags --depth=1 --force --update-shallow
 git reset $Q --hard origin/master
 sudo chmod g+rwx "$HOMEBREW_PREFIX"/* "$HOMEBREW_PREFIX"/.??*
 unset GIT_DIR GIT_WORK_TREE
