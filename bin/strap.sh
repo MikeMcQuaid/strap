@@ -62,8 +62,8 @@ log()   { STRAP_STEP="$*"; echo "--> $*"; }
 logn()  { STRAP_STEP="$*"; printf -- "--> $* "; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 
-sw_vers -productVersion | grep $Q -E "^10.(9|10|11)" || {
-  abort "Run Strap on Mac OS X 10.9/10/11."
+sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12)" || {
+  abort "Run Strap on Mac OS X 10.9/10/11/12."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
