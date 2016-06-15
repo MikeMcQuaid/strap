@@ -206,7 +206,6 @@ git config remote.origin.url "https://github.com/Homebrew/brew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git fetch $Q --no-tags --depth=1 --force --update-shallow
 git reset $Q --hard origin/master
-sudo chmod g+rwx "$HOMEBREW_PREFIX"/* "$HOMEBREW_PREFIX"/.??*
 unset GIT_DIR GIT_WORK_TREE
 logk
 
