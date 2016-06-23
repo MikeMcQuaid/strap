@@ -52,7 +52,7 @@ Alternatively, to deploy to [Heroku](https://www.heroku.com) click:
 ## Status
 Stable and in active development.
 
-[![Build Status](https://travis-ci.org/mikemcquaid/strap.svg)](https://travis-ci.org/mikemcquaid/strap)
+[![Build Status](https://travis-ci.org/MikeMcQuaid/strap.svg)](https://travis-ci.org/MikeMcQuaid/strap)
 
 ## Contact
 [Mike McQuaid](mailto:mike@mikemcquaid.com)
