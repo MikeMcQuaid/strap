@@ -225,46 +225,6 @@ tap 'homebrew/versions'
 EOF
 logk
 
-# Use pf packet filter to forward ports 80 and 443.
-logn "Forwarding local ports 80 to 8080 and 443 to 8443:"
-cat <<EOF | sudo tee /etc/pf.anchors/dev.strap >/dev/null
-rdr pass inet proto tcp from any to any port 80 -> 127.0.0.1 port 8080
-rdr pass inet proto tcp from any to any port 443 -> 127.0.0.1 port 8443
-EOF
-sudo rm -f /etc/pf.anchors/dev.github 2>/dev/null
-sudo perl -pi \
-  -e 's/(rdr-anchor|load anchor) "dev\.(github|strap)"( from "\/etc\/pf.anchors\/dev\.(github|strap)")?\n//g;' \
-  -e 's/(rdr-anchor.*)/\1\nrdr-anchor "dev.strap"/g;' \
-  -e 's|(load anchor.*)|\1\nload anchor "dev.strap" from "/etc/pf.anchors/dev.strap"|g;' \
-  /etc/pf.conf
-sudo launchctl unload /Library/LaunchDaemons/dev.strap.pf.plist 2>/dev/null || true
-cat <<EOF | sudo tee /Library/LaunchDaemons/dev.strap.pf.plist >/dev/null
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer/DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key>
-  <string>dev.strap.pf.plist</string>
-  <key>ProgramArguments</key>
-  <array>
-    <string>/bin/bash</string>
-    <string>-c</string>
-    <string>ipconfig waitall &amp;&amp; /sbin/pfctl -e -f /etc/pf.conf</string>
-  </array>
-  <key>RunAtLoad</key>
-  <true/>
-  <key>ServiceDescription</key>
-  <string>FreeBSD Packet Filter (pf) daemon</string>
-  <key>StandardErrorPath</key>
-  <string>/var/log/pf.log</string>
-  <key>StandardOutPath</key>
-  <string>/var/log/pf.log</string>
-</dict>
-</plist>
-EOF
-sudo launchctl load -w /Library/LaunchDaemons/dev.strap.pf.plist 2>/dev/null
-logk
-
 # Check and install any remaining software updates.
 logn "Checking for software updates:"
 if softwareupdate -l 2>&1 | grep $Q "No new software available."; then
