@@ -166,7 +166,7 @@ if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
   git config --global user.email "$STRAP_GIT_EMAIL"
 fi
 
-if [ -n "$STRAP_GITHUB_USER" ] && [ "$(git config --global github.user)" != "$STRAP_GITHUB_USER" ]; then
+if [ -n "$STRAP_GITHUB_USER" ] && [ "$(git config github.user)" != "$STRAP_GITHUB_USER" ]; then
   git config --global github.user "$STRAP_GITHUB_USER"
 fi
 
