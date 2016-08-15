@@ -3,14 +3,14 @@ language: objective-c
 os: osx
 env: OSX=10.11
 osx_image: xcode7.3
-rvm: 2.1.7
+rvm: 2.3.1
 
 install:
   - ./script/bootstrap
 
 # Remove things Strap installs (so we can test installing them from scratch).
 before_script:
-  - sudo rm -rf /usr/local/* /usr/local/.??* /Applications/Xcode.app /Library/Developer/CommandLineTools /opt/homebrew-cask/Caskroom
+  - sudo rm -rf /usr/local/bin/brew /usr/local/.??* /Applications/Xcode.app /Library/Developer/CommandLineTools /opt/homebrew-cask/Caskroom
   - sudo pkgutil --forget com.apple.pkg.CLTools_Executables
 
 # Install Strap and then test installing packages works.
