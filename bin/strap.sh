@@ -247,18 +247,39 @@ else
   logk
 fi
 
+# Setup dotfiles
 if [ -n "$STRAP_GITHUB_USER" ]; then
-  REPO_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
-  REPO_API_URL="https://api.github.com/repos/$STRAP_GITHUB_USER/homebrew-brewfile"
-  STATUS_CODE=$(curl -u "$STRAP_GITHUB_USER:$STRAP_GITHUB_TOKEN" --silent --write-out "%{http_code}" --output /dev/null $REPO_API_URL/contents/Brewfile)
+  STRAP_DOTFILES_SETUP="script/setup"
+
+  DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
+  DOTFILES_API_URL="https://api.github.com/repos/$STRAP_GITHUB_USER/dotfiles"
+  STATUS_CODE=$(curl -u "$STRAP_GITHUB_USER:$STRAP_GITHUB_TOKEN" --silent --write-out "%{http_code}" --output /dev/null "$DOTFILES_API_URL/contents/$STRAP_DOTFILES_SETUP")
 
   if [ "$STATUS_CODE" -eq 200 ]; then
-    logn "Fetching user Brewfile from GitHub:"
+    logn "Fetching $STRAP_GITHUB_USER/dotfiles from GitHub:"
+    if [ ! -d "$HOME/.dotfiles" ]; then
+      git clone $Q $DOTFILES_URL ~/.dotfiles
+    fi
+    ~/.dotfiles/"$STRAP_DOTFILES_SETUP"
+    logk
+  fi
+fi
+
+# Setup Brewfile
+if [ -n "$STRAP_GITHUB_USER" ] && ! [ -f "$HOME/.Brewfile" ]; then
+  BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
+  BREWFILE_API_URL="https://api.github.com/repos/$STRAP_GITHUB_USER/homebrew-brewfile"
+  STATUS_CODE=$(curl -u "$STRAP_GITHUB_USER:$STRAP_GITHUB_TOKEN" --silent --write-out "%{http_code}" --output /dev/null "$BREWFILE_API_URL"/contents/Brewfile)
+
+  if [ "$STATUS_CODE" -eq 200 ]; then
+    logn "Fetching $STRAP_GITHUB_USER/homebrew-brewfile from GitHub:"
     if [ ! -d "$HOME/.homebrew-brewfile" ]; then
-      git clone $Q $REPO_URL ~/.homebrew-brewfile
+      git clone $Q $BREWFILE_URL ~/.homebrew-brewfile
     else
-      cd ~/.homebrew-brewfile
-      git pull $Q
+      (
+        cd ~/.homebrew-brewfile
+        git pull $Q
+      )
     fi
     ln -sf ~/.homebrew-brewfile/Brewfile ~/.Brewfile
     logk

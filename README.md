@@ -15,6 +15,7 @@ Strap is a script to bootstrap a minimal OS X development system. This does not 
 - Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
 - Installs [Homebrew Cask](https://github.com/caskroom/homebrew-cask) (for installing graphical software)
 - Installs the latest OS X software updates (for better security)
+- Installs dotfiles from a user's `https://github.com/username/dotfiles` repository and runs `script/setup` to configure them.
 - Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
 - A simple web application to set Git's name, email and GitHub token
 - Mostly idempotent (the slow bit is rerunning `brew update`)
