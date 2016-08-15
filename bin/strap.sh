@@ -249,32 +249,38 @@ fi
 
 # Setup dotfiles
 if [ -n "$STRAP_GITHUB_USER" ]; then
-  STRAP_DOTFILES_SETUP="script/setup"
-
   DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
-  DOTFILES_API_URL="https://api.github.com/repos/$STRAP_GITHUB_USER/dotfiles"
-  STATUS_CODE=$(curl -u "$STRAP_GITHUB_USER:$STRAP_GITHUB_TOKEN" --silent --write-out "%{http_code}" --output /dev/null "$DOTFILES_API_URL/contents/$STRAP_DOTFILES_SETUP")
 
-  if [ "$STATUS_CODE" -eq 200 ]; then
-    logn "Fetching $STRAP_GITHUB_USER/dotfiles from GitHub:"
+  if git ls-remote "$DOTFILES_URL" &>/dev/null; then
+    log "Fetching $STRAP_GITHUB_USER/dotfiles from GitHub:"
     if [ ! -d "$HOME/.dotfiles" ]; then
-      git clone $Q $DOTFILES_URL ~/.dotfiles
+      log "Cloning to ~/.dotfiles:"
+      git clone $Q "$DOTFILES_URL" ~/.dotfiles
     fi
-    ~/.dotfiles/"$STRAP_DOTFILES_SETUP"
+    (
+      cd ~/.dotfiles
+      for i in script/setup script/bootstrap; do
+        if [ -f "$i" ] && [ -x "$i" ]; then
+          log "Running dotfiles $i:"
+          "$i" 2>/dev/null
+          break
+        fi
+      done
+    )
     logk
   fi
 fi
 
 # Setup Brewfile
 if [ -n "$STRAP_GITHUB_USER" ] && ! [ -f "$HOME/.Brewfile" ]; then
-  BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
-  BREWFILE_API_URL="https://api.github.com/repos/$STRAP_GITHUB_USER/homebrew-brewfile"
-  STATUS_CODE=$(curl -u "$STRAP_GITHUB_USER:$STRAP_GITHUB_TOKEN" --silent --write-out "%{http_code}" --output /dev/null "$BREWFILE_API_URL"/contents/Brewfile)
+  HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
 
-  if [ "$STATUS_CODE" -eq 200 ]; then
-    logn "Fetching $STRAP_GITHUB_USER/homebrew-brewfile from GitHub:"
+  if git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
+    log "Fetching $STRAP_GITHUB_USER/homebrew-brewfile from GitHub:"
     if [ ! -d "$HOME/.homebrew-brewfile" ]; then
-      git clone $Q $BREWFILE_URL ~/.homebrew-brewfile
+      log "Cloning to ~/.homebrew-brewfile:"
+      git clone $Q "$HOMEBREW_BREWFILE_URL" ~/.homebrew-brewfile
+      logk
     else
       (
         cd ~/.homebrew-brewfile
