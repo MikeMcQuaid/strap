@@ -201,12 +201,18 @@ sudo chown -R "$USER:admin" "$HOMEBREW_PREFIX"
 
 # Download Homebrew.
 export GIT_DIR="$HOMEBREW_PREFIX/.git" GIT_WORK_TREE="$HOMEBREW_PREFIX"
+[ -d "$GIT_DIR" ] && HOMEBREW_EXISTING="1"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/brew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-git fetch $Q --no-tags --depth=1 --force --update-shallow
+if [ -n "$HOMEBREW_EXISTING" ]
+then
+  git fetch $Q
+else
+  git fetch $Q --no-tags --depth=1 --force --update-shallow
+fi
 git reset $Q --hard origin/master
-unset GIT_DIR GIT_WORK_TREE
+unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
 logk
 
 # Update Homebrew.
