@@ -8,13 +8,15 @@ GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
-            "https://github.com/mikemcquaid/strap/issues/new"
+                   "https://github.com/mikemcquaid/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 
 set :sessions, secret: SESSION_SECRET
 
 use OmniAuth::Builder do
-  provider :github, GITHUB_KEY, GITHUB_SECRET, scope: "user:email,repo"
+  options = { scope: "user:email,repo" }
+  options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
+  provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
 
 get "/auth/github/callback" do
@@ -29,8 +31,9 @@ get "/" do
     redirect to "https://#{request.host}#{request.fullpath}"
   end
 
-  before_install_list_item = if STRAP_BEFORE_INSTALL
-    "<li>#{STRAP_BEFORE_INSTALL}</li>"
+  before_install_list_item = nil
+  if STRAP_BEFORE_INSTALL
+    before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>"
   end
 
   @title = "Strap"
@@ -68,10 +71,10 @@ get "/strap.sh" do
   content_type = params["text"] ? "text/plain" : "application/octet-stream"
 
   if auth
-    content.gsub!(/^STRAP_GIT_NAME=$/, "STRAP_GIT_NAME='#{auth["info"]["name"]}'")
-    content.gsub!(/^STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
-    content.gsub!(/^STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
-    content.gsub!(/^STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
+    content.gsub!(/^# STRAP_GIT_NAME=$/, "STRAP_GIT_NAME='#{auth["info"]["name"]}'")
+    content.gsub!(/^# STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
+    content.gsub!(/^# STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
+    content.gsub!(/^# STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
   end
 
   erb content, content_type: content_type
