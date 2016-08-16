@@ -14,7 +14,7 @@ script/bootstrap
 bundle exec foreman check
 script/server &
 SERVER_PID="$!"
-sleep 5
+sleep 15
 curl -O http://localhost:5000/strap.sh
 kill "$SERVER_PID"
 wait "$SERVER_PID" || true
