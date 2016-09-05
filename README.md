@@ -17,7 +17,7 @@ Strap is a script to bootstrap a minimal OS X development system. This does not 
 - Installs the latest OS X software updates (for better security)
 - Installs dotfiles from a user's `https://github.com/username/dotfiles` repository and runs `script/setup` to configure them.
 - Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
-- A simple web application to set Git's name, email and GitHub token
+- A simple web application to set Git's name, email and GitHub token (needs to be authorized on any organizations you wish to access)
 - Mostly idempotent (the slow bit is rerunning `brew update`)
 
 ## Usage
