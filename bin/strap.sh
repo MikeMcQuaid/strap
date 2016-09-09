@@ -120,8 +120,9 @@ fi
 
 # Install the Xcode Command Line Tools.
 DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
-[ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] \
-                        || ! [ -f "/usr/include/iconv.h" ] && {
+if [ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] \
+                           || ! [ -f "/usr/include/iconv.h" ]
+then
   log "Installing the Xcode Command Line Tools:"
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo touch "$CLT_PLACEHOLDER"
@@ -141,7 +142,7 @@ DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
     fi
   fi
   logk
-}
+fi
 
 # Check if the Xcode license is agreed to and agree if not.
 xcode_license() {
@@ -196,12 +197,28 @@ logk
 
 # Setup Homebrew directory and permissions.
 logn "Installing Homebrew:"
-HOMEBREW_PREFIX="/usr/local"
+HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
+[ -n "$HOMEBREW_PREFIX" ] || HOMEBREW_PREFIX="/usr/local"
 [ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
-sudo chown -R "$USER:admin" "$HOMEBREW_PREFIX"
+sudo chown "root:wheel" "$HOMEBREW_PREFIX"
+(
+  cd "$HOMEBREW_PREFIX"
+  sudo mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
+  sudo chown -R "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
+)
+
+HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
+[ -n "$HOMEBREW_REPOSITORY" ] || HOMEBREW_REPOSITORY="/usr/local/Homebrew"
+[ -d "$HOMEBREW_REPOSITORY" ] || sudo mkdir -p "$HOMEBREW_REPOSITORY"
+sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
+
+if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]
+then
+  ln -sf "$HOMEBREW_REPOSITORY/bin/brew" "$HOMEBREW_PREFIX/bin/brew"
+fi
 
 # Download Homebrew.
-export GIT_DIR="$HOMEBREW_PREFIX/.git" GIT_WORK_TREE="$HOMEBREW_PREFIX"
+export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
 [ -d "$GIT_DIR" ] && HOMEBREW_EXISTING="1"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/brew"
