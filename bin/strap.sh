@@ -274,6 +274,11 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
     if [ ! -d "$HOME/.dotfiles" ]; then
       log "Cloning to ~/.dotfiles:"
       git clone $Q "$DOTFILES_URL" ~/.dotfiles
+    else
+      (
+        cd ~/.dotfiles
+        git pull $Q --rebase --autostash
+      )
     fi
     (
       cd ~/.dotfiles
