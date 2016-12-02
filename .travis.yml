@@ -10,7 +10,7 @@ install:
 
 # Remove things Strap installs (so we can test installing them from scratch).
 before_script:
-  - sudo rm -rf /usr/local/bin/brew /usr/local/.??* /Applications/Xcode.app /Library/Developer/CommandLineTools /opt/homebrew-cask/Caskroom
+  - travis_wait sudo rm -rf /usr/local/bin/brew /usr/local/.??* /Applications/Xcode.app /Library/Developer/CommandLineTools /usr/local/Caskroom
   - sudo pkgutil --forget com.apple.pkg.CLTools_Executables
 
 # Install Strap and then test installing packages works.
