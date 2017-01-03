@@ -1,9 +1,6 @@
-# Force OS X.
-language: objective-c
 os: osx
-env: OSX=10.11
-osx_image: xcode7.3
-rvm: 2.3.1
+osx_image: xcode8.1
+rvm: 2.3.3
 
 install:
   - ./script/bootstrap
