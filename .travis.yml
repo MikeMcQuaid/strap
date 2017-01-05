@@ -12,4 +12,4 @@ before_script:
 
 # Install Strap and then test installing packages works.
 script:
-  - ./script/cibuild
+  - CUSTOM_TAP=barklyprotects/barkly CUSTOM_TAP_COMMAND=barkly ./script/cibuild
