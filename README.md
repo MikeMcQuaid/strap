@@ -1,6 +1,8 @@
 # Strap
 Strap is a script to bootstrap a minimal OS X development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every OS X developer will want.
 
+Barkly has made a few changes to strap to allow additional taps to be added. Specifically we were looking for ways to group contigs by team, similiar to how we did it in Boxen.  You can find all of this located in our tap, [barklyprotects/homebrew-barkly.](https://github.com/barklyprotects/homebrew-barkly)
+
 ## Features
 - Disables Java in Safari (for better security)
 - Enables the OS X screensaver password immediately (for better security)
