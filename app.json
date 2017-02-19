@@ -1,6 +1,6 @@
 {
   "name": "Strap",
-  "description": "Bootstrap a minimal OS X development system",
+  "description": "Bootstrap a minimal macOS development system",
   "website": "https://github.com/mikemcquaid/strap",
   "repository": "https://github.com/mikemcquaid/strap",
   "keywords": ["ruby", "strap"],

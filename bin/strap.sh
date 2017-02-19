@@ -1,6 +1,6 @@
 #!/bin/bash
 #/ Usage: bin/strap.sh [--debug]
-#/ Install development dependencies on Mac OS X.
+#/ Install development dependencies on macOS.
 set -e
 
 # Keep sudo timestamp updated while Strap is running.
@@ -64,7 +64,7 @@ logn()  { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 
 sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12)" || {
-  abort "Run Strap on Mac OS X 10.9/10/11/12."
+  abort "Run Strap on macOS 10.9/10/11/12."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."

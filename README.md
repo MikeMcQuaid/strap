@@ -1,10 +1,10 @@
 # Strap
-Strap is a script to bootstrap a minimal OS X development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every OS X developer will want.
+Strap is a script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
 ## Features
 - Disables Java in Safari (for better security)
-- Enables the OS X screensaver password immediately (for better security)
-- Enables the OS X application firewall (for better security)
+- Enables the macOS screensaver password immediately (for better security)
+- Enables the macOS application firewall (for better security)
 - Adds a `Found this computer?` message to the login screen (for machine recovery)
 - Enables full-disk encryption and saves the FileVault Recovery Key to the Desktop (for better security)
 - Installs the Xcode Command Line Tools (for compilers and Unix tools)
@@ -14,7 +14,7 @@ Strap is a script to bootstrap a minimal OS X development system. This does not 
 - Installs [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle) (for `bundler`-like `Brewfile` support)
 - Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
 - Installs [Homebrew Cask](https://github.com/caskroom/homebrew-cask) (for installing graphical software)
-- Installs the latest OS X software updates (for better security)
+- Installs the latest macOS software updates (for better security)
 - Installs dotfiles from a user's `https://github.com/username/dotfiles` repository and runs `script/setup` to configure them.
 - Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
 - A simple web application to set Git's name, email and GitHub token (needs to be authorized on any organizations you wish to access)

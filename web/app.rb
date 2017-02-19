@@ -38,7 +38,7 @@ get "/" do
 
   @title = "Strap"
   @text = <<-EOS
-Strap is a script to bootstrap a minimal OS X development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every OS X developer will want.
+Strap is a script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
 To Strap your system:
 <ol>
