@@ -68,7 +68,7 @@ sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12)" || {
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
-groups | grep $Q admin || abort "Add $USER to the admin group."
+/usr/bin/groups | grep $Q admin || abort "Add $USER to the admin group."
 
 # Initialise sudo now to save prompting later.
 log "Enter your password (for sudo access):"
