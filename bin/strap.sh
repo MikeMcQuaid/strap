@@ -239,13 +239,12 @@ log "Updating Homebrew:"
 brew update
 logk
 
-# Install Homebrew Bundle, Cask, Services and Versions tap.
+# Install Homebrew Bundle, Cask and Services tap.
 log "Installing Homebrew taps and extensions:"
 brew bundle --file=- <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
-tap 'homebrew/versions'
 EOF
 logk
 
