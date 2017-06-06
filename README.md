@@ -10,7 +10,6 @@ Strap is a script to bootstrap a minimal macOS development system. This does not
 - Installs the Xcode Command Line Tools (for compilers and Unix tools)
 - Agree to the Xcode license (for using compilers without prompts)
 - Installs [Homebrew](http://brew.sh) (for installing command-line software)
-- Installs [Homebrew Versions](https://github.com/Homebrew/homebrew-versions) (for installing older versions of command-line software)
 - Installs [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle) (for `bundler`-like `Brewfile` support)
 - Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
 - Installs [Homebrew Cask](https://github.com/caskroom/homebrew-cask) (for installing graphical software)
