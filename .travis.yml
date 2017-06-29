@@ -1,6 +1,6 @@
 os: osx
 osx_image: xcode8.1
-rvm: 2.3.3
+rvm: 2.4.1
 
 install:
   - ./script/bootstrap
