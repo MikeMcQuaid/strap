@@ -71,6 +71,7 @@ sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
 groups | grep $Q admin || abort "Add $USER to the admin group."
 
+
 # Initialise sudo now to save prompting later.
 log "Enter your password (for sudo access):"
 sudo -k
@@ -80,6 +81,11 @@ sudo bash "$STRAP_FULL_PATH" --sudo-wait &
 STRAP_SUDO_WAIT_PID="$!"
 ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
 logk
+
+# Add user to staff group
+if !groups | grep $Q staff; then
+  sudo dseditgroup -o edit -a "$USER" -t user staff
+fi
 
 # Set some basic security settings.
 logn "Configuring security settings:"
@@ -266,6 +272,41 @@ else
   logk
 fi
 
+# Setup Daptiv dotfiles
+DOTFILES_URL="https://github.com/daptiv/dotfiles"
+DOTFILES_DIR="$HOME/.daptiv-dotfiles"
+if git ls-remote "$DOTFILES_URL" &>/dev/null; then
+  log "Fetching daptiv/dotfiles from GitHub:"
+  if [ ! -d "$DOTFILES_DIR" ]; then
+    log "Cloning to $DOTFILES_DIR:"
+    git clone $Q "$DOTFILES_URL" "$DOTFILES_DIR"
+  else
+    (
+      cd "$DOTFILES_DIR"
+      git pull $Q --rebase --autostash
+    )
+  fi
+  (
+    cd "$DOTFILES_DIR"
+    for i in script/setup script/bootstrap; do
+      if [ -f "$i" ] && [ -x "$i" ]; then
+        log "Running dotfiles $i:"
+        "$i" 2>/dev/null
+        break
+      fi
+    done
+  )
+  logk
+fi
+
+# Install from Daptiv Brewfile
+DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
+if [ -f "$DAPTIV_BREWFILE" ]; then
+  log "Installing from Daptiv Brewfile:"
+  brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
+  logk
+fi
+
 # Setup dotfiles
 if [ -n "$STRAP_GITHUB_USER" ]; then
   DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
@@ -295,7 +336,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
   fi
 fi
 
-# Setup Brewfile
+# Setup User Brewfile
 if [ -n "$STRAP_GITHUB_USER" ] && ! [ -f "$HOME/.Brewfile" ]; then
   HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
 
