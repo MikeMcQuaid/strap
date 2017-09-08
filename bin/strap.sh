@@ -308,6 +308,12 @@ if [ -f "$DAPTIV_BREWFILE" ]; then
   logk
 fi
 
+# Run postbrew script from daptiv dotfiles
+DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
+if [ =f "$DAPTIV_DOTFILES/script/postbrew"] && [ -x "$DAPTIV_DOTFILES/script/postbrew"]; then
+  "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
+fi
+
 # Setup dotfiles
 if [ -n "$STRAP_GITHUB_USER" ]; then
   DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
@@ -363,6 +369,12 @@ if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from user Brewfile on GitHub:"
   brew bundle check --global || brew bundle --global
   logk
+fi
+
+# Run postbrew script from user dotfiles
+USER_DOTFILES="$HOME/.dotfiles"
+if [ =f "$USER_DOTFILES/script/postbrew"] && [ -x "$USER_DOTFILES/script/postbrew"]; then
+  "$USER_DOTFILES/script/postbrew" 2>/dev/null
 fi
 
 STRAP_SUCCESS="1"
