@@ -8,8 +8,9 @@ GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
-                   "https://github.com/mikemcquaid/strap/issues/new"
+                   "https://github.com/daptiv/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
+STRAP_CONTACT_PHONE = ENV["STRAP_CONTACT_PHONE"]
 
 set :sessions, secret: SESSION_SECRET
 
@@ -50,7 +51,7 @@ To Strap your system:
   <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
 </ol>
 
-<a href="https://github.com/mikemcquaid/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
+<a href="https://github.com/daptiv/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
 EOS
   erb :root
 end
@@ -75,6 +76,7 @@ get "/strap.sh" do
     content.gsub!(/^# STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
     content.gsub!(/^# STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
     content.gsub!(/^# STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
+    content.gsub!(/^# STRAP_CONTACT_PHONE=$/, "STRAP_CONTACT_PHONE='#{STRAP_CONTACT_PHONE}'")
   end
 
   erb content, content_type: content_type

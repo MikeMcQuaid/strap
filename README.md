@@ -30,20 +30,20 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 - Add phone number to security screen message (want to avoid prompting users for information on installation)
 
 ## Usage
-Open https://macos-strap.herokuapp.com/ in your web browser.
+Open https://daptiv-macos-strap.herokuapp.com/ in your web browser.
 
 Instead, to run Strap locally run:
 ```bash
-git clone https://github.com/MikeMcQuaid/strap
+git clone https://github.com/daptiv/strap
 cd strap
 bash bin/strap.sh # or bash bin/strap.sh --debug for more debugging output
 ```
 
 Instead, to run the web application locally run:
 ```bash
-git clone https://github.com/mikemcquaid/strap
+git clone https://github.com/daptiv/strap
 cd strap
-GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
+GITHUB_KEY="..." GITHUB_SECRET="..." STRAP_CONTACT_PHONE="..." ./script/server
 ```
 
 Instead, to deploy to [Heroku](https://www.heroku.com) click:
@@ -51,6 +51,7 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## Web Application Configuration Environment Variables
+- `STRAP_CONTACT_PHONE`: Phone number to show on lock screen.
 - `GITHUB_KEY`: the GitHub.com Application Client ID..
 - `GITHUB_SECRET`: the GitHub.com Application Client Secret..
 - `SESSION_SECRET`: the secret used for cookie session storage.
@@ -61,11 +62,9 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 ## Status
 Stable and in active development.
 
-[![Build Status](https://travis-ci.org/MikeMcQuaid/strap.svg)](https://travis-ci.org/MikeMcQuaid/strap)
+[![Build Status](https://travis-ci.org/daptiv/strap.svg)](https://travis-ci.org/daptiv/strap)
 
-## Contact
-[Mike McQuaid](mailto:mike@mikemcquaid.com)
 
 ## License
 Licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
-The full license text is available in [LICENSE.txt](https://github.com/mikemcquaid/strap/blob/master/LICENSE.txt).
+The full license text is available in [LICENSE.txt](https://github.com/daptiv/strap/blob/master/LICENSE.txt).
