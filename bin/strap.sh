@@ -83,7 +83,7 @@ ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
 logk
 
 # Add user to staff group
-if !groups | grep $Q staff; then
+if ! groups | grep $Q staff; then
   sudo dseditgroup -o edit -a "$USER" -t user staff
 fi
 
