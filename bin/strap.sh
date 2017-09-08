@@ -237,7 +237,8 @@ then
 else
   git fetch $Q --no-tags --depth=1 --force --update-shallow
 fi
-git reset $Q --hard origin/master
+HOMEBREW_LATEST_TAG="$(git describe --tags `git rev-list --tags --max-count=1`)"
+git reset $Q --hard $HOMEBREW_LATEST_TAG
 unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
 logk
 
