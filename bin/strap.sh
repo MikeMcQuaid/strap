@@ -231,13 +231,9 @@ if [ -d "$GIT_DIR" ]
 then
   git fetch $Q
 else
-  git init $Q
-  git config remote.origin.url "https://github.com/Homebrew/brew"
-  git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-
-  git fetch $Q --no-tags --depth=1 --force --update-shallow
-  HOMEBREW_LATEST_TAG="1.3.2"
-  git reset $Q --hard $HOMEBREW_LATEST_TAG
+  git clone --depth=1 git@github.com:Homebrew/brew.git "$HOMEBREW_REPOSITORY"
+  git fetch --tags
+  git checkout 1.3.2
 fi
 
 unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
