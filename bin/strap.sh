@@ -213,10 +213,10 @@ sudo chown "root:wheel" "$HOMEBREW_PREFIX"
 HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
 [ -n "$HOMEBREW_REPOSITORY" ] || HOMEBREW_REPOSITORY="/usr/local/Homebrew"
 if ! [ -d "$HOMEBREW_REPOSITORY" ] ; then
-  git clone --depth=1 https://github.com/Homebrew/brew.git "$HOMEBREW_REPOSITORY"
+  sudo git clone --depth=1 https://github.com/Homebrew/brew.git "$HOMEBREW_REPOSITORY"
   sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
   cd "$HOMEBREW_REPOSITORY"
-  git fetch
+  git fetch --tags --depth=1
   git checkout 1.3.2
 fi
 logk
