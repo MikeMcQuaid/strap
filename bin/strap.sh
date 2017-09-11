@@ -310,7 +310,7 @@ fi
 
 # Run postbrew script from daptiv dotfiles
 DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
-if [ =f "$DAPTIV_DOTFILES/script/postbrew"] && [ -x "$DAPTIV_DOTFILES/script/postbrew"]; then
+if [ -f "$DAPTIV_DOTFILES/script/postbrew"] && [ -x "$DAPTIV_DOTFILES/script/postbrew"]; then
   "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
 fi
 
@@ -373,7 +373,7 @@ fi
 
 # Run postbrew script from user dotfiles
 USER_DOTFILES="$HOME/.dotfiles"
-if [ =f "$USER_DOTFILES/script/postbrew"] && [ -x "$USER_DOTFILES/script/postbrew"]; then
+if [ -f "$USER_DOTFILES/script/postbrew"] && [ -x "$USER_DOTFILES/script/postbrew"]; then
   "$USER_DOTFILES/script/postbrew" 2>/dev/null
 fi
 
