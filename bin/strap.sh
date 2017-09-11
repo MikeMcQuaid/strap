@@ -227,18 +227,19 @@ fi
 
 # Download Homebrew.
 export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
-[ -d "$GIT_DIR" ] && HOMEBREW_EXISTING="1"
-git init $Q
-git config remote.origin.url "https://github.com/Homebrew/brew"
-git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-if [ -n "$HOMEBREW_EXISTING" ]
+if [ -d "$GIT_DIR" ]
 then
   git fetch $Q
 else
+  git init $Q
+  git config remote.origin.url "https://github.com/Homebrew/brew"
+  git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
   git fetch $Q --no-tags --depth=1 --force --update-shallow
+  HOMEBREW_LATEST_TAG="1.3.2"
+  git reset $Q --hard $HOMEBREW_LATEST_TAG
 fi
-HOMEBREW_LATEST_TAG="$(git describe --tags `git rev-list --tags --max-count=1`)"
-git reset $Q --hard $HOMEBREW_LATEST_TAG
+
 unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
 logk
 
