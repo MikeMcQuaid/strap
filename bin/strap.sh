@@ -209,16 +209,31 @@ HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
 [ -n "$HOMEBREW_PREFIX" ] || HOMEBREW_PREFIX="/usr/local"
 [ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
 sudo chown "root:wheel" "$HOMEBREW_PREFIX"
+(
+  cd "$HOMEBREW_PREFIX"
+  sudo mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
+  sudo chown -R "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
+)
 
+# Download Homebrew.
 HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
 [ -n "$HOMEBREW_REPOSITORY" ] || HOMEBREW_REPOSITORY="/usr/local/Homebrew"
-if ! [ -d "$HOMEBREW_REPOSITORY" ] ; then
-  sudo git clone --depth=1 https://github.com/Homebrew/brew.git "$HOMEBREW_REPOSITORY"
-  sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
+[ -d "$HOMEBREW_REPOSITORY" ] || sudo mkdir -p "$HOMEBREW_REPOSITORY"
+sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
+
+if ! [ -d "$HOMEBREW_REPOSITORY/.git" ] ; then
+  git clone --depth=1 https://github.com/Homebrew/brew.git "$HOMEBREW_REPOSITORY"
+
   cd "$HOMEBREW_REPOSITORY"
   git fetch --tags --depth=1
   git checkout 1.3.2
 fi
+
+if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]
+then
+  ln -sf "$HOMEBREW_REPOSITORY/bin/brew" "$HOMEBREW_PREFIX/bin/brew"
+fi
+
 logk
 
 # Update Homebrew.
