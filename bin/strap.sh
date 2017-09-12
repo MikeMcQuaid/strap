@@ -201,6 +201,16 @@ then
           | git credential-osxkeychain store
   fi
 fi
+
+# add ssh key to github
+if ! [ -f "$HOME/.ssh/id_rsa" ]; then
+  ssh-keygen -t rsa -b 4096 -C "$STRAP_GIT_EMAIL" -N "" -f "$HOME/.ssh/id_rsa"
+  eval "$(ssh-agent -s)"
+  ssh-add -K ~/.ssh/id_rsa
+  
+  PUBLIC_KEY="$(cat $HOME/.ssh/id_rsa.pub)"
+  POST_BODY="{\"title\":\"MacOSX Key - strap\",\"key\":\"$PUBLIC_KEY\"}"
+  curl $Q -H "Content-Type: application/json" -X POST -d "$POST_BODY" https://api.github.com/user/keys
 logk
 
 # Setup Homebrew directory and permissions.

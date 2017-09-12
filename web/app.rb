@@ -15,7 +15,7 @@ STRAP_CONTACT_PHONE = ENV["STRAP_CONTACT_PHONE"]
 set :sessions, secret: SESSION_SECRET
 
 use OmniAuth::Builder do
-  options = { scope: "user:email,repo" }
+  options = { scope: "user:email,repo,write:public_key" }
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
