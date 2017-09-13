@@ -210,7 +210,7 @@ if ! [ -f "$HOME/.ssh/id_rsa" ]; then
   
   PUBLIC_KEY="$(cat $HOME/.ssh/id_rsa.pub)"
   POST_BODY="{\"title\":\"MacOSX Key - strap\",\"key\":\"$PUBLIC_KEY\"}"
-  curl $Q -H "Content-Type: application/json" -X POST -d "$POST_BODY" https://api.github.com/user/keys
+  curl $Q -H "Content-Type: application/json" -H "Authorization: token $STRAP_GITHUB_TOKEN" -X POST -d "$POST_BODY" https://api.github.com/user/keys
 fi
 
 logk
