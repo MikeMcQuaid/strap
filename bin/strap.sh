@@ -1,5 +1,5 @@
 #!/bin/bash
-#/ Usage: bin/strap.sh [--debug]
+#/ Usage: bin/strap.sh [--debug] [--cached-credentials]
 #/ Install development dependencies on macOS.
 set -e
 
@@ -13,7 +13,8 @@ if [ "$1" = "--sudo-wait" ]; then
   exit 0
 fi
 
-[ "$1" = "--debug" ] && STRAP_DEBUG="1"
+( [ "$1" = "--debug" ] || [ "$2" = "--debug" ] ) && STRAP_DEBUG="1"
+( [ "$1" = "--cached-credentials" ] || [ "$2" = "--cached-credentials" ] ) && STRAP_CACHED_CREDENTIALS="1"
 STRAP_SUCCESS=""
 
 cleanup() {
@@ -21,7 +22,9 @@ cleanup() {
   if [ -n "$STRAP_SUDO_WAIT_PID" ]; then
     sudo kill "$STRAP_SUDO_WAIT_PID"
   fi
-  sudo -k
+  if [ -z "$STRAP_CACHED_CREDENTIALS" ]; then
+    sudo -k
+  fi
   rm -f "$CLT_PLACEHOLDER"
   if [ -z "$STRAP_SUCCESS" ]; then
     if [ -n "$STRAP_STEP" ]; then
@@ -71,8 +74,10 @@ sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
 groups | grep $Q admin || abort "Add $USER to the admin group."
 
 # Initialise sudo now to save prompting later.
-log "Enter your password (for sudo access):"
-sudo -k
+if [ -z "$STRAP_CACHED_CREDENTIALS" ]; then
+  log "Enter your password (for sudo access):"
+  sudo -k
+fi
 sudo /usr/bin/true
 [ -f "$STRAP_FULL_PATH" ]
 sudo bash "$STRAP_FULL_PATH" --sudo-wait &
