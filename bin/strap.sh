@@ -13,8 +13,8 @@ if [ "$1" = "--sudo-wait" ]; then
   exit 0
 fi
 
-[ "$1" = "--debug" -o "$2" = "--debug" ] && STRAP_DEBUG="1"
-[ "$1" = "--cached-credentials" -o "$2" = "--cached-credentials" ] && STRAP_CACHED_CREDENTIALS="1"
+( [ "$1" = "--debug" ] || [ "$2" = "--debug" ] ) && STRAP_DEBUG="1"
+( [ "$1" = "--cached-credentials" ] || [ "$2" = "--cached-credentials" ] ) && STRAP_CACHED_CREDENTIALS="1"
 STRAP_SUCCESS=""
 
 cleanup() {
