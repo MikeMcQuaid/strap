@@ -29,6 +29,9 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 - Disabling security features (these are a minimal set of best practises)
 - Add phone number to security screen message (want to avoid prompting users for information on installation)
 
+
+# By Platanus
+
 ## Usage
 Open https://macos-strap.herokuapp.com/ in your web browser.
 
