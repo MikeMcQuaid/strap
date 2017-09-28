@@ -207,7 +207,7 @@ if ! [ -f "$HOME/.ssh/id_rsa" ]; then
   ssh-keygen -t rsa -b 4096 -C "$STRAP_GIT_EMAIL" -N "" -f "$HOME/.ssh/id_rsa"
   eval "$(ssh-agent -s)"
   ssh-add -K ~/.ssh/id_rsa
-  
+
   PUBLIC_KEY="$(cat $HOME/.ssh/id_rsa.pub)"
   POST_BODY="{\"title\":\"MacOSX Key - strap\",\"key\":\"$PUBLIC_KEY\"}"
   curl $Q -H "Content-Type: application/json" -H "Authorization: token $STRAP_GITHUB_TOKEN" -X POST -d "$POST_BODY" https://api.github.com/user/keys
@@ -306,6 +306,12 @@ if git ls-remote "$DOTFILES_URL" &>/dev/null; then
   logk
 fi
 
+# Check for broken cask installs
+DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
+if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile'
+fi
+
 # Install from Daptiv Brewfile
 DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
 if [ -f "$DAPTIV_BREWFILE" ]; then
@@ -315,7 +321,6 @@ if [ -f "$DAPTIV_BREWFILE" ]; then
 fi
 
 # Run postbrew script from daptiv dotfiles
-DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
 if [ -f "$DAPTIV_DOTFILES/script/postbrew" ] && [ -x "$DAPTIV_DOTFILES/script/postbrew" ]; then
   "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
 fi
@@ -347,6 +352,11 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
     )
     logk
   fi
+fi
+
+# Check for broken cask installs in user brewfile
+if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile'
 fi
 
 # Setup User Brewfile
