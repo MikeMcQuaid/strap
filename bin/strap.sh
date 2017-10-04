@@ -220,7 +220,10 @@ logn "Installing Homebrew:"
 HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
 [ -n "$HOMEBREW_PREFIX" ] || HOMEBREW_PREFIX="/usr/local"
 [ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
-sudo chown "root:wheel" "$HOMEBREW_PREFIX"
+if [ "$HOMEBREW_PREFIX" = "/usr/local" ]
+then
+  sudo chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
+fi
 (
   cd "$HOMEBREW_PREFIX"
   sudo mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
