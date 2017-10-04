@@ -50,6 +50,16 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
+## Heroku Information
+The heroku app can be accessed by navigating to: https://dashboard.heroku.com/apps/daptiv-macos-strap/deploy/heroku-git
+To deploy to Heroku, you will need to do the following:
+- Get access to the Heroku application
+- Install Heroku on your mac with `brew install heroku`
+- Pull this repository (`git clone git@github.com:daptiv/strap.git`)
+- Add the Heroku remote with `git remote add heroku https://git.heroku.com/daptiv-macos-strap.git`
+- Then push your changes with `git push heroku master`
+
+
 ## Web Application Configuration Environment Variables
 - `STRAP_CONTACT_PHONE`: Phone number to show on lock screen.
 - `GITHUB_KEY`: the GitHub.com Application Client ID..
