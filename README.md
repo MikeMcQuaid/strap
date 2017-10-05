@@ -62,30 +62,26 @@ Strap is just a collection of bash scripts, which is where it gets its power and
 
 ### How it works
 Strap starts with a single shell script file, located in this repository and named `bin/strap.sh`.  This script calls out to the follow "blocks", in this order:
-- Clones (or updates) `https://github.com/daptiv/dotfiles` to `~/.daptiv-dotfiles`
--  Runs the follow scripts:
--    `~/.daptiv-dotfiles/scripts/setup`
--      This script links in the Daptiv `.bash_profile`, `.bashrc`, `.npmrc`, `.Daptiv.Brewfile`
--        `.bash_profile`: This is the system default.  It will source your personal bash profile located in `~/.dotfiles/.bash_profile`
--        `.bashrc': This is the system default.  It will source your personal bash rc file located in `~/.dotfiles/.bashrc`
--        `.npmrc`: Contains the keys you need to access our private NPM repository.
--        `.Daptiv.Brewfile`: Contains the default packages that all developers will need.
--    `~/.daptiv-dotfiles/scripts/bootstrap`
--      Does not currently exist, and is reserved for future use.
--    `~/.daptiv-dotfiles/scripts/fix-cask-installs.py`
--      A custom python script that fixes up Homebrew so that anything that was manually installed outside of Strap/Homebrew, won't break the setup process.
+- Clones (or updates) `https://github.com/daptiv/dotfiles` to `~/.daptiv-dotfiles`, then runs the follow scripts:
+  - `~/.daptiv-dotfiles/scripts/setup`
+    - This script links in the Daptiv `.bash_profile`, `.bashrc`, `.npmrc`, `.Daptiv.Brewfile`
+      - `.bash_profile`: This is the system default.  It will source your personal bash profile located in `~/.dotfiles/.bash_profile`
+      - `.bashrc': This is the system default.  It will source your personal bash rc file located in `~/.dotfiles/.bashrc`
+      - `.npmrc`: Contains the keys you need to access our private NPM repository.
+      - `.Daptiv.Brewfile`: Contains the default packages that all developers will need.
+- Runs `~/.daptiv-dotfiles/scripts/bootstrap` (Not currently used)
+- Runs `~/.daptiv-dotfiles/scripts/fix-cask-installs.py`
+  - A custom python script that fixes up Homebrew so that anything that was manually installed outside of Strap/Homebrew, won't break the setup process.
 - Installs everything in `~/.Daptiv.Brewfile`
--    `~/.daptiv-dotfiles/scripts/postbrew`
--      This critical script sets up your machine for running ppm.  It installs nginx configurations, hostfile entries, and more.
-- Clones (or updates) your user dotfiles repository.  This takes the form of `git clone https://github.com/$STRAP_GITHUB_USER/dotfiles ~/.dotfiles`.  If you cloned your personal dotfiles to a different location, it is recommended that you at least symlink that clone to `~/.dotfiles` so that strap will get your latest updates and you won't have 2 copies of the repo floating around.
--     `~/.dotfiles/script/setup`
--       This is your personal setup script.  It should link in your `.gitconfig` file, and your `.Brewfile` at a minimum.
--     `~/.dotfiles/scripts/bootstrap`
--       An additional script entry point you can leverage to provide additional personal customizations.
--   `~/.daptiv-dotfiles/scripts/fix-cask-installs.py`
--     Perform any additional fixups for Homebrew.  Same as above.
+- Runs `~/.daptiv-dotfiles/scripts/postbrew`
+  - This critical script sets up your machine for running ppm.  It installs nginx configurations, hostfile entries, and more.
+- Clones (or updates) your user dotfiles repository.  This takes the form of `git clone https://github.com/$STRAP_GITHUB_USER/dotfiles ~/.dotfiles`.
+- Runs `~/.dotfiles/script/setup`
+  - This is your personal setup script.  It should link in your `.gitconfig` file, and your `.Brewfile` at a minimum.
+- Runs `~/.dotfiles/scripts/bootstrap` (if it exists)
+- Runs `~/.daptiv-dotfiles/scripts/fix-cask-installs.py`
 - Clones (or updates) `https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile`, then symlinks `~/.homebrew-brewfile` to `~/.Brewfile`.
--   This is an optional repository.  Most developers will keep their personal `.Brewfile` in their dotfiles repository.
+  - This is an optional repository.  Most developers will keep their personal `.Brewfile` in their dotfiles repository, but you can store it here instead.
 - Installs everything in `~/.Brewfile`
 - Runs the `~/.dotfiles/script/postbrew` script
 
