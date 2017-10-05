@@ -24,7 +24,6 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 
 ## Out of Scope Features
 - Enabling any network services by default (instead enable them when needed)
-- Installing Homebrew formulae by default for everyone in an organisation (install them with `Brewfile`s in project repositories instead of mandating formulae for the whole organisation)
 - Opting-out of any macOS updates (Apple's security updates and macOS updates are there for a reason)
 - Disabling security features (these are a minimal set of best practises)
 - Add phone number to security screen message (want to avoid prompting users for information on installation)
@@ -32,30 +31,19 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 ## Usage
 Open https://daptiv-macos-strap.herokuapp.com/ in your web browser.
 
-Instead, to run Strap locally run:
-```bash
-git clone https://github.com/daptiv/strap
-cd strap
-bash bin/strap.sh # or bash bin/strap.sh --debug for more debugging output
-```
-
-Instead, to run the web application locally run:
+To run the web application locally run:
 ```bash
 git clone https://github.com/daptiv/strap
 cd strap
 GITHUB_KEY="..." GITHUB_SECRET="..." STRAP_CONTACT_PHONE="..." ./script/server
 ```
 
-Instead, to deploy to [Heroku](https://www.heroku.com) click:
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-
 ## Heroku Information
 The heroku app can be accessed by navigating to: https://dashboard.heroku.com/apps/daptiv-macos-strap/deploy/heroku-git
 To deploy to Heroku, you will need to do the following:
 - Get access to the Heroku application
 - Install Heroku on your mac with `brew install heroku`
-- Pull this repository (`git clone git@github.com:daptiv/strap.git`)
+- Pull this repository (`git clone git@github.com:daptiv/strap.git $HOME/src/strap`)
 - Add the Heroku remote with `git remote add heroku https://git.heroku.com/daptiv-macos-strap.git`
 - Then push your changes with `git push heroku master`
 
@@ -68,6 +56,41 @@ To deploy to Heroku, you will need to do the following:
 - `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run (defaults to 3).
 - `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).
 - `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
+
+## What is Strap?
+Strap is just a collection of bash scripts, which is where it gets its power and simplicity.  Coupled with Homebrew, which is a well-maintained package manager for Mac OS, it forms a one-stop solution for replacing Boxen and providing a scriptable, repeatable setup process for new machines and developers.
+
+### How it works
+Strap starts with a single shell script file, located in this repository and named `bin/strap.sh`.  This script calls out to the follow "blocks", in this order:
+- Clones (or updates) `https://github.com/daptiv/dotfiles` to `~/.daptiv-dotfiles`
+-  Runs the follow scripts:
+-    `~/.daptiv-dotfiles/scripts/setup`
+-      This script links in the Daptiv `.bash_profile`, `.bashrc`, `.npmrc`, `.Daptiv.Brewfile`
+-        `.bash_profile`: This is the system default.  It will source your personal bash profile located in `~/.dotfiles/.bash_profile`
+-        `.bashrc': This is the system default.  It will source your personal bash rc file located in `~/.dotfiles/.bashrc`
+-        `.npmrc`: Contains the keys you need to access our private NPM repository.
+-        `.Daptiv.Brewfile`: Contains the default packages that all developers will need.
+-    `~/.daptiv-dotfiles/scripts/bootstrap`
+-      Does not currently exist, and is reserved for future use.
+-    `~/.daptiv-dotfiles/scripts/fix-cask-installs.py`
+-      A custom python script that fixes up Homebrew so that anything that was manually installed outside of Strap/Homebrew, won't break the setup process.
+- Installs everything in `~/.Daptiv.Brewfile`
+-    `~/.daptiv-dotfiles/scripts/postbrew`
+-      This critical script sets up your machine for running ppm.  It installs nginx configurations, hostfile entries, and more.
+- Clones (or updates) your user dotfiles repository.  This takes the form of `git clone https://github.com/$STRAP_GITHUB_USER/dotfiles ~/.dotfiles`.  If you cloned your personal dotfiles to a different location, it is recommended that you at least symlink that clone to `~/.dotfiles` so that strap will get your latest updates and you won't have 2 copies of the repo floating around.
+-     `~/.dotfiles/script/setup`
+-       This is your personal setup script.  It should link in your `.gitconfig` file, and your `.Brewfile` at a minimum.
+-     `~/.dotfiles/scripts/bootstrap`
+-       An additional script entry point you can leverage to provide additional personal customizations.
+-   `~/.daptiv-dotfiles/scripts/fix-cask-installs.py`
+-     Perform any additional fixups for Homebrew.  Same as above.
+- Clones (or updates) `https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile`, then symlinks `~/.homebrew-brewfile` to `~/.Brewfile`.
+-   This is an optional repository.  Most developers will keep their personal `.Brewfile` in their dotfiles repository.
+- Installs everything in `~/.Brewfile`
+- Runs the `~/.dotfiles/script/postbrew` script
+
+That's the entire strap process!  Enjoy!
+
 
 ## Status
 Stable and in active development.
