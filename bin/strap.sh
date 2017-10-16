@@ -55,6 +55,8 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_GITHUB_USER=
 # STRAP_GITHUB_TOKEN=
 # STRAP_CONTACT_PHONE=
+DAPTIV_DOTFILES_BRANCH="${DAPTIV_DOTFILES_BRANCH:-master}"
+USER_DOTFILES_BRANCH="${USER_DOTFILES_BRANCH:-master}"
 STRAP_ISSUES_URL="https://github.com/daptiv/strap/issues/new"
 
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
@@ -298,6 +300,17 @@ if git ls-remote "$DOTFILES_URL" &>/dev/null; then
   fi
   (
     cd "$DOTFILES_DIR"
+    CURRENT_DAPTIV_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+    if [ "$DAPTIV_DOTFILES_BRANCH" != "$CURRENT_DAPTIV_DOTFILES_BRANCH" ]; then
+      # check to make sure there are no pending changes in current branch
+      if git diff-index --quiet HEAD -- ; then
+        log "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
+        git checkout $DAPTIV_DOTFILES_BRANCH
+      else
+        abort "Pending changes in $DOTFILES_DIR, unable to switch to branch: $DAPTIV_DOTFILES_BRANCH. If you want to run in this branch run strap with: DAPTIV_DOTFILES_BRANCH=$CURRENT_DAPTIV_DOTFILES_BRANCH"
+      fi
+    fi
+
     for i in script/setup script/bootstrap; do
       if [ -f "$i" ] && [ -x "$i" ]; then
         log "Running dotfiles $i:"
@@ -345,6 +358,16 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
     fi
     (
       cd ~/.dotfiles
+      CURRENT_USER_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+      if [ "$USER_DOTFILES_BRANCH" != "$CURRENT_USER_DOTFILES_BRANCH" ]; then
+        # check to make sure there are no pending changes in current branch
+        if git diff-index --quiet HEAD -- ; then
+          log "Changing branch from '$CURRENT_USER_DOTFILES_BRANCH' to '$USER_DOTFILES_BRANCH'"
+          git checkout $USER_DOTFILES_BRANCH
+        else
+          abort "Pending changes in ~/.dotfiles, unable to switch to branch: $USER_DOTFILES_BRANCH. If you want to run in this branch run strap with: USER_DOTFILES_BRANCH=$CURRENT_USER_DOTFILES_BRANCH"
+        fi
+      fi
       for i in script/setup script/bootstrap; do
         if [ -f "$i" ] && [ -x "$i" ]; then
           log "Running dotfiles $i:"
