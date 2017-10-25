@@ -8,8 +8,10 @@ GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
-                   "https://github.com/mikemcquaid/strap/issues/new"
+                   "https://github.com/barklyprotects/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
+CUSTOM_TAP = ENV["CUSTOM_TAP"]
+CUSTOM_TAP_COMMAND = ENV["CUSTOM_TAP_COMMAND"]
 
 set :sessions, secret: SESSION_SECRET
 
@@ -50,7 +52,7 @@ To Strap your system:
   <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
 </ol>
 
-<a href="https://github.com/mikemcquaid/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
+<a href="https://github.com/barklyprotects/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
 EOS
   erb :root
 end
@@ -67,6 +69,8 @@ get "/strap.sh" do
 
   content = IO.read(File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh"))
   content.gsub!(/^STRAP_ISSUES_URL=.*$/, "STRAP_ISSUES_URL='#{STRAP_ISSUES_URL}'")
+  content.gsub!(/^# CUSTOM_TAP=.*$/, "CUSTOM_TAP='#{CUSTOM_TAP}'")
+  content.gsub!(/^# CUSTOM_TAP_COMMAND=.*$/, "CUSTOM_TAP_COMMAND='#{CUSTOM_TAP_COMMAND}'")
 
   content_type = params["text"] ? "text/plain" : "application/octet-stream"
 

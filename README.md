@@ -1,8 +1,7 @@
 # Strap
 A script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
-## Motivation
-Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.com/) with a better tool. This post outlines the problems with Boxen and requirements for Strap and other tools used by GitHub: http://mikemcquaid.com/2016/06/15/replacing-boxen/
+Barkly has made a few changes to strap to allow additional taps to be added. Specifically we were looking for ways to group contigs by team, similiar to how we did it in Boxen.  You can find all of this located in our tap, [barklyprotects/homebrew-barkly.](https://github.com/barklyprotects/homebrew-barkly)
 
 ## Features
 - Disables Java in Safari (for better security)
@@ -30,18 +29,18 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 - Add phone number to security screen message (want to avoid prompting users for information on installation)
 
 ## Usage
-Open https://macos-strap.herokuapp.com/ in your web browser.
+Open https://barkly-strap.herokuapp.com in your web browser.
 
 Instead, to run Strap locally run:
 ```bash
-git clone https://github.com/MikeMcQuaid/strap
+git clone https://github.com/barklyprotects/strap
 cd strap
 bash bin/strap.sh # or bash bin/strap.sh --debug for more debugging output
 ```
 
 Instead, to run the web application locally run:
 ```bash
-git clone https://github.com/mikemcquaid/strap
+git clone https://github.com/barklyprotects/strap
 cd strap
 GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
 ```
@@ -55,16 +54,18 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 - `GITHUB_SECRET`: the GitHub.com Application Client Secret..
 - `SESSION_SECRET`: the secret used for cookie session storage.
 - `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run (defaults to 3).
-- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).
-- `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
+- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/barklyprotects/strap/issues/new).
+- `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (will be wrapped in `<li>` tags).
+- `CUSTOM_TAP`: an optional tap to strap, allowing other commands to be setup from strap.sh
+- `CUSTOM_TAP_COMMAND`: an optional tap command to run after a custom tap is setup. e.g. `brew <command from custom_tap>`
 
 ## Status
 Stable and in active development.
 
-[![Build Status](https://travis-ci.org/MikeMcQuaid/strap.svg)](https://travis-ci.org/MikeMcQuaid/strap)
+[![Build Status](https://travis-ci.org/barklyprotects/strap.svg)](https://travis-ci.org/barklyprotects/strap)
 
 ## Contact
-[Mike McQuaid](mailto:mike@mikemcquaid.com)
+[Mike Splain](mailto:mike.splain@barkly.com)
 
 ## License
 Licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
