@@ -1,6 +1,6 @@
 #!/bin/bash
 #/ Usage: bin/strap.sh [--debug]
-#/ Install development dependencies on Mac OS X.
+#/ Install development dependencies on macOS.
 set -e
 
 # Keep sudo timestamp updated while Strap is running.
@@ -65,8 +65,8 @@ log()   { STRAP_STEP="$*"; echo "--> $*"; }
 logn()  { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 
-sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12)" || {
-  abort "Run Strap on Mac OS X 10.9/10/11/12."
+sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
+  abort "Run Strap on macOS 10.9/10/11/12/13."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
@@ -202,7 +202,10 @@ logn "Installing Homebrew:"
 HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
 [ -n "$HOMEBREW_PREFIX" ] || HOMEBREW_PREFIX="/usr/local"
 [ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
-sudo chown "root:wheel" "$HOMEBREW_PREFIX"
+if [ "$HOMEBREW_PREFIX" = "/usr/local" ]
+then
+  sudo chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
+fi
 (
   cd "$HOMEBREW_PREFIX"
   sudo mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
@@ -241,13 +244,12 @@ log "Updating Homebrew:"
 brew update
 logk
 
-# Install Homebrew Bundle, Cask, Services and Versions tap.
+# Install Homebrew Bundle, Cask and Services tap.
 log "Installing Homebrew taps and extensions:"
 brew bundle --file=- <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
-tap 'homebrew/versions'
 EOF
 logk
 
@@ -297,7 +299,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
 fi
 
 # Setup Brewfile
-if [ -n "$STRAP_GITHUB_USER" ] && ! [ -f "$HOME/.Brewfile" ]; then
+if [ -n "$STRAP_GITHUB_USER" ] && ( [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ] ); then
   HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
 
   if git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
@@ -320,7 +322,7 @@ fi
 # Install from local Brewfile
 if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from user Brewfile on GitHub:"
-  brew bundle --global
+  brew bundle check --global || brew bundle --global
   logk
 fi
 
