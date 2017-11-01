@@ -343,10 +343,14 @@ fi
 
 # Setup dotfiles
 if [ -n "$STRAP_GITHUB_USER" ]; then
-  DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
+  DOTFILES_REPO="$STRAP_GITHUB_USER/dotfiles"
+  if [ -n "$STRAP_CI" ]; then
+    DOTFILES_REPO="daptiv/dotfiles-template"
+  fi
 
+  DOTFILES_URL="https://github.com/$DOTFILES_REPO"
   if git ls-remote "$DOTFILES_URL" &>/dev/null; then
-    log "Fetching $STRAP_GITHUB_USER/dotfiles from GitHub:"
+    log "Fetching $DOTFILES_REPO from GitHub:"
     if [ ! -d "$HOME/.dotfiles" ]; then
       log "Cloning to ~/.dotfiles:"
       git clone $Q "$DOTFILES_URL" ~/.dotfiles
