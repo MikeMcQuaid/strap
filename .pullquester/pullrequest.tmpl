@@ -1,0 +1,20 @@
+<%= config.title %>
+
+<%= config.description %>
+<% if (config.reviewers && config.reviewers.length > 0) { %>### Code Review<% } %>
+<% _.forEach(config.reviewers, function(reviewer) { %> - [ ] <%- reviewer %>
+<% }); %>
+
+<% if (config.testers && config.testers.length > 0) { %>### Testing<% }%>
+<% _.forEach(config.testers, function(reviewer) { %> - [ ] <%- reviewer %>
+<% }); %>
+
+<% if (config.additionalRequirements && config.additionalRequirements.length > 0) { %>### Additional Requirements<% } %>
+<% _.forEach(config.additionalRequirements, function(additionalRequirement) { %> - [ ] <%- additionalRequirement %>
+<% }); %>
+
+<% if (config.issues && config.issues.length > 0) { %>
+### Related issues
+<% _.forEach(config.issues, function(issueNumber) { %> - [ ] #<%- issueNumber %>
+<% }); %>
+<% } %>
