@@ -27,6 +27,14 @@
     "STRAP_BEFORE_INSTALL": {
       "description": "Instructions displayed in the web application for users to follow before installing Strap (will be wrapped in `<li>` tags)..",
       "required": false
+    },
+    "CUSTOM_TAP": {
+      "description": "an optional tap to tap, allowing other commands to be setup from strap.sh.",
+      "required": false
+    },
+    "CUSTOM_COMMAND": {
+      "description": "a single command that is run after all other stages have completed.",
+      "required": false
     }
   }
 }

@@ -57,6 +57,8 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 - `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run (defaults to 3).
 - `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).
 - `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
+- `CUSTOM_TAP`: an optional tap to tap, allowing other commands to be setup from strap.sh.
+- `CUSTOM_COMMAND`: a single command that is run after all other stages have completed.
 
 ## Status
 Stable and in active development.
