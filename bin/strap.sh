@@ -325,7 +325,8 @@ fi
 # Check for broken cask installs
 DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
 if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile'
+
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile' "${STRAP_DEBUG:+--debug}"
 fi
 
 # Install from Daptiv Brewfile
@@ -386,7 +387,7 @@ fi
 
 # Check for broken cask installs in user brewfile
 if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile'
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile' "${STRAP_DEBUG:+--debug}"
 fi
 
 # Setup User Brewfile
