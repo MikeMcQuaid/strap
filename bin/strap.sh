@@ -306,6 +306,7 @@ if git ls-remote "$DOTFILES_URL" &>/dev/null; then
       if git diff-index --quiet HEAD -- ; then
         log "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
         git checkout $DAPTIV_DOTFILES_BRANCH
+        git pull $Q --rebase --autostash
       else
         abort "Pending changes in $DOTFILES_DIR, unable to switch to branch: $DAPTIV_DOTFILES_BRANCH. If you want to run in this branch run strap with: DAPTIV_DOTFILES_BRANCH=$CURRENT_DAPTIV_DOTFILES_BRANCH"
       fi
@@ -325,7 +326,8 @@ fi
 # Check for broken cask installs
 DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
 if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile'
+
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile' "${STRAP_DEBUG:+--debug}"
 fi
 
 # Install from Daptiv Brewfile
@@ -368,6 +370,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
         if git diff-index --quiet HEAD -- ; then
           log "Changing branch from '$CURRENT_USER_DOTFILES_BRANCH' to '$USER_DOTFILES_BRANCH'"
           git checkout $USER_DOTFILES_BRANCH
+          git pull $Q --rebase --autostash
         else
           abort "Pending changes in ~/.dotfiles, unable to switch to branch: $USER_DOTFILES_BRANCH. If you want to run in this branch run strap with: USER_DOTFILES_BRANCH=$CURRENT_USER_DOTFILES_BRANCH"
         fi
@@ -386,7 +389,7 @@ fi
 
 # Check for broken cask installs in user brewfile
 if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile'
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile' "${STRAP_DEBUG:+--debug}"
 fi
 
 # Setup User Brewfile
