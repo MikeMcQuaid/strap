@@ -3,7 +3,7 @@ GEM
   specs:
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
-    awesome_print (1.7.0)
+    awesome_print (1.8.0)
     coderay (1.1.2)
     faraday (0.12.2)
       multipart-post (>= 1.2, < 3)
