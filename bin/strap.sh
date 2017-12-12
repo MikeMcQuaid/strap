@@ -228,7 +228,7 @@ if ! [ -f "$HOME/.ssh/id_rsa" ]; then
   fi
 
   log "checking for github.com as a known host"
-  if [ `ssh-keygen -H -F githubr.com | wc -l` = 0 ]; then
+  if [ `ssh-keygen -H -F github.com | wc -l` = 0 ]; then
     log "adding known host: github.com"
     ssh-keyscan -H github.com >> ~/.ssh/known_hosts
   else
