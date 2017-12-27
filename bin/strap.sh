@@ -323,6 +323,13 @@ if git ls-remote "$DOTFILES_URL" &>/dev/null; then
   logk
 fi
 
+# Uninstall non-Brew hostess
+if [ "$GOPATH/go/bin/hostess" -ef /usr/local/bin/hostess ]; then
+  log "Uninstalling non-Brew hostess"
+  rm -f /usr/local/bin/hostess
+  rm -f "$GOPATH/go/bin/hostess"
+fi
+
 # Check for broken cask installs
 DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
 if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
