@@ -54,8 +54,8 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_GIT_EMAIL=
 # STRAP_GITHUB_USER=
 # STRAP_GITHUB_TOKEN=
-# CUSTOM_TAP=
-# CUSTOM_COMMAND=
+# CUSTOM_HOMEBREW_TAP=
+# CUSTOM_BREW_COMMAND=
 STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
 
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
@@ -326,15 +326,17 @@ if [ -f "$HOME/.Brewfile" ]; then
   logk
 fi
 
-if [ -n "$CUSTOM_TAP" ]; then
-  log "Tapping custom tap:"
-  brew tap "$CUSTOM_TAP"
+# Tap a custom Homebrew tap
+if [ -n "$CUSTOM_HOMEBREW_TAP" ]; then
+  log "Tapping $CUSTOM_HOMEBREW_TAP Homebrew tap:"
+  brew tap "$CUSTOM_HOMEBREW_TAP"
   logk
 fi
 
-if [ -n "$CUSTOM_COMMAND" ]; then
-  log "Executing custom command $CUSTOM_COMMAND:"
-  brew $CUSTOM_COMMAND
+# Run a custom `brew` command
+if [ -n "$CUSTOM_BREW_COMMAND" ]; then
+  log "Executing 'brew $CUSTOM_BREW_COMMAND':"
+  brew "$CUSTOM_BREW_COMMAND"
   logk
 fi
 

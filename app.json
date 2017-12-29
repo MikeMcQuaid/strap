@@ -28,12 +28,12 @@
       "description": "Instructions displayed in the web application for users to follow before installing Strap (will be wrapped in `<li>` tags).",
       "required": false
     },
-    "CUSTOM_TAP": {
-      "description": "an optional tap to tap, allowing other commands to be setup from strap.sh.",
+    "CUSTOM_HOMEBREW_TAP": {
+      "description": "an optional Homebrew tap to install with 'brew tap'.",
       "required": false
     },
-    "CUSTOM_COMMAND": {
-      "description": "a single command that is run after all other stages have completed.",
+    "CUSTOM_BREW_COMMAND": {
+      "description": "a single 'brew' command that is run after all other stages have completed.",
       "required": false
     }
   }
