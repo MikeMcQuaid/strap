@@ -51,12 +51,14 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## Web Application Configuration Environment Variables
-- `GITHUB_KEY`: the GitHub.com Application Client ID..
-- `GITHUB_SECRET`: the GitHub.com Application Client Secret..
+- `GITHUB_KEY`: the GitHub.com Application Client ID.
+- `GITHUB_SECRET`: the GitHub.com Application Client Secret.
 - `SESSION_SECRET`: the secret used for cookie session storage.
 - `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run (defaults to 3).
 - `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).
 - `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
+- `CUSTOM_HOMEBREW_TAP`: an optional Homebrew tap to install with `brew tap`.
+- `CUSTOM_BREW_COMMAND`: a single `brew` command that is run after all other stages have completed.
 
 ## Status
 Stable and in active development.

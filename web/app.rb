@@ -10,6 +10,8 @@ SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
                    "https://github.com/mikemcquaid/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
+CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
+CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
 
 set :sessions, secret: SESSION_SECRET
 
@@ -67,6 +69,8 @@ get "/strap.sh" do
 
   content = IO.read(File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh"))
   content.gsub!(/^STRAP_ISSUES_URL=.*$/, "STRAP_ISSUES_URL='#{STRAP_ISSUES_URL}'")
+  content.gsub!(/^# CUSTOM_HOMEBREW_TAP=.*$/, "CUSTOM_HOMEBREW_TAP='#{CUSTOM_HOMEBREW_TAP}'")
+  content.gsub!(/^# CUSTOM_BREW_COMMAND=.*$/, "CUSTOM_BREW_COMMAND='#{CUSTOM_BREW_COMMAND}'")
 
   content_type = params["text"] ? "text/plain" : "application/octet-stream"
 

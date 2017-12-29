@@ -54,6 +54,8 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_GIT_EMAIL=
 # STRAP_GITHUB_USER=
 # STRAP_GITHUB_TOKEN=
+# CUSTOM_HOMEBREW_TAP=
+# CUSTOM_BREW_COMMAND=
 STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
 
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
@@ -320,6 +322,20 @@ fi
 if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from user Brewfile on GitHub:"
   brew bundle check --global || brew bundle --global
+  logk
+fi
+
+# Tap a custom Homebrew tap
+if [ -n "$CUSTOM_HOMEBREW_TAP" ]; then
+  log "Tapping $CUSTOM_HOMEBREW_TAP Homebrew tap:"
+  brew tap "$CUSTOM_HOMEBREW_TAP"
+  logk
+fi
+
+# Run a custom `brew` command
+if [ -n "$CUSTOM_BREW_COMMAND" ]; then
+  log "Executing 'brew $CUSTOM_BREW_COMMAND':"
+  brew "$CUSTOM_BREW_COMMAND"
   logk
 fi
 

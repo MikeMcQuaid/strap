@@ -25,7 +25,15 @@
       "required": false
     },
     "STRAP_BEFORE_INSTALL": {
-      "description": "Instructions displayed in the web application for users to follow before installing Strap (will be wrapped in `<li>` tags)..",
+      "description": "Instructions displayed in the web application for users to follow before installing Strap (will be wrapped in `<li>` tags).",
+      "required": false
+    },
+    "CUSTOM_HOMEBREW_TAP": {
+      "description": "an optional Homebrew tap to install with 'brew tap'.",
+      "required": false
+    },
+    "CUSTOM_BREW_COMMAND": {
+      "description": "a single 'brew' command that is run after all other stages have completed.",
       "required": false
     }
   }
