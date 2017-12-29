@@ -121,9 +121,8 @@ else
 fi
 
 # Install the Xcode Command Line Tools.
-DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
-if [ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] \
-                           || ! [ -f "/usr/include/iconv.h" ]
+if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ] || \
+   ! [ -f "/usr/include/iconv.h" ]
 then
   log "Installing the Xcode Command Line Tools:"
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
@@ -189,8 +188,8 @@ then
 
   if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]
   then
-    printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
-    printf "protocol=https\nhost=github.com\nusername=%s\npassword=%s\n" \
+    printf "protocol=https\\nhost=github.com\\n" | git credential-osxkeychain erase
+    printf "protocol=https\\nhost=github.com\\nusername=%s\\npassword=%s\\n" \
           "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
           | git credential-osxkeychain store
   fi
