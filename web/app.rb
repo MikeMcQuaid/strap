@@ -83,3 +83,8 @@ get "/strap.sh" do
 
   erb content, content_type: content_type
 end
+
+get "/logout" do
+  session[:auth] = nil
+  redirect to "/"
+end
