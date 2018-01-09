@@ -284,6 +284,13 @@ else
   logk
 fi
 
+# Halt if requested before Daptiv-specific setup
+if [ -n "$EXIT_BEFORE_DAPTIV" ]; then
+  log "You requested exit before Daptiv-specific setup. Strap process not completed."
+  STRAP_SUCCESS=1
+  exit
+fi
+
 # Setup Daptiv dotfiles
 DOTFILES_URL="https://github.com/daptiv/dotfiles"
 DOTFILES_DIR="$HOME/.daptiv-dotfiles"
