@@ -57,7 +57,7 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_CONTACT_PHONE=
 DAPTIV_DOTFILES_BRANCH="${DAPTIV_DOTFILES_BRANCH:-master}"
 USER_DOTFILES_BRANCH="${USER_DOTFILES_BRANCH:-master}"
-STRAP_ISSUES_URL="https://github.com/daptiv/strap/issues/new"
+STRAP_ISSUES_URL='https://github.com/daptiv/strap/issues/new'
 
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 
@@ -188,15 +188,19 @@ if ! git config push.default >/dev/null; then
 fi
 
 # Setup GitHub HTTPS credentials.
+log "checking for git credential-osxkeychain"
 if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
 then
+  log "found it!"
   if [ "$(git config --global credential.helper)" != "osxkeychain" ]
   then
+    log "setting git credential helper to osxkeychain"
     git config --global credential.helper osxkeychain
   fi
 
   if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]
   then
+    log "storing https credentials for github"
     printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
     printf "protocol=https\nhost=github.com\nusername=%s\npassword=%s\n" \
           "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
@@ -213,6 +217,23 @@ if ! [ -f "$HOME/.ssh/id_rsa" ]; then
   PUBLIC_KEY="$(cat $HOME/.ssh/id_rsa.pub)"
   POST_BODY="{\"title\":\"MacOSX Key - strap\",\"key\":\"$PUBLIC_KEY\"}"
   curl $Q -H "Content-Type: application/json" -H "Authorization: token $STRAP_GITHUB_TOKEN" -X POST -d "$POST_BODY" https://api.github.com/user/keys
+
+  log "checking for known_hosts file"
+  if ! [ -f "$HOME/.ssh/known_hosts"]; then
+    log "creating known_hosts file"
+    touch ~/.ssh/known_hosts
+    chmod 644 ~/.ssh/known_hosts
+  else
+    log 'found known_hosts file at ~/.ssh/known_hosts'
+  fi
+
+  log "checking for github.com as a known host"
+  if [ `ssh-keygen -H -F github.com | wc -l` = 0 ]; then
+    log "adding known host: github.com"
+    ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+  else
+    log "found github.com as known host"
+  fi
 fi
 
 logk
@@ -285,48 +306,49 @@ else
 fi
 
 # Setup Daptiv dotfiles
-DOTFILES_URL="https://github.com/daptiv/dotfiles"
+DOTFILES_URL="git@github.com:daptiv/dotfiles"
 DOTFILES_DIR="$HOME/.daptiv-dotfiles"
-if git ls-remote "$DOTFILES_URL" &>/dev/null; then
-  log "Fetching daptiv/dotfiles from GitHub:"
-  if [ ! -d "$DOTFILES_DIR" ]; then
-    log "Cloning to $DOTFILES_DIR:"
-    git clone $Q "$DOTFILES_URL" "$DOTFILES_DIR"
-  else
-    (
-      cd "$DOTFILES_DIR"
-      git pull $Q --rebase --autostash
-    )
-  fi
-  (
-    cd "$DOTFILES_DIR"
-    CURRENT_DAPTIV_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-    if [ "$DAPTIV_DOTFILES_BRANCH" != "$CURRENT_DAPTIV_DOTFILES_BRANCH" ]; then
-      # check to make sure there are no pending changes in current branch
-      if git diff-index --quiet HEAD -- ; then
-        log "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
-        git checkout $DAPTIV_DOTFILES_BRANCH
-        git pull $Q --rebase --autostash
-      else
-        abort "Pending changes in $DOTFILES_DIR, unable to switch to branch: $DAPTIV_DOTFILES_BRANCH. If you want to run in this branch run strap with: DAPTIV_DOTFILES_BRANCH=$CURRENT_DAPTIV_DOTFILES_BRANCH"
-      fi
-    fi
 
-    for i in script/setup script/bootstrap; do
-      if [ -f "$i" ] && [ -x "$i" ]; then
-        log "Running dotfiles $i:"
-        "$i" 2>/dev/null
-        break
-      fi
-    done
+log "Fetching daptiv/dotfiles from GitHub:"
+if [ ! -d "$DOTFILES_DIR" ]; then
+  log "Cloning to $DOTFILES_DIR:"
+  git clone $Q "$DOTFILES_URL" "$DOTFILES_DIR"
+else
+  (
+    log "Updating local repository."
+    cd "$DOTFILES_DIR"
+    git pull $Q --rebase --autostash
   )
-  logk
 fi
+(
+  log "Check current branch of daptiv/dotfiles against requested branch"
+  cd "$DOTFILES_DIR"
+  CURRENT_DAPTIV_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  if [ "$DAPTIV_DOTFILES_BRANCH" != "$CURRENT_DAPTIV_DOTFILES_BRANCH" ]; then
+    # check to make sure there are no pending changes in current branch
+    if git diff-index --quiet HEAD -- ; then
+      log "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
+      git checkout $DAPTIV_DOTFILES_BRANCH
+      git pull $Q --rebase --autostash
+    else
+      abort "Pending changes in $DOTFILES_DIR, unable to switch to branch: $DAPTIV_DOTFILES_BRANCH. If you want to run in this branch run strap with: DAPTIV_DOTFILES_BRANCH=$CURRENT_DAPTIV_DOTFILES_BRANCH"
+    fi
+  fi
+
+  for i in script/setup script/bootstrap; do
+    if [ -f "$i" ] && [ -x "$i" ]; then
+      log "Running dotfiles $i:"
+      "$i" 2>/dev/null
+      break
+    fi
+  done
+)
+logk
 
 # Check for broken cask installs
 DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
 if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-
+  log "Fix cask installs"
   python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile' "${STRAP_DEBUG:+--debug}"
 fi
 
@@ -336,6 +358,8 @@ if [ -f "$DAPTIV_BREWFILE" ]; then
   log "Installing from Daptiv Brewfile:"
   brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
   logk
+else
+  log "Daptiv Brewfile not found at: $DAPTIV_BREWFILE"
 fi
 
 # Run postbrew script from daptiv dotfiles
@@ -350,7 +374,10 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
     DOTFILES_REPO="daptiv/dotfiles-template"
   fi
 
-  DOTFILES_URL="https://github.com/$DOTFILES_REPO"
+  DOTFILES_URL="git@github.com:$DOTFILES_REPO"
+  log "Checking for remotes on $DOTFILES_URL"
+  git ls-remote "$DOTFILES_URL"
+
   if git ls-remote "$DOTFILES_URL" &>/dev/null; then
     log "Fetching $DOTFILES_REPO from GitHub:"
     if [ ! -d "$HOME/.dotfiles" ]; then
@@ -363,6 +390,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
       )
     fi
     (
+      log "Updating local ~/.dotfiles repository"
       cd ~/.dotfiles
       CURRENT_USER_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
       if [ "$USER_DOTFILES_BRANCH" != "$CURRENT_USER_DOTFILES_BRANCH" ]; then
@@ -384,6 +412,8 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
       done
     )
     logk
+  else
+    log "Couldn't get remotes for $DOTFILES_URL"
   fi
 fi
 
