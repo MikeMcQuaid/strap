@@ -352,13 +352,18 @@ if [ -f "$DAPTIV_BREWFILE" ]; then
   if [ ! -f "$DAPTIV_BREWFILE_BLACKLIST" ]; then
     brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
   else
-    log "Using blacklist"
+    log "Generating brewfile blacklist"
     while read BLACKLIST_LINE
     do
       if [ ! -z $BLACKLIST_REGEX ]; then BLACKLIST_REGEX+="|"; fi
       BLACKLIST_REGEX+="\"$BLACKLIST_LINE\""
     done < $DAPTIV_BREWFILE_BLACKLIST
-    sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE | brew bundle check --file=- || sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE | brew bundle --file=-
+
+    BREWFILE_CLEAN='/tmp/daptiv.brewfile.clean'
+    log "Using clean brewfile: $BREWFILE_CLEAN"
+    sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE > $BREWFILE_CLEAN
+
+    brew bundle check --file="$BREWFILE_CLEAN" || brew bundle --file="$BREWFILE_CLEAN"
   fi
   logk
 fi
