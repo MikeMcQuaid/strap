@@ -305,13 +305,6 @@ else
   logk
 fi
 
-# Halt if requested before Daptiv-specific setup
-if [ -n "$EXIT_BEFORE_DAPTIV" ]; then
-  log "You requested exit before Daptiv-specific setup. Strap process not completed."
-  STRAP_SUCCESS=1
-  exit
-fi
-
 # Setup dotfiles
 USER_DOTFILES_EXISTS=
 if [ -n "$STRAP_GITHUB_USER" ]; then
