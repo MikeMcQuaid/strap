@@ -305,6 +305,49 @@ else
   logk
 fi
 
+# Setup dotfiles
+USER_DOTFILES_EXISTS=
+if [ -n "$STRAP_GITHUB_USER" ]; then
+  DOTFILES_REPO="$STRAP_GITHUB_USER/dotfiles"
+  if [ -n "$STRAP_CI" ]; then
+    DOTFILES_REPO="daptiv/dotfiles-template"
+  fi
+
+  DOTFILES_URL="git@github.com:$DOTFILES_REPO"
+  log "Checking for remotes on $DOTFILES_URL"
+  if git ls-remote "$DOTFILES_URL" &>/dev/null; then USER_DOTFILES_EXISTS=1; fi
+  if [ -n "$USER_DOTFILES_EXISTS" ]; then
+    log "Fetching $DOTFILES_REPO from GitHub:"
+    if [ ! -d "$HOME/.dotfiles" ]; then
+      log "Cloning to ~/.dotfiles:"
+      git clone $Q "$DOTFILES_URL" ~/.dotfiles
+    else
+      (
+        cd ~/.dotfiles
+        git pull $Q --rebase --autostash
+      )
+    fi
+    (
+      log "Updating local ~/.dotfiles repository"
+      cd ~/.dotfiles
+      CURRENT_USER_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+      if [ "$USER_DOTFILES_BRANCH" != "$CURRENT_USER_DOTFILES_BRANCH" ]; then
+        # check to make sure there are no pending changes in current branch
+        if git diff-index --quiet HEAD -- ; then
+          log "Changing branch from '$CURRENT_USER_DOTFILES_BRANCH' to '$USER_DOTFILES_BRANCH'"
+          git checkout $USER_DOTFILES_BRANCH
+          git pull $Q --rebase --autostash
+        else
+          abort "Pending changes in ~/.dotfiles, unable to switch to branch: $USER_DOTFILES_BRANCH. If you want to run in this branch run strap with: USER_DOTFILES_BRANCH=$CURRENT_USER_DOTFILES_BRANCH"
+        fi
+      fi
+    )
+    logk
+  else
+    log "Couldn't get remotes for $DOTFILES_URL"
+  fi
+fi
+
 # Setup Daptiv dotfiles
 DOTFILES_URL="git@github.com:daptiv/dotfiles"
 DOTFILES_DIR="$HOME/.daptiv-dotfiles"
@@ -345,6 +388,13 @@ fi
 )
 logk
 
+# Uninstall non-Brew hostess
+if [ "$GOPATH/go/bin/hostess" -ef /usr/local/bin/hostess ]; then
+  log "Uninstalling non-Brew hostess"
+  rm -f /usr/local/bin/hostess
+  rm -f "$GOPATH/go/bin/hostess"
+fi
+
 # Check for broken cask installs
 DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
 if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
@@ -356,7 +406,25 @@ fi
 DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
 if [ -f "$DAPTIV_BREWFILE" ]; then
   log "Installing from Daptiv Brewfile:"
-  brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
+  # if a blacklist exists use it; else just brew from Daptiv file
+  if { DAPTIV_BREWFILE_BLACKLIST=$DAPTIV_BREWFILE.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; } \
+      || { DAPTIV_BREWFILE_BLACKLIST=~/.dotfiles/.Daptiv.Brewfile.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; };
+  then
+    log "Generating brewfile blacklist from: $DAPTIV_BREWFILE_BLACKLIST"
+    while read BLACKLIST_LINE
+    do
+      if [ ! -z $BLACKLIST_REGEX ]; then BLACKLIST_REGEX+="|"; fi
+      BLACKLIST_REGEX+="\"$BLACKLIST_LINE\""
+    done < $DAPTIV_BREWFILE_BLACKLIST
+
+    BREWFILE_CLEAN='/tmp/daptiv.brewfile.clean'
+    log "Using clean brewfile: $BREWFILE_CLEAN"
+    sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE > $BREWFILE_CLEAN
+
+    brew bundle check --file="$BREWFILE_CLEAN" || brew bundle --file="$BREWFILE_CLEAN"
+  else
+    brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
+  fi
   logk
 else
   log "Daptiv Brewfile not found at: $DAPTIV_BREWFILE"
@@ -367,54 +435,19 @@ if [ -f "$DAPTIV_DOTFILES/script/postbrew" ] && [ -x "$DAPTIV_DOTFILES/script/po
   "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
 fi
 
-# Setup dotfiles
-if [ -n "$STRAP_GITHUB_USER" ]; then
-  DOTFILES_REPO="$STRAP_GITHUB_USER/dotfiles"
-  if [ -n "$STRAP_CI" ]; then
-    DOTFILES_REPO="daptiv/dotfiles-template"
-  fi
-
-  DOTFILES_URL="git@github.com:$DOTFILES_REPO"
-  log "Checking for remotes on $DOTFILES_URL"
-  git ls-remote "$DOTFILES_URL"
-
-  if git ls-remote "$DOTFILES_URL" &>/dev/null; then
-    log "Fetching $DOTFILES_REPO from GitHub:"
-    if [ ! -d "$HOME/.dotfiles" ]; then
-      log "Cloning to ~/.dotfiles:"
-      git clone $Q "$DOTFILES_URL" ~/.dotfiles
-    else
-      (
-        cd ~/.dotfiles
-        git pull $Q --rebase --autostash
-      )
-    fi
-    (
-      log "Updating local ~/.dotfiles repository"
-      cd ~/.dotfiles
-      CURRENT_USER_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-      if [ "$USER_DOTFILES_BRANCH" != "$CURRENT_USER_DOTFILES_BRANCH" ]; then
-        # check to make sure there are no pending changes in current branch
-        if git diff-index --quiet HEAD -- ; then
-          log "Changing branch from '$CURRENT_USER_DOTFILES_BRANCH' to '$USER_DOTFILES_BRANCH'"
-          git checkout $USER_DOTFILES_BRANCH
-          git pull $Q --rebase --autostash
-        else
-          abort "Pending changes in ~/.dotfiles, unable to switch to branch: $USER_DOTFILES_BRANCH. If you want to run in this branch run strap with: USER_DOTFILES_BRANCH=$CURRENT_USER_DOTFILES_BRANCH"
-        fi
+# Run user dotfiles scripts
+if [ -n "$USER_DOTFILES_EXISTS" ]; then
+  (
+    cd ~/.dotfiles
+    for i in script/setup script/bootstrap; do
+      if [ -f "$i" ] && [ -x "$i" ]; then
+        log "Running dotfiles $i:"
+        "$i" 2>/dev/null
+        break
       fi
-      for i in script/setup script/bootstrap; do
-        if [ -f "$i" ] && [ -x "$i" ]; then
-          log "Running dotfiles $i:"
-          "$i" 2>/dev/null
-          break
-        fi
-      done
-    )
-    logk
-  else
-    log "Couldn't get remotes for $DOTFILES_URL"
-  fi
+    done
+  )
+  logk
 fi
 
 # Check for broken cask installs in user brewfile
