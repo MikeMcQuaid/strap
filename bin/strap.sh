@@ -437,15 +437,16 @@ fi
 
 # Run user dotfiles scripts
 if [ -n "$USER_DOTFILES_EXISTS" ]; then
-  pushd ~/.dotfiles > /dev/null
-  for i in script/setup script/bootstrap; do
-    if [ -f "$i" ] && [ -x "$i" ]; then
-      log "Running dotfiles $i:"
-      "$i" 2>/dev/null
-      break
-    fi
-  done
-  popd > /dev/null
+  (
+    cd ~/.dotfiles
+    for i in script/setup script/bootstrap; do
+      if [ -f "$i" ] && [ -x "$i" ]; then
+        log "Running dotfiles $i:"
+        "$i" 2>/dev/null
+        break
+      fi
+    done
+  )
   logk
 fi
 
