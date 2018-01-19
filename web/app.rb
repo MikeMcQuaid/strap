@@ -38,6 +38,9 @@ get "/" do
   end
 
   @title = "Strap"
+  @head = <<-EOS
+<link rel="stylesheet" href="app.css">
+EOS
   @text = <<-EOS
 Strap is a script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
@@ -50,6 +53,17 @@ To Strap your system:
   <li>Delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a></li>
   <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
 </ol>
+
+<h3>Run Strap with Locally-Downloaded Vagrant Box</h3>
+<p>After downloading <code>strap.sh</code> above, you need to run it with the following environment variables set.</p>
+<table>
+  <tbody>
+    <tr><td><code>VAGRANT_LOCAL_BOX_PATH</code></td><td>Full path to the locally-downloaded box file.</td></tr>
+    <tr><td><code>VAGRANT_LOCAL_BOX_VERSION</code></td><td>Version of the box file.</td></tr>
+  </tbody>
+</table>
+<h4>Example</h4>
+<p><code>VAGRANT_LOCAL_BOX_PATH=/Volumes/SanDisk/dev_ppm.box VAGRANT_LOCAL_BOX_VERSION=1.0.0 bash ~/Downloads/strap.sh</code></p>
 
 <a href="https://github.com/daptiv/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
 EOS
