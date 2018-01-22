@@ -66,7 +66,7 @@ GEM
     rack (2.0.3)
     rack-protection (2.0.0)
       rack
-    raindrops (0.17.0)
+    raindrops (0.19.0)
     rb-fsevent (0.9.8)
     rb-inotify (0.9.7)
       ffi (>= 0.5.0)
@@ -85,7 +85,7 @@ GEM
       ffi
     thor (0.19.4)
     tilt (2.0.8)
-    unicorn (5.2.0)
+    unicorn (5.3.1)
       kgio (~> 2.6)
       raindrops (~> 0.7)
 
