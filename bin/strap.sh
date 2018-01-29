@@ -3,16 +3,6 @@
 #/ Install development dependencies on macOS.
 set -e
 
-# Keep sudo timestamp updated while Strap is running.
-if [ "$1" = "--sudo-wait" ]; then
-  while true; do
-    mkdir -p "/var/db/sudo/$SUDO_USER"
-    touch "/var/db/sudo/$SUDO_USER"
-    sleep 1
-  done
-  exit 0
-fi
-
 [ "$1" = "--debug" ] && STRAP_DEBUG="1"
 STRAP_SUCCESS=""
 
@@ -58,11 +48,26 @@ STDIN_FILE_DESCRIPTOR="0"
 # CUSTOM_BREW_COMMAND=
 STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
 
-STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+# We want to always prompt for sudo password at least once rather than doing
+# root stuff unexpectedly.
+sudo -k
+
+# Initialise (or reinitialise) sudo to save unhelpful prompts later.
+sudo_init() {
+  if ! sudo -vn &>/dev/null; then
+    if [ -n "$STRAP_SUDOED_ONCE" ]; then
+      echo "--> Re-enter your password (for sudo access; sudo has timed out):"
+    else
+      echo "--> Enter your password (for sudo access):"
+    fi
+    sudo /usr/bin/true
+    STRAP_SUDOED_ONCE="1"
+  fi
+}
 
 abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
-log()   { STRAP_STEP="$*"; echo "--> $*"; }
-logn()  { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
+log()   { STRAP_STEP="$*"; sudo_init; echo "--> $*"; }
+logn()  { STRAP_STEP="$*"; sudo_init; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 
 sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
@@ -71,16 +76,6 @@ sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
 groups | grep $Q admin || abort "Add $USER to the admin group."
-
-# Initialise sudo now to save prompting later.
-log "Enter your password (for sudo access):"
-sudo -k
-sudo /usr/bin/true
-[ -f "$STRAP_FULL_PATH" ]
-sudo bash "$STRAP_FULL_PATH" --sudo-wait &
-STRAP_SUDO_WAIT_PID="$!"
-ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
-logk
 
 # Set some basic security settings.
 logn "Configuring security settings:"
