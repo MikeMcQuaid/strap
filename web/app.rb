@@ -54,8 +54,8 @@ To Strap your system:
   <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
 </ol>
 
-<h3>Run Strap with Locally-Downloaded Vagrant Box</h3>
-<p>After downloading <code>strap.sh</code> above, you need to run it with the following environment variables set.</p>
+<h3>Alternatively:  Run Strap with a Locally-Downloaded Vagrant Box</h3>
+<p>If you want to use a previously downloaded Vagrant box, download <code>strap.sh</code> above and then run it with the following environment variables set.</p>
 <table>
   <tbody>
     <tr><td><code>VAGRANT_LOCAL_BOX_PATH</code></td><td>Full path to the locally-downloaded box file.</td></tr>
