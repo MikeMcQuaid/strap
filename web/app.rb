@@ -45,6 +45,7 @@ EOS
 Strap is a script to bootstrap a minimal macOS development system for Daptiv developers and testers.
 
 <h2>To Strap your system:</h2>
+<p class="note">(If you have locally-downloaded your Vagrant box, see alternate instructions below.)</p>
 <ol>
   #{before_install_list_item}
   <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user.

@@ -14,3 +14,7 @@
   border-top: 1px solid #eee;
   padding-top: 20px;
 }
+
+.container p.note {
+  font-style: italic;
+}
