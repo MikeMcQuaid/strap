@@ -54,7 +54,7 @@ Strap is a script to bootstrap a minimal macOS development system. This does not
   <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
 </ol>
 
-<h3>Alternatively:  Run Strap with a Locally-Downloaded Vagrant Box</h3>
+<h3 class="separator">Alternatively:  Run Strap with a Locally-Downloaded Vagrant Box</h3>
 <p>If you want to use a previously downloaded Vagrant box, download <code>strap.sh</code> above and then run it with the following environment variables set.</p>
 <table>
   <tbody>
