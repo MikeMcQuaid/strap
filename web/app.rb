@@ -44,7 +44,7 @@ EOS
   @text = <<-EOS
 Strap is a script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
-To Strap your system:
+<h2>To Strap your system:</h2>
 <ol>
   #{before_install_list_item}
   <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user (or <a href="/strap.sh?text=1">view it</a> first). This will prompt for access to your email, public and private repositories; you'll need to provide access to any organizations whose repositories you need to be able to <code>git clone</code>. This is used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
