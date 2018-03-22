@@ -7,11 +7,8 @@ set -e
 STRAP_SUCCESS=""
 
 cleanup() {
+  remove_sudo_nopasswd
   set +e
-  if [ -n "$STRAP_SUDO_WAIT_PID" ]; then
-    sudo kill "$STRAP_SUDO_WAIT_PID"
-  fi
-  sudo -k
   rm -f "$CLT_PLACEHOLDER"
   if [ -z "$STRAP_SUCCESS" ]; then
     if [ -n "$STRAP_STEP" ]; then
@@ -48,30 +45,49 @@ STDIN_FILE_DESCRIPTOR="0"
 # CUSTOM_BREW_COMMAND=
 STRAP_ISSUES_URL='https://github.com/MikeMcQuaid/strap/issues/new'
 
-# We want to always prompt for sudo password at least once rather than doing
-# root stuff unexpectedly.
-sudo -k
-
-# Initialise (or reinitialise) sudo to save unhelpful prompts later.
-sudo_init() {
-  if ! sudo -vn &>/dev/null; then
-    if [ -n "$STRAP_SUDOED_ONCE" ]; then
-      echo "--> Re-enter your password (for sudo access; sudo has timed out):"
-    else
-      echo "--> Enter your password (for sudo access):"
-    fi
-    sudo /usr/bin/true
-    STRAP_SUDOED_ONCE="1"
-  fi
-}
-
 abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
-log()   { STRAP_STEP="$*"; sudo_init; echo "--> $*"; }
-logn()  { STRAP_STEP="$*"; sudo_init; printf -- "--> %s " "$*"; }
+log()   { STRAP_STEP="$*"; echo "--> $*"; }
+logn()  { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 escape() {
   printf '%s' "${1//\'/\'}"
 }
+
+# We want to always prompt for sudo password at least once rather than doing
+# root stuff unexpectedly.
+sudo -k
+
+SUDOERS_FILE_NAME=/etc/sudoers.d/strap-nopasswd
+SUDOERS_INSTALLED="0"
+
+# Write out a temporary sudoers file that gives the current user a much longer timeout
+add_sudo_nopasswd() {
+  cat | sudo tee ${SUDOERS_FILE_NAME} << EOF
+${USER} ALL=(ALL) NOPASSWD:ALL
+EOF
+  SUDOERS_INSTALLED="1"
+}
+
+# Remove the sudoers file and reset permissions
+remove_sudo_nopasswd() {
+  if [ ${SUDOERS_INSTALLED} -ne "0" ]
+  then
+    logn "Removing NOPASSWD sudoers file: "
+    sudo rm -f ${SUDOERS_FILE_NAME}
+    logk
+  fi
+  sudo -K
+}
+
+# Initialise sudo to save unhelpful prompts later.
+sudo_init() {
+  if ! sudo -vn &>/dev/null; then
+    log "--> Enter your password (for sudo access):"
+    add_sudo_nopasswd
+  fi
+}
+
+sudo_init
 
 MACOS_VERSION="$(sw_vers -productVersion)"
 echo "$MACOS_VERSION" | grep $Q -E "^10.(9|10|11|12|13|14)" || {
