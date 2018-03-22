@@ -38,20 +38,43 @@ get "/" do
   end
 
   @title = "Strap"
+  @head = <<-EOS
+<link rel="stylesheet" href="app.css">
+EOS
   @text = <<-EOS
-Strap is a script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
+Strap is a script to bootstrap a minimal macOS development system for Daptiv developers and testers.
 
-To Strap your system:
+<h2>To Strap your system:</h2>
+<p class="note">(If you have locally-downloaded your Vagrant box, see alternate instructions below.)</p>
 <ol>
   #{before_install_list_item}
-  <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user (or <a href="/strap.sh?text=1">view it</a> first). This will prompt for access to your email, public and private repositories; you'll need to provide access to any organizations whose repositories you need to be able to <code>git clone</code>. This is used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
+  <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user.
+    <ul>
+      <li>This will prompt for access to your email, public and private repositories; you'll need to provide access to the Daptiv organization so Strap can access its repositories.</li>
+      <li>The permissions above are used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
+      <li>You can <a href="/strap.sh?text=1">view the file</a> first if you want.</li>
+    </ul>
+  </li>
   <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.</li>
-  <li>If something failed, run Strap with more debugging output in Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a></li>
-  <li>Delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a></li>
-  <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
+  <li>Once Strap completes, delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a>.</li>
 </ol>
 
-<a href="https://github.com/daptiv/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
+<h3>Troubleshooting</h3>
+If something failed, run Strap with more debugging output in Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>.
+
+<h3>Customization</h3>
+Install additional software using Homebrew via your <a href="https://sites.google.com/a/daptiv.com/portal/Daptiv-Engineering-Wiki/dev-machine-setup/personal-dotfiles-repository">personal dotfiles repository</a>.
+
+<h3 class="separator">Alternatively:  Run Strap with a Locally-Downloaded Vagrant Box</h3>
+<p>If you want to use a previously downloaded Vagrant box, download <code>strap.sh</code> above and then run it with the following environment variables set.</p>
+<table>
+  <tbody>
+    <tr><td><code>VAGRANT_LOCAL_BOX_PATH</code></td><td>Full path to the locally-downloaded box file.</td></tr>
+    <tr><td><code>VAGRANT_LOCAL_BOX_VERSION</code></td><td>Version of the box file.</td></tr>
+  </tbody>
+</table>
+<h4>Example</h4>
+<p><code>VAGRANT_LOCAL_BOX_PATH=/Volumes/SanDisk/dev_ppm.box VAGRANT_LOCAL_BOX_VERSION=1.0.0 bash ~/Downloads/strap.sh</code></p>
 EOS
   erb :root
 end
