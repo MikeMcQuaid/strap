@@ -22,7 +22,12 @@ use OmniAuth::Builder do
 end
 
 get "/auth/github/callback" do
-  session[:auth] = request.env["omniauth.auth"]
+  auth = request.env["omniauth.auth"]
+  session[:auth] = {
+    'info' => auth["info"],
+    'credentials' => auth["credentials"]
+  }
+
   return_to = session.delete :return_to
   return_to = "/" if !return_to || return_to.empty?
   redirect to return_to
