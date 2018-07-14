@@ -283,7 +283,9 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
       for i in script/setup script/bootstrap; do
         if [ -f "$i" ] && [ -x "$i" ]; then
           log "Running dotfiles $i:"
-          "$i" 2>/dev/null
+          "$i" 2>/dev/null || {
+            log "Warning - running dotfiles $i failed"
+          }
           break
         fi
       done
