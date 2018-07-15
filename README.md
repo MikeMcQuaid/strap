@@ -2,7 +2,7 @@
 A script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
 ## Motivation
-Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.com/) with a better tool. This post outlines the problems with Boxen and requirements for Strap and other tools used by GitHub: http://mikemcquaid.com/2016/06/15/replacing-boxen/
+Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.com/) with a better tool. This post outlines the problems with Boxen and requirements for Strap and other tools used by GitHub: https://mikemcquaid.com/2016/06/15/replacing-boxen/
 
 ## Features
 - Disables Java in Safari (for better security)
@@ -41,7 +41,7 @@ bash bin/strap.sh # or bash bin/strap.sh --debug for more debugging output
 
 Instead, to run the web application locally run:
 ```bash
-git clone https://github.com/mikemcquaid/strap
+git clone https://github.com/MikeMcQuaid/strap
 cd strap
 GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
 ```
@@ -55,7 +55,7 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 - `GITHUB_SECRET`: the GitHub.com Application Client Secret.
 - `SESSION_SECRET`: the secret used for cookie session storage.
 - `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run (defaults to 3).
-- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).
+- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/MikeMcQuaid/strap/issues/new).
 - `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
 - `CUSTOM_HOMEBREW_TAP`: an optional Homebrew tap to install with `brew tap`.
 - `CUSTOM_BREW_COMMAND`: a single `brew` command that is run after all other stages have completed.
@@ -70,4 +70,4 @@ Stable and in active development.
 
 ## License
 Licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
-The full license text is available in [LICENSE.txt](https://github.com/mikemcquaid/strap/blob/master/LICENSE.txt).
+The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/master/LICENSE.txt).

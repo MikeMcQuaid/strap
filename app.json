@@ -1,8 +1,8 @@
 {
   "name": "Strap",
   "description": "Bootstrap a minimal macOS development system",
-  "website": "https://github.com/mikemcquaid/strap",
-  "repository": "https://github.com/mikemcquaid/strap",
+  "website": "https://github.com/MikeMcQuaid/strap",
+  "repository": "https://github.com/MikeMcQuaid/strap",
   "keywords": ["ruby", "strap"],
   "success_url": "/",
   "env": {
@@ -21,7 +21,7 @@
       "required": false
     },
     "STRAP_ISSUES_URL": {
-      "description": "The URL where users should file issues (defaults to https://github.com/mikemcquaid/strap/issues/new).",
+      "description": "The URL where users should file issues (defaults to https://github.com/MikeMcQuaid/strap/issues/new).",
       "required": false
     },
     "STRAP_BEFORE_INSTALL": {
