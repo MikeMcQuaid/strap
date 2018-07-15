@@ -8,7 +8,7 @@ GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
-                   "https://github.com/mikemcquaid/strap/issues/new"
+                   "https://github.com/MikeMcQuaid/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
 CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
@@ -43,22 +43,18 @@ get "/" do
     before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>"
   end
 
-  @title = "Strap"
-  @text = <<-EOS
-Strap is a script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
-
-To Strap your system:
-<ol>
-  #{before_install_list_item}
-  <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user (or <a href="/strap.sh?text=1">view it</a> first). This will prompt for access to your email, public and private repositories; you'll need to provide access to any organizations whose repositories you need to be able to <code>git clone</code>. This is used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
-  <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.</li>
-  <li>If something failed, run Strap with more debugging output in Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a></li>
-  <li>Delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a></li>
-  <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
-</ol>
-
-<a href="https://github.com/mikemcquaid/strap"><img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-graphite@2x.png" alt="Fork me on GitHub"></a>
-EOS
+  @title = "👢 Strap"
+  @text = <<~EOS
+    To Strap your system:
+    <ol>
+      #{before_install_list_item}
+      <li><a href="/strap.sh"><button type="button" class="btn btn-outline-primary btn-sm">Download the <code>strap.sh</code></button></a> that's been customised for your GitHub user (or <a href="/strap.sh?text=1">view it</a> first). This will prompt for access to your email, public and private repositories; you'll need to provide access to any organizations whose repositories you need to be able to <code>git clone</code>. This is used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
+      <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.</li>
+      <li>If something failed, run Strap with more debugging output in Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a></li>
+      <li>Delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a></li>
+      <li>Install additional software with <code>brew install</code> and <code>brew cask install</code>.</li>
+    </ol>
+  EOS
   erb :root
 end
 

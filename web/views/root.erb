@@ -4,18 +4,28 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css">
     <title><%= @title %></title>
   </head>
   <body>
+    <nav class="navbar navbar-expand-lg bg-primary pt-4 pb-2 mb-4">
+      <h1 class="container display-1 text-white"><%= @title %></h1>
+    </nav>
     <div class="container">
-      <div class="page-header">
-        <h1><a href="/"><%= @title %></a></h1>
-      </div>
-    </div>
-    <div class="container">
+      <p class="lead">
+        Strap is a script to bootstrap a minimal macOS development system.
+        This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
+      </p>
       <%= @text %>
     </div>
+
+    <a href="https://github.com/MikeMcQuaid/strap">
+      <img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.com/fork-me-on-github-retina-ribbons/right-red@2x.png" alt="Fork me on GitHub">
+    </a>
+
+    <nav class="navbar bg-primary fixed-bottom text-white">
+      <span class="navbar-brand">👢</span>
+      <span>Made with ❤️ by&nbsp;<a class="text-white" href="https://mikemcquaid.com">Mike McQuaid</a></span>
+    </nav>
   </body>
 </html>

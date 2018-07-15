@@ -46,7 +46,7 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_GITHUB_TOKEN=
 # CUSTOM_HOMEBREW_TAP=
 # CUSTOM_BREW_COMMAND=
-STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
+STRAP_ISSUES_URL="https://github.com/MikeMcQuaid/strap/issues/new"
 
 # We want to always prompt for sudo password at least once rather than doing
 # root stuff unexpectedly.
