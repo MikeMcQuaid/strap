@@ -69,6 +69,9 @@ abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
 log()   { STRAP_STEP="$*"; sudo_init; echo "--> $*"; }
 logn()  { STRAP_STEP="$*"; sudo_init; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
+escape() {
+  echo "${1//\'/\\\'}"
+}
 
 sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
   abort "Run Strap on macOS 10.9/10/11/12/13."
@@ -93,7 +96,7 @@ sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/d
 if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
   sudo defaults write /Library/Preferences/com.apple.loginwindow \
     LoginwindowText \
-    "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL."
+    "'Found this computer? Please contact $(escape "$STRAP_GIT_NAME") at $(escape "$STRAP_GIT_EMAIL").'"
 fi
 logk
 
