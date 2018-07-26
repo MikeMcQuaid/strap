@@ -127,7 +127,7 @@ then
   sudo touch "$CLT_PLACEHOLDER"
   CLT_PACKAGE=$(softwareupdate -l | \
                 grep -B 1 -E "Command Line (Developer|Tools)" | \
-                awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | head -n1)
+                awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | tail -n1)
   sudo softwareupdate -i "$CLT_PACKAGE"
   sudo rm -f "$CLT_PLACEHOLDER"
   if ! [ -f "/usr/include/iconv.h" ]; then
