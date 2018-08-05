@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "sinatra"
 require "omniauth-github"
 require "octokit"
@@ -96,19 +98,48 @@ get "/strap.sh" do
     redirect to "/auth/github"
   end
 
-  content = IO.read(File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh"))
-  content.gsub!(/^STRAP_ISSUES_URL=.*$/, "STRAP_ISSUES_URL='#{STRAP_ISSUES_URL}'")
-  content.gsub!(/^# CUSTOM_HOMEBREW_TAP=.*$/, "CUSTOM_HOMEBREW_TAP='#{CUSTOM_HOMEBREW_TAP}'")
-  content.gsub!(/^# CUSTOM_BREW_COMMAND=.*$/, "CUSTOM_BREW_COMMAND='#{CUSTOM_BREW_COMMAND}'")
+  script = File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh")
+  content = IO.read(script)
 
-  content_type = params["text"] ? "text/plain" : "application/octet-stream"
+  set_variables = { STRAP_ISSUES_URL: STRAP_ISSUES_URL }
+  unset_variables = {}
 
-  if auth
-    content.gsub!(/^# STRAP_GIT_NAME=$/, "STRAP_GIT_NAME='#{auth["info"]["name"]}'")
-    content.gsub!(/^# STRAP_GIT_EMAIL=$/, "STRAP_GIT_EMAIL='#{auth["info"]["email"]}'")
-    content.gsub!(/^# STRAP_GITHUB_USER=$/, "STRAP_GITHUB_USER='#{auth["info"]["nickname"]}'")
-    content.gsub!(/^# STRAP_GITHUB_TOKEN=$/, "STRAP_GITHUB_TOKEN='#{auth["credentials"]["token"]}'")
+  if CUSTOM_HOMEBREW_TAP
+    unset_variables[:CUSTOM_HOMEBREW_TAP] = CUSTOM_HOMEBREW_TAP
   end
 
+  if CUSTOM_BREW_COMMAND
+    unset_variables[:CUSTOM_BREW_COMMAND] = CUSTOM_BREW_COMMAND
+  end
+
+  if auth
+    unset_variables.merge! STRAP_GIT_NAME:     auth["info"]["name"],
+                           STRAP_GIT_EMAIL:    auth["info"]["email"],
+                           STRAP_GITHUB_USER:  auth["info"]["nickname"],
+                           STRAP_GITHUB_TOKEN: auth["credentials"]["token"]
+  end
+
+  env_sub(content, set_variables, set: true)
+  env_sub(content, unset_variables, set: false)
+
+  content_type = if params["text"]
+    "text/plain"
+  else
+    "application/octet-stream"
+  end
   erb content, content_type: content_type
+end
+
+private
+
+def env_sub(content, variables, set:)
+  variables.each do |key, value|
+    regex = if set
+      /^#{key}='.*'$/
+    else
+      /^# #{key}=$/
+    end
+    escaped_value = value.gsub(/'/, "\\\\\\\\'")
+    content.gsub!(regex, "#{key}='#{escaped_value}'")
+  end
 end
