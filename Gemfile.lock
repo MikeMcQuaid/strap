@@ -24,7 +24,7 @@ GEM
     guard-process (1.2.1)
       guard-compat (~> 1.2, >= 1.2.1)
       spoon (~> 0.0.1)
-    hashie (3.5.6)
+    hashie (3.5.7)
     jwt (1.5.6)
     kgio (2.11.2)
     listen (3.1.5)
