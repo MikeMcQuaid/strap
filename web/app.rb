@@ -134,6 +134,7 @@ private
 
 def env_sub(content, variables, set:)
   variables.each do |key, value|
+    next if value.to_s.empty?
     regex = if set
       /^#{key}='.*'$/
     else
