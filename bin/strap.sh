@@ -130,13 +130,17 @@ then
                 awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | tail -n1)
   sudo softwareupdate -i "$CLT_PACKAGE"
   sudo rm -f "$CLT_PLACEHOLDER"
-  if [ -n "$STRAP_INTERACTIVE" ]; then
-    echo
-    logn "Requesting user install of Xcode Command Line Tools:"
-    xcode-select --install
-  else
-    echo
-    abort "Run 'xcode-select --install' to install the Xcode Command Line Tools."
+  if ! [ -f "/usr/include/iconv.h" ] || \
+     ! [ -d "/Library/Developer" ]
+  then
+    if [ -n "$STRAP_INTERACTIVE" ]; then
+      echo
+      logn "Requesting user install of Xcode Command Line Tools:"
+      xcode-select --install
+    else
+      echo
+      abort "Run 'xcode-select --install' to install the Xcode Command Line Tools."
+    fi
   fi
   logk
 fi
