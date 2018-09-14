@@ -73,8 +73,8 @@ escape() {
   echo "${1//\'/\\\'}"
 }
 
-sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
-  abort "Run Strap on macOS 10.9/10/11/12/13."
+sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13|14)" || {
+  abort "Run Strap on macOS 10.9/10/11/12/13/14."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
@@ -130,7 +130,9 @@ then
                 awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | tail -n1)
   sudo softwareupdate -i "$CLT_PACKAGE"
   sudo rm -f "$CLT_PLACEHOLDER"
-  if ! [ -f "/usr/include/iconv.h" ]; then
+  if ! [ -f "/usr/include/iconv.h" ] || \
+     ! [ -d "/Library/Developer" ]
+  then
     if [ -n "$STRAP_INTERACTIVE" ]; then
       echo
       logn "Requesting user install of Xcode Command Line Tools:"
