@@ -119,7 +119,7 @@ else
 fi
 
 # Install the Xcode Command Line Tools.
-if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ] || \
+if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ] && \
    ! [ -f "/usr/include/iconv.h" ]
 then
   log "Installing the Xcode Command Line Tools:"
@@ -130,7 +130,7 @@ then
                 awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | tail -n1)
   sudo softwareupdate -i "$CLT_PACKAGE"
   sudo rm -f "$CLT_PLACEHOLDER"
-  if ! [ -f "/usr/include/iconv.h" ] || \
+  if ! [ -f "/usr/include/iconv.h" ] && \
      ! [ -d "/Library/Developer" ]
   then
     if [ -n "$STRAP_INTERACTIVE" ]; then
