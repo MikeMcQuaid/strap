@@ -3,16 +3,6 @@
 #/ Install development dependencies on macOS.
 set -e
 
-# Keep sudo timestamp updated while Strap is running.
-if [ "$1" = "--sudo-wait" ]; then
-  while true; do
-    mkdir -p "/var/db/sudo/$SUDO_USER"
-    touch "/var/db/sudo/$SUDO_USER"
-    sleep 1
-  done
-  exit 0
-fi
-
 [ "$1" = "--debug" ] && STRAP_DEBUG="1"
 STRAP_SUCCESS=""
 
@@ -59,30 +49,37 @@ DAPTIV_DOTFILES_BRANCH="${DAPTIV_DOTFILES_BRANCH:-master}"
 USER_DOTFILES_BRANCH="${USER_DOTFILES_BRANCH:-master}"
 STRAP_ISSUES_URL='https://github.com/daptiv/strap/issues/new'
 
-STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+# We want to always prompt for sudo password at least once rather than doing
+# root stuff unexpectedly.
+sudo -k
+
+# Initialise (or reinitialise) sudo to save unhelpful prompts later.
+sudo_init() {
+  if ! sudo -vn &>/dev/null; then
+    if [ -n "$STRAP_SUDOED_ONCE" ]; then
+      echo "--> Re-enter your password (for sudo access; sudo has timed out):"
+    else
+      echo "--> Enter your password (for sudo access):"
+    fi
+    sudo /usr/bin/true
+    STRAP_SUDOED_ONCE="1"
+  fi
+}
 
 abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
-log()   { STRAP_STEP="$*"; echo "--> $*"; }
-logn()  { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
+log()   { STRAP_STEP="$*"; sudo_init; echo "--> $*"; }
+logn()  { STRAP_STEP="$*"; sudo_init; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
+escape() {
+  echo "${1//\'/\\\'}"
+}
 
-sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13)" || {
-  abort "Run Strap on macOS 10.9/10/11/12/13."
+sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13|14)" || {
+  abort "Run Strap on macOS 10.9/10/11/12/13/14."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
 groups | grep $Q admin || abort "Add $USER to the admin group."
-
-
-# Initialise sudo now to save prompting later.
-log "Enter your password (for sudo access):"
-sudo -k
-sudo /usr/bin/true
-[ -f "$STRAP_FULL_PATH" ]
-sudo bash "$STRAP_FULL_PATH" --sudo-wait &
-STRAP_SUDO_WAIT_PID="$!"
-ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
-logk
 
 # Add user to staff group
 if ! groups | grep $Q staff; then
@@ -129,9 +126,8 @@ else
 fi
 
 # Install the Xcode Command Line Tools.
-DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
-if [ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] \
-                           || ! [ -f "/usr/include/iconv.h" ]
+if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ] && \
+   ! [ -f "/usr/include/iconv.h" ]
 then
   log "Installing the Xcode Command Line Tools:"
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
@@ -141,7 +137,9 @@ then
                 awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | tail -n1)
   sudo softwareupdate -i "$CLT_PACKAGE"
   sudo rm -f "$CLT_PLACEHOLDER"
-  if ! [ -f "/usr/include/iconv.h" ]; then
+  if ! [ -f "/usr/include/iconv.h" ] && \
+     ! [ -d "/Library/Developer" ]
+  then
     if [ -n "$STRAP_INTERACTIVE" ]; then
       echo
       logn "Requesting user install of Xcode Command Line Tools:"
@@ -201,41 +199,11 @@ then
   if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]
   then
     log "storing https credentials for github"
-    printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
-    printf "protocol=https\nhost=github.com\nusername=%s\npassword=%s\n" \
+    printf "protocol=https\\nhost=github.com\\nusername=%s\\npassword=%s\\n" \
           "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
           | git credential-osxkeychain store
   fi
 fi
-
-# add ssh key to github
-if ! [ -f "$HOME/.ssh/id_rsa" ]; then
-  ssh-keygen -t rsa -b 4096 -C "$STRAP_GIT_EMAIL" -N "" -f "$HOME/.ssh/id_rsa"
-  eval "$(ssh-agent -s)"
-  ssh-add -K ~/.ssh/id_rsa
-
-  PUBLIC_KEY="$(cat $HOME/.ssh/id_rsa.pub)"
-  POST_BODY="{\"title\":\"MacOSX Key - strap\",\"key\":\"$PUBLIC_KEY\"}"
-  curl $Q -H "Content-Type: application/json" -H "Authorization: token $STRAP_GITHUB_TOKEN" -X POST -d "$POST_BODY" https://api.github.com/user/keys
-
-  log "checking for known_hosts file"
-  if ! [ -f "$HOME/.ssh/known_hosts"]; then
-    log "creating known_hosts file"
-    touch ~/.ssh/known_hosts
-    chmod 644 ~/.ssh/known_hosts
-  else
-    log 'found known_hosts file at ~/.ssh/known_hosts'
-  fi
-
-  log "checking for github.com as a known host"
-  if [ `ssh-keygen -H -F github.com | wc -l` = 0 ]; then
-    log "adding known host: github.com"
-    ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-  else
-    log "found github.com as known host"
-  fi
-fi
-
 logk
 
 # Setup Homebrew directory and permissions.
@@ -259,19 +227,25 @@ HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
 [ -d "$HOMEBREW_REPOSITORY" ] || sudo mkdir -p "$HOMEBREW_REPOSITORY"
 sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
 
-if ! [ -d "$HOMEBREW_REPOSITORY/.git" ] ; then
-  git clone --depth=1 https://github.com/Homebrew/brew.git "$HOMEBREW_REPOSITORY"
-
-  cd "$HOMEBREW_REPOSITORY"
-  git fetch --tags --depth=1
-  git checkout 1.3.2
-fi
-
 if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]
 then
   ln -sf "$HOMEBREW_REPOSITORY/bin/brew" "$HOMEBREW_PREFIX/bin/brew"
 fi
 
+# Download Homebrew.
+export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
+[ -d "$GIT_DIR" ] && HOMEBREW_EXISTING="1"
+git init $Q
+git config remote.origin.url "https://github.com/Homebrew/brew"
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+if [ -n "$HOMEBREW_EXISTING" ]
+then
+  git fetch $Q
+else
+  git fetch $Q --no-tags --depth=1 --force --update-shallow
+fi
+git reset $Q --hard origin/master
+unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
 logk
 
 # Update Homebrew.
@@ -403,6 +377,7 @@ if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
 fi
 
 # Install from Daptiv Brewfile
+#if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ]; }; then
 DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
 if [ -f "$DAPTIV_BREWFILE" ]; then
   log "Installing from Daptiv Brewfile:"
@@ -480,6 +455,21 @@ fi
 if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from user Brewfile on GitHub:"
   brew bundle check --global || brew bundle --global
+  logk
+fi
+
+# Tap a custom Homebrew tap
+if [ -n "$CUSTOM_HOMEBREW_TAP" ]; then
+  read -ra CUSTOM_HOMEBREW_TAP <<< "$CUSTOM_HOMEBREW_TAP"
+  log "Running 'brew tap ${CUSTOM_HOMEBREW_TAP[*]}':"
+  brew tap "${CUSTOM_HOMEBREW_TAP[@]}"
+  logk
+fi
+
+# Run a custom `brew` command
+if [ -n "$CUSTOM_BREW_COMMAND" ]; then
+  log "Executing 'brew $CUSTOM_BREW_COMMAND':"
+  brew "$CUSTOM_BREW_COMMAND"
   logk
 fi
 
