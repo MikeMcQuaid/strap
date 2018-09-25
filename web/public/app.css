@@ -1,0 +1,20 @@
+.container table {
+  border: 1px solid #ddd;
+  border-collapse: collapse;
+  font-size: inherit;
+  margin-left: 20px;
+}
+
+.container td {
+  border: 1px solid #ddd;
+  padding: 5px;
+}
+
+.container h3.separator {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.container p.note {
+  font-style: italic;
+}

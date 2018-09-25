@@ -117,6 +117,7 @@ get "/strap.sh" do
                            STRAP_GIT_EMAIL:    auth["info"]["email"],
                            STRAP_GITHUB_USER:  auth["info"]["nickname"],
                            STRAP_GITHUB_TOKEN: auth["credentials"]["token"]
+    content.gsub!(/^# STRAP_CONTACT_PHONE=$/, "STRAP_CONTACT_PHONE='#{STRAP_CONTACT_PHONE}'")
   end
 
   env_sub(content, set_variables, set: true)

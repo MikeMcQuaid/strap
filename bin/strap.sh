@@ -44,9 +44,10 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_GIT_EMAIL=
 # STRAP_GITHUB_USER=
 # STRAP_GITHUB_TOKEN=
-# CUSTOM_HOMEBREW_TAP=
-# CUSTOM_BREW_COMMAND=
-STRAP_ISSUES_URL='https://github.com/MikeMcQuaid/strap/issues/new'
+# STRAP_CONTACT_PHONE=
+DAPTIV_DOTFILES_BRANCH="${DAPTIV_DOTFILES_BRANCH:-master}"
+USER_DOTFILES_BRANCH="${USER_DOTFILES_BRANCH:-master}"
+STRAP_ISSUES_URL='https://github.com/daptiv/strap/issues/new'
 
 # We want to always prompt for sudo password at least once rather than doing
 # root stuff unexpectedly.
@@ -80,6 +81,11 @@ sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13|14)" || {
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
 groups | grep $Q admin || abort "Add $USER to the admin group."
 
+# Add user to staff group
+if ! groups | grep $Q staff; then
+  sudo dseditgroup -o edit -a "$USER" -t user staff
+fi
+
 # Set some basic security settings.
 logn "Configuring security settings:"
 defaults write com.apple.Safari \
@@ -93,10 +99,11 @@ defaults write com.apple.screensaver askForPasswordDelay -int 0
 sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
 sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
 
-if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
+# Set login window text
+if [ -n "$STRAP_CONTACT_PHONE" ]; then
   sudo defaults write /Library/Preferences/com.apple.loginwindow \
     LoginwindowText \
-    "'Found this computer? Please contact $(escape "$STRAP_GIT_NAME") at $(escape "$STRAP_GIT_EMAIL").'"
+    "Found this computer? Please call $STRAP_CONTACT_PHONE."
 fi
 logk
 
@@ -179,16 +186,19 @@ if ! git config push.default >/dev/null; then
 fi
 
 # Setup GitHub HTTPS credentials.
+log "checking for git credential-osxkeychain"
 if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
 then
+  log "found it!"
   if [ "$(git config --global credential.helper)" != "osxkeychain" ]
   then
+    log "setting git credential helper to osxkeychain"
     git config --global credential.helper osxkeychain
   fi
 
   if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]
   then
-    printf "protocol=https\\nhost=github.com\\n" | git credential-osxkeychain erase
+    log "storing https credentials for github"
     printf "protocol=https\\nhost=github.com\\nusername=%s\\npassword=%s\\n" \
           "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
           | git credential-osxkeychain store
@@ -211,6 +221,7 @@ fi
   sudo chown -R "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
 )
 
+# Download Homebrew.
 HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
 [ -n "$HOMEBREW_REPOSITORY" ] || HOMEBREW_REPOSITORY="/usr/local/Homebrew"
 [ -d "$HOMEBREW_REPOSITORY" ] || sudo mkdir -p "$HOMEBREW_REPOSITORY"
@@ -269,11 +280,18 @@ else
 fi
 
 # Setup dotfiles
+USER_DOTFILES_EXISTS=
 if [ -n "$STRAP_GITHUB_USER" ]; then
-  DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
+  DOTFILES_REPO="$STRAP_GITHUB_USER/dotfiles"
+  if [ -n "$STRAP_CI" ]; then
+    DOTFILES_REPO="daptiv/dotfiles-template"
+  fi
 
-  if git ls-remote "$DOTFILES_URL" &>/dev/null; then
-    log "Fetching $STRAP_GITHUB_USER/dotfiles from GitHub:"
+  DOTFILES_URL="git@github.com:$DOTFILES_REPO"
+  log "Checking for remotes on $DOTFILES_URL"
+  if git ls-remote "$DOTFILES_URL" &>/dev/null; then USER_DOTFILES_EXISTS=1; fi
+  if [ -n "$USER_DOTFILES_EXISTS" ]; then
+    log "Fetching $DOTFILES_REPO from GitHub:"
     if [ ! -d "$HOME/.dotfiles" ]; then
       log "Cloning to ~/.dotfiles:"
       git clone $Q "$DOTFILES_URL" ~/.dotfiles
@@ -284,21 +302,136 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
       )
     fi
     (
+      log "Updating local ~/.dotfiles repository"
       cd ~/.dotfiles
-      for i in script/setup script/bootstrap; do
-        if [ -f "$i" ] && [ -x "$i" ]; then
-          log "Running dotfiles $i:"
-          "$i" 2>/dev/null
-          break
+      CURRENT_USER_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+      if [ "$USER_DOTFILES_BRANCH" != "$CURRENT_USER_DOTFILES_BRANCH" ]; then
+        # check to make sure there are no pending changes in current branch
+        if git diff-index --quiet HEAD -- ; then
+          log "Changing branch from '$CURRENT_USER_DOTFILES_BRANCH' to '$USER_DOTFILES_BRANCH'"
+          git checkout $USER_DOTFILES_BRANCH
+          git pull $Q --rebase --autostash
+        else
+          abort "Pending changes in ~/.dotfiles, unable to switch to branch: $USER_DOTFILES_BRANCH. If you want to run in this branch run strap with: USER_DOTFILES_BRANCH=$CURRENT_USER_DOTFILES_BRANCH"
         fi
-      done
+      fi
     )
     logk
+  else
+    log "Couldn't get remotes for $DOTFILES_URL"
   fi
 fi
 
-# Setup Brewfile
-if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ]; }; then
+# Setup Daptiv dotfiles
+DOTFILES_URL="git@github.com:daptiv/dotfiles"
+DOTFILES_DIR="$HOME/.daptiv-dotfiles"
+
+log "Fetching daptiv/dotfiles from GitHub:"
+if [ ! -d "$DOTFILES_DIR" ]; then
+  log "Cloning to $DOTFILES_DIR:"
+  git clone $Q "$DOTFILES_URL" "$DOTFILES_DIR"
+else
+  (
+    log "Updating local repository."
+    cd "$DOTFILES_DIR"
+    git pull $Q --rebase --autostash
+  )
+fi
+(
+  log "Check current branch of daptiv/dotfiles against requested branch"
+  cd "$DOTFILES_DIR"
+  CURRENT_DAPTIV_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  if [ "$DAPTIV_DOTFILES_BRANCH" != "$CURRENT_DAPTIV_DOTFILES_BRANCH" ]; then
+    # check to make sure there are no pending changes in current branch
+    if git diff-index --quiet HEAD -- ; then
+      log "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
+      git checkout $DAPTIV_DOTFILES_BRANCH
+      git pull $Q --rebase --autostash
+    else
+      abort "Pending changes in $DOTFILES_DIR, unable to switch to branch: $DAPTIV_DOTFILES_BRANCH. If you want to run in this branch run strap with: DAPTIV_DOTFILES_BRANCH=$CURRENT_DAPTIV_DOTFILES_BRANCH"
+    fi
+  fi
+
+  for i in script/setup script/bootstrap; do
+    if [ -f "$i" ] && [ -x "$i" ]; then
+      log "Running dotfiles $i:"
+      "$i" 2>/dev/null
+      break
+    fi
+  done
+)
+logk
+
+# Uninstall non-Brew hostess
+if [ "$GOPATH/go/bin/hostess" -ef /usr/local/bin/hostess ]; then
+  log "Uninstalling non-Brew hostess"
+  rm -f /usr/local/bin/hostess
+  rm -f "$GOPATH/go/bin/hostess"
+fi
+
+# Check for broken cask installs
+DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
+if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
+  log "Fix cask installs"
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile' "${STRAP_DEBUG:+--debug}"
+fi
+
+# Install from Daptiv Brewfile
+#if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ]; }; then
+DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
+if [ -f "$DAPTIV_BREWFILE" ]; then
+  log "Installing from Daptiv Brewfile:"
+  # if a blacklist exists use it; else just brew from Daptiv file
+  if { DAPTIV_BREWFILE_BLACKLIST=$DAPTIV_BREWFILE.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; } \
+      || { DAPTIV_BREWFILE_BLACKLIST=~/.dotfiles/.Daptiv.Brewfile.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; };
+  then
+    log "Generating brewfile blacklist from: $DAPTIV_BREWFILE_BLACKLIST"
+    while read BLACKLIST_LINE
+    do
+      if [ ! -z $BLACKLIST_REGEX ]; then BLACKLIST_REGEX+="|"; fi
+      BLACKLIST_REGEX+="\"$BLACKLIST_LINE\""
+    done < $DAPTIV_BREWFILE_BLACKLIST
+
+    BREWFILE_CLEAN='/tmp/daptiv.brewfile.clean'
+    log "Using clean brewfile: $BREWFILE_CLEAN"
+    sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE > $BREWFILE_CLEAN
+
+    brew bundle check --file="$BREWFILE_CLEAN" || brew bundle --file="$BREWFILE_CLEAN"
+  else
+    brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
+  fi
+  logk
+else
+  log "Daptiv Brewfile not found at: $DAPTIV_BREWFILE"
+fi
+
+# Run postbrew script from daptiv dotfiles
+if [ -f "$DAPTIV_DOTFILES/script/postbrew" ] && [ -x "$DAPTIV_DOTFILES/script/postbrew" ]; then
+  "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
+fi
+
+# Run user dotfiles scripts
+if [ -n "$USER_DOTFILES_EXISTS" ]; then
+  (
+    cd ~/.dotfiles
+    for i in script/setup script/bootstrap; do
+      if [ -f "$i" ] && [ -x "$i" ]; then
+        log "Running dotfiles $i:"
+        "$i" 2>/dev/null
+        break
+      fi
+    done
+  )
+  logk
+fi
+
+# Check for broken cask installs in user brewfile
+if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
+  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile' "${STRAP_DEBUG:+--debug}"
+fi
+
+# Setup User Brewfile
+if [ -n "$STRAP_GITHUB_USER" ] && ( [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ] ); then
   HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
 
   if git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
@@ -338,6 +471,12 @@ if [ -n "$CUSTOM_BREW_COMMAND" ]; then
   log "Executing 'brew $CUSTOM_BREW_COMMAND':"
   brew "$CUSTOM_BREW_COMMAND"
   logk
+fi
+
+# Run postbrew script from user dotfiles
+USER_DOTFILES="$HOME/.dotfiles"
+if [ -f "$USER_DOTFILES/script/postbrew" ] && [ -x "$USER_DOTFILES/script/postbrew" ]; then
+  "$USER_DOTFILES/script/postbrew" 2>/dev/null
 fi
 
 STRAP_SUCCESS="1"
