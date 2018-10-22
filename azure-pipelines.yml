@@ -1,0 +1,12 @@
+jobs:
+- job: macOS
+  pool:
+    vmImage: xcode9-macos10.13
+  steps:
+    - bash: |
+        ./script/bootstrap
+        sudo rm -rf /usr/local/bin/brew /usr/local/.??* /Applications/Xcode.app /Library/Developer/CommandLineTools /usr/local/Caskroom
+        sudo pkgutil --forget com.apple.pkg.CLTools_Executables
+        sudo xcode-select --switch /Applications/Xcode_10.app/Contents/Developer
+        ./script/cibuild
+      displayName: Tests
