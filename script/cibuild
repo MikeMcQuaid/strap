@@ -12,7 +12,7 @@ trap "cleanup" EXIT
 
 script/bootstrap
 bundle exec foreman check
-script/server &
+script/server &>/dev/null &
 SERVER_PID="$!"
 sleep 15
 curl -O http://localhost:5000/strap.sh
