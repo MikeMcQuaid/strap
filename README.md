@@ -63,7 +63,7 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 ## Status
 Stable and in active development.
 
-[![Build Status](https://travis-ci.org/MikeMcQuaid/strap.svg)](https://travis-ci.org/MikeMcQuaid/strap)
+[![Azure Pipelines](https://img.shields.io/vso/build/MikeMcQuaid/1aff1cc4-3d48-4767-8815-ead284940ec1/1.svg)](https://dev.azure.com/MikeMcQuaid/MikeMcQuaid/_build/latest?definitionId=1)
 
 ## Contact
 [Mike McQuaid](mailto:mike@mikemcquaid.com)
