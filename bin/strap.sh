@@ -70,7 +70,7 @@ log()   { STRAP_STEP="$*"; sudo_init; echo "--> $*"; }
 logn()  { STRAP_STEP="$*"; sudo_init; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 escape() {
-  echo "${1//\'/\\\'}"
+  printf '%s' "${1//\'/\'}"
 }
 
 MACOS_VERSION="$(sw_vers -productVersion)"
