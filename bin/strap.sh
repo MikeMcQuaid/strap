@@ -95,9 +95,11 @@ sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
 sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
 
 if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
+  LOGIN_TEXT=$(escape "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL.")
+  echo "$LOGIN_TEXT" | grep -q '[()]' && LOGIN_TEXT="'$LOGIN_TEXT'"
   sudo defaults write /Library/Preferences/com.apple.loginwindow \
     LoginwindowText \
-    "'Found this computer? Please contact $(escape "$STRAP_GIT_NAME") at $(escape "$STRAP_GIT_EMAIL").'"
+    "$LOGIN_TEXT"
 fi
 logk
 
