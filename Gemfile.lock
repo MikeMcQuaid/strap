@@ -58,7 +58,7 @@ GEM
     omniauth-oauth2 (1.5.0)
       oauth2 (~> 1.1)
       omniauth (~> 1.2)
-    pry (0.11.3)
+    pry (0.12.0)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
     public_suffix (3.0.3)
