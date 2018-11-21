@@ -21,7 +21,6 @@ cleanup() {
   if [ -n "$STRAP_SUDO_WAIT_PID" ]; then
     sudo kill "$STRAP_SUDO_WAIT_PID"
   fi
-  sudo -k
   rm -f "$CLT_PLACEHOLDER"
   if [ -z "$STRAP_SUCCESS" ]; then
     if [ -n "$STRAP_STEP" ]; then
@@ -61,10 +60,11 @@ STRAP_ISSUES_URL='https://github.com/daptiv/strap/issues/new'
 
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 
-abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
-log()   { STRAP_STEP="$*"; echo "--> $*"; }
-logn()  { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
-logk()  { STRAP_STEP="";   echo "OK"; }
+abort()  { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
+log()    { STRAP_STEP="$*"; echo "--> $*"; }
+logn()   { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
+logk()   { STRAP_STEP="";   echo "OK"; }
+logdebug(){ STRAP_STEP="$*"; if [ -n "$STRAP_DEBUG" ]; then echo -e "\n$*" ; fi }
 
 sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13|14)" || {
   abort "Run Strap on macOS 10.9/10/11/12/13/14."
@@ -76,7 +76,6 @@ groups | grep $Q admin || abort "Add $USER to the admin group."
 
 # Initialise sudo now to save prompting later.
 log "Enter your password (for sudo access):"
-sudo -k
 sudo /usr/bin/true
 [ -f "$STRAP_FULL_PATH" ]
 sudo bash "$STRAP_FULL_PATH" --sudo-wait &
@@ -115,11 +114,9 @@ logn "Checking full-disk encryption status:"
 if fdesetup status | grep $Q -E "FileVault is (On|Off, but will be enabled after the next restart)."; then
   logk
 elif [ -n "$STRAP_CI" ]; then
-  echo
-  logn "Skipping full-disk encryption for CI"
+  logdebug "Skipping full-disk encryption for CI"
 elif [ -n "$STRAP_INTERACTIVE" ]; then
-  echo
-  log "Enabling full-disk encryption on next reboot:"
+  logdebug "Enabling full-disk encryption on next reboot:"
   sudo fdesetup enable -user "$USER" \
     | tee ~/Desktop/"FileVault Recovery Key.txt"
   logk
@@ -129,11 +126,12 @@ else
 fi
 
 # Install the Xcode Command Line Tools.
+logn 'Install Xcode command line tools:'
 DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
 if [ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] \
                            || ! [ -f "/usr/include/iconv.h" ]
 then
-  log "Installing the Xcode Command Line Tools:"
+  logdebug "Installing the Xcode Command Line Tools:"
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo touch "$CLT_PLACEHOLDER"
   CLT_PACKAGE=$(softwareupdate -l | \
@@ -143,16 +141,15 @@ then
   sudo rm -f "$CLT_PLACEHOLDER"
   if ! [ -f "/usr/include/iconv.h" ]; then
     if [ -n "$STRAP_INTERACTIVE" ]; then
-      echo
-      logn "Requesting user install of Xcode Command Line Tools:"
+      logdebug "Requesting user install of Xcode Command Line Tools:"
       xcode-select --install
     else
       echo
       abort "Run 'xcode-select --install' to install the Xcode Command Line Tools."
     fi
   fi
-  logk
 fi
+logk
 
 # Check if the Xcode license is agreed to and agree if not.
 xcode_license() {
@@ -186,30 +183,30 @@ fi
 if ! git config push.default >/dev/null; then
   git config --global push.default simple
 fi
+logk
 
 # Setup GitHub HTTPS credentials.
-log "checking for git credential-osxkeychain"
-if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
-then
-  log "found it!"
-  if [ "$(git config --global credential.helper)" != "osxkeychain" ]
-  then
-    log "setting git credential helper to osxkeychain"
+logn "Setting up GitHub HTTPS credentials:"
+if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain" ; then
+  if [ "$(git config --global credential.helper)" != "osxkeychain" ]; then
+    logdebug "setting git credential helper to osxkeychain"
     git config --global credential.helper osxkeychain
   fi
 
-  if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]
-  then
-    log "storing https credentials for github"
+  if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]; then
+    logdebug "storing https credentials for github"
     printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
     printf "protocol=https\nhost=github.com\nusername=%s\npassword=%s\n" \
           "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
           | git credential-osxkeychain store
   fi
 fi
+logk
 
 # add ssh key to github
+logn "Setting up GitHub SSH key:"
 if ! [ -f "$HOME/.ssh/id_rsa" ]; then
+  logdebug 'adding ssh key to github'
   ssh-keygen -t rsa -b 4096 -C "$STRAP_GIT_EMAIL" -N "" -f "$HOME/.ssh/id_rsa"
   eval "$(ssh-agent -s)"
   ssh-add -K ~/.ssh/id_rsa
@@ -218,66 +215,39 @@ if ! [ -f "$HOME/.ssh/id_rsa" ]; then
   POST_BODY="{\"title\":\"MacOSX Key - strap\",\"key\":\"$PUBLIC_KEY\"}"
   curl $Q -H "Content-Type: application/json" -H "Authorization: token $STRAP_GITHUB_TOKEN" -X POST -d "$POST_BODY" https://api.github.com/user/keys
 
-  log "checking for known_hosts file"
+  logdebug "checking for known_hosts file"
   if ! [ -f "$HOME/.ssh/known_hosts"]; then
-    log "creating known_hosts file"
+    logdebug  "creating known_hosts file"
     touch ~/.ssh/known_hosts
     chmod 644 ~/.ssh/known_hosts
-  else
-    log 'found known_hosts file at ~/.ssh/known_hosts'
   fi
 
-  log "checking for github.com as a known host"
+  logdebug "ensure github.com is a known host"
   if [ `ssh-keygen -H -F github.com | wc -l` = 0 ]; then
-    log "adding known host: github.com"
     ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-  else
-    log "found github.com as known host"
   fi
 fi
 
 logk
 
 # Setup Homebrew directory and permissions.
-logn "Installing Homebrew:"
-HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
-[ -n "$HOMEBREW_PREFIX" ] || HOMEBREW_PREFIX="/usr/local"
-[ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
-if [ "$HOMEBREW_PREFIX" = "/usr/local" ]
-then
-  sudo chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
+logn "Check for Homebrew:"
+if ! type brew 1>/dev/null 2>&1 ; then
+  logdebug "Installing Homebrew"
+  BREW_INSTALL_SCRIPT="/tmp/brew-install.rb"
+  curl -fsSL --output $BREW_INSTALL_SCRIPT https://raw.githubusercontent.com/Homebrew/install/master/install
+  /usr/bin/ruby $BREW_INSTALL_SCRIPT
 fi
-(
-  cd "$HOMEBREW_PREFIX"
-  sudo mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
-  sudo chown -R "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
-)
-
-# Download Homebrew.
-HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
-[ -n "$HOMEBREW_REPOSITORY" ] || HOMEBREW_REPOSITORY="/usr/local/Homebrew"
-[ -d "$HOMEBREW_REPOSITORY" ] || sudo mkdir -p "$HOMEBREW_REPOSITORY"
-sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
-
-if ! [ -d "$HOMEBREW_REPOSITORY/.git" ] ; then
-  git clone --depth=1 https://github.com/Homebrew/brew.git "$HOMEBREW_REPOSITORY"
-
-  cd "$HOMEBREW_REPOSITORY"
-  git fetch --tags --depth=1
-  git checkout 1.3.2
-fi
-
-if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]
-then
-  ln -sf "$HOMEBREW_REPOSITORY/bin/brew" "$HOMEBREW_PREFIX/bin/brew"
-fi
-
 logk
 
 # Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
-log "Updating Homebrew:"
-brew update
+logn "Updating Homebrew:"
+if [ -n "$STRAP_DEBUG"]; then
+  brew update
+else
+  brew update 1>/dev/null 2>&1
+fi
 logk
 
 # Install Homebrew Bundle, Cask and Services tap.
@@ -291,19 +261,16 @@ logk
 
 # Check and install any remaining software updates.
 logn "Checking for software updates:"
-if softwareupdate -l 2>&1 | grep $Q "No new software available."; then
-  logk
-else
-  echo
-  log "Installing software updates:"
+if ! softwareupdate -l 2>&1 | grep $Q "No new software available."; then
+  logdebug "Installing software updates:"
   if [ -z "$STRAP_CI" ]; then
     sudo softwareupdate --install --all
     xcode_license
   else
-    echo "Skipping software updates for CI"
+    logdebug "Skipping software updates for CI"
   fi
-  logk
 fi
+logk
 
 # Setup dotfiles
 USER_DOTFILES_EXISTS=
