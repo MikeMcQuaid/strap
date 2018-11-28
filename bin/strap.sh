@@ -362,5 +362,31 @@ if [ -n "$CUSTOM_BREW_COMMAND" ]; then
   logk
 fi
 
+log "Installing Docker..."
+brew cask install docker
+# brew install docker docker-compose docker-machine xhyve docker-machine-driver-xhyve
+log "Succesfully installed Docker."
+
+log "Installing Cisco OpenConnect"
+brew install openconnect
+log "Successfully installed openconnect."
+
+log "Downloading Cisco AnyConnect Package..."
+curl -O https://s3.amazonaws.com/optoro-packages/anyconnect-macosx-i386-3.1.13015-k9.dmg ~/Downloads/.
+log "Successfully dowloaded package."
+
+
+log "Installing Ruby build, Rbenv, Nodenv"
+brew install ruby-build rbenv node-build nodenv
+
+echo 'Make sure to add: eval $(rbenv init -) to your bash config'
+echo 'Make sure to add: eval $(nodenv init -) to your bash config'
+log "Succesfully install ruby-build, rbenv, and node."
+
+log "Installing other dependencies..."
+brew install git mysql56 postgresql mongodb memcached redis imagemagick ghostscript influxdb qt
+brew link --force mysql@5.6
+log "Successfully installed other dependencies!"
+
 STRAP_SUCCESS="1"
 log "Your system is now Strap'd!"
