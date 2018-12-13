@@ -249,12 +249,7 @@ export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/brew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-if [ -n "$HOMEBREW_EXISTING" ]
-then
-  git fetch $Q
-else
-  git fetch $Q --no-tags --depth=1 --force --update-shallow
-fi
+git fetch $Q --tags --force
 git reset $Q --hard origin/master
 unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
 logk
@@ -268,7 +263,7 @@ logk
 # Install Homebrew Bundle, Cask and Services tap.
 log "Installing Homebrew taps and extensions:"
 brew bundle --file=- <<EOF
-tap 'caskroom/cask'
+tap 'homebrew/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
 EOF
