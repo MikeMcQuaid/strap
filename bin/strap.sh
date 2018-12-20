@@ -245,13 +245,12 @@ fi
 
 # Download Homebrew.
 export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
-[ -d "$GIT_DIR" ] && HOMEBREW_EXISTING="1"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/brew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git fetch $Q --tags --force
 git reset $Q --hard origin/master
-unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
+unset GIT_DIR GIT_WORK_TREE
 logk
 
 # Update Homebrew.
