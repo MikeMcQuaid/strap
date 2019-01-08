@@ -259,6 +259,13 @@ if ! type brew 1>/dev/null 2>&1 ; then
 fi
 logk
 
+# "Unpin" version of VirtualBox before brew update
+if [ -z "$HOMEBREW_REPOSITORY" ]; then
+  HOMEBREW_REPOSITORY=$(brew --repository)
+fi
+HOMEBREW_CASK="$HOMEBREW_REPOSITORY/Library/Taps/homebrew/homebrew-cask"
+git --git-dir="$HOMEBREW_CASK/.git" --work-tree="$HOMEBREW_CASK" reset --hard
+
 # Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 logn "Updating Homebrew:"
@@ -268,6 +275,10 @@ else
   brew update 1>/dev/null 2>&1
 fi
 logk
+
+# Use "pinned" version of VirtualBox
+git --git-dir="$HOMEBREW_CASK/.git" --work-tree="$HOMEBREW_CASK" checkout eabf6ef195fcc22b08c4260b7d16b466bfdc2e7d -- Casks/virtualbox.rb
+git --git-dir="$HOMEBREW_CASK/.git" --work-tree="$HOMEBREW_CASK" checkout 1f57034b10a9e3e276a7682f6bf179cef1c14f31 -- Casks/virtualbox-extension-pack.rb
 
 # Install Homebrew Bundle, Cask and Services tap.
 log "Installing Homebrew taps and extensions:"
