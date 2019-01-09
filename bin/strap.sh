@@ -276,7 +276,8 @@ else
 fi
 logk
 
-# Use "pinned" version of VirtualBox (5.2.22r126460)
+# Use "pinned" version of VirtualBox
+log "Pinning Homebrew casks to install VirtualBox 5.2.22r126460:"
 git --git-dir="$HOMEBREW_CASK/.git" --work-tree="$HOMEBREW_CASK" checkout eabf6ef195fcc22b08c4260b7d16b466bfdc2e7d -- Casks/virtualbox.rb
 git --git-dir="$HOMEBREW_CASK/.git" --work-tree="$HOMEBREW_CASK" checkout 1f57034b10a9e3e276a7682f6bf179cef1c14f31 -- Casks/virtualbox-extension-pack.rb
 
