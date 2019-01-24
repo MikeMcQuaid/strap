@@ -262,7 +262,7 @@ logk
 # Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 logn "Updating Homebrew:"
-if [ -n "$STRAP_DEBUG"]; then
+if [ -n "$STRAP_DEBUG" ]; then
   brew update
 else
   brew update 1>/dev/null 2>&1
