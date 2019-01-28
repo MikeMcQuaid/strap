@@ -132,6 +132,10 @@ then
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo touch "$CLT_PLACEHOLDER"
 
+  if [ -z "$MACOS_VERSION" ]; then
+    MACOS_VERSION="$(defaults read loginwindow SystemVersionStampAsString)"
+  fi
+
   # shellcheck disable=SC2086,SC2183
   printf -v MACOS_VERSION_NUMERIC "%02d%02d%02d" ${MACOS_VERSION//./ }
   if [ "$MACOS_VERSION_NUMERIC" -ge "100900" ] &&
