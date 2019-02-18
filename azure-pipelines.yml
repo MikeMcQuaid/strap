@@ -1,0 +1,12 @@
+pool:
+  vmImage: macOS-10.13
+steps:
+  - bash: |
+      set -e
+      ./script/bootstrap
+      sudo rm -rf /usr/local/bin/brew /usr/local/.??* /Applications/Xcode.app /Library/Developer/CommandLineTools /usr/local/Caskroom
+      sudo pkgutil --forget com.apple.pkg.CLTools_Executables
+      sudo xcode-select --switch /Applications/Xcode_10.1.app/Contents/Developer
+      bash ./script/cibuild
+      echo ===
+    displayName: Tests

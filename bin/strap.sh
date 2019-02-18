@@ -3,16 +3,6 @@
 #/ Install development dependencies on macOS.
 set -e
 
-# Keep sudo timestamp updated while Strap is running.
-if [ "$1" = "--sudo-wait" ]; then
-  while true; do
-    mkdir -p "/var/db/sudo/$SUDO_USER"
-    touch "/var/db/sudo/$SUDO_USER"
-    sleep 1
-  done
-  exit 0
-fi
-
 [ "$1" = "--debug" ] && STRAP_DEBUG="1"
 STRAP_SUCCESS=""
 
@@ -54,31 +44,42 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_GIT_EMAIL=
 # STRAP_GITHUB_USER=
 # STRAP_GITHUB_TOKEN=
-STRAP_ISSUES_URL="https://github.com/mikemcquaid/strap/issues/new"
+# CUSTOM_HOMEBREW_TAP=
+# CUSTOM_BREW_COMMAND=
+STRAP_ISSUES_URL='https://github.com/MikeMcQuaid/strap/issues/new'
 
-STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+# We want to always prompt for sudo password at least once rather than doing
+# root stuff unexpectedly.
+sudo -k
+
+# Initialise (or reinitialise) sudo to save unhelpful prompts later.
+sudo_init() {
+  if ! sudo -vn &>/dev/null; then
+    if [ -n "$STRAP_SUDOED_ONCE" ]; then
+      echo "--> Re-enter your password (for sudo access; sudo has timed out):"
+    else
+      echo "--> Enter your password (for sudo access):"
+    fi
+    sudo /usr/bin/true
+    STRAP_SUDOED_ONCE="1"
+  fi
+}
 
 abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
-log()   { STRAP_STEP="$*"; echo "--> $*"; }
-logn()  { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
+log()   { STRAP_STEP="$*"; sudo_init; echo "--> $*"; }
+logn()  { STRAP_STEP="$*"; sudo_init; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
+escape() {
+  printf '%s' "${1//\'/\'}"
+}
 
-sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12)" || {
-  abort "Run Strap on macOS 10.9/10/11/12."
+MACOS_VERSION="$(sw_vers -productVersion)"
+echo "$MACOS_VERSION" | grep $Q -E "^10.(9|10|11|12|13|14)" || {
+  abort "Run Strap on macOS 10.9/10/11/12/13/14."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
 groups | grep $Q admin || abort "Add $USER to the admin group."
-
-# Initialise sudo now to save prompting later.
-log "Enter your password (for sudo access):"
-sudo -k
-sudo /usr/bin/true
-[ -f "$STRAP_FULL_PATH" ]
-sudo bash "$STRAP_FULL_PATH" --sudo-wait &
-STRAP_SUDO_WAIT_PID="$!"
-ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
-logk
 
 # Set some basic security settings.
 logn "Configuring security settings:"
@@ -94,9 +95,11 @@ sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
 sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
 
 if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
+  LOGIN_TEXT=$(escape "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL.")
+  echo "$LOGIN_TEXT" | grep -q '[()]' && LOGIN_TEXT="'$LOGIN_TEXT'"
   sudo defaults write /Library/Preferences/com.apple.loginwindow \
     LoginwindowText \
-    "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL."
+    "$LOGIN_TEXT"
 fi
 logk
 
@@ -119,19 +122,39 @@ else
 fi
 
 # Install the Xcode Command Line Tools.
-DEVELOPER_DIR=$("xcode-select" -print-path 2>/dev/null || true)
-if [ -z "$DEVELOPER_DIR" ] || ! [ -f "$DEVELOPER_DIR/usr/bin/git" ] \
-                           || ! [ -f "/usr/include/iconv.h" ]
+if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]
 then
   log "Installing the Xcode Command Line Tools:"
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo touch "$CLT_PLACEHOLDER"
+
+  # shellcheck disable=SC2086,SC2183
+  printf -v MACOS_VERSION_NUMERIC "%02d%02d%02d" ${MACOS_VERSION//./ }
+  if [ "$MACOS_VERSION_NUMERIC" -ge "100900" ] &&
+     [ "$MACOS_VERSION_NUMERIC" -lt "101000" ]
+  then
+    CLT_MACOS_VERSION="Mavericks"
+  else
+    CLT_MACOS_VERSION="$(echo "$MACOS_VERSION" | grep -E -o "10\\.\\d+")"
+  fi
+  if [ "$MACOS_VERSION_NUMERIC" -ge "101300" ]
+  then
+    CLT_SORT="sort -V"
+  else
+    CLT_SORT="sort"
+  fi
+
   CLT_PACKAGE=$(softwareupdate -l | \
                 grep -B 1 -E "Command Line (Developer|Tools)" | \
-                awk -F"*" '/^ +\*/ {print $2}' | sed 's/^ *//' | head -n1)
+                awk -F"*" '/^ +\*/ {print $2}' | \
+                sed 's/^ *//' | \
+                grep "$CLT_MACOS_VERSION" |
+                $CLT_SORT |
+                tail -n1)
   sudo softwareupdate -i "$CLT_PACKAGE"
   sudo rm -f "$CLT_PLACEHOLDER"
-  if ! [ -f "/usr/include/iconv.h" ]; then
+  if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]
+  then
     if [ -n "$STRAP_INTERACTIVE" ]; then
       echo
       logn "Requesting user install of Xcode Command Line Tools:"
@@ -187,8 +210,8 @@ then
 
   if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]
   then
-    printf "protocol=https\nhost=github.com\n" | git credential-osxkeychain erase
-    printf "protocol=https\nhost=github.com\nusername=%s\npassword=%s\n" \
+    printf "protocol=https\\nhost=github.com\\n" | git credential-osxkeychain erase
+    printf "protocol=https\\nhost=github.com\\nusername=%s\\npassword=%s\\n" \
           "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
           | git credential-osxkeychain store
   fi
@@ -200,7 +223,10 @@ logn "Installing Homebrew:"
 HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
 [ -n "$HOMEBREW_PREFIX" ] || HOMEBREW_PREFIX="/usr/local"
 [ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
-sudo chown "root:wheel" "$HOMEBREW_PREFIX"
+if [ "$HOMEBREW_PREFIX" = "/usr/local" ]
+then
+  sudo chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
+fi
 (
   cd "$HOMEBREW_PREFIX"
   sudo mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
@@ -219,18 +245,12 @@ fi
 
 # Download Homebrew.
 export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
-[ -d "$GIT_DIR" ] && HOMEBREW_EXISTING="1"
 git init $Q
 git config remote.origin.url "https://github.com/Homebrew/brew"
 git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-if [ -n "$HOMEBREW_EXISTING" ]
-then
-  git fetch $Q
-else
-  git fetch $Q --no-tags --depth=1 --force --update-shallow
-fi
+git fetch $Q --tags --force
 git reset $Q --hard origin/master
-unset GIT_DIR GIT_WORK_TREE HOMEBREW_EXISTING
+unset GIT_DIR GIT_WORK_TREE
 logk
 
 # Update Homebrew.
@@ -239,13 +259,12 @@ log "Updating Homebrew:"
 brew update
 logk
 
-# Install Homebrew Bundle, Cask, Services and Versions tap.
+# Install Homebrew Bundle, Cask and Services tap.
 log "Installing Homebrew taps and extensions:"
 brew bundle --file=- <<EOF
-tap 'caskroom/cask'
+tap 'homebrew/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
-tap 'homebrew/versions'
 EOF
 logk
 
@@ -295,7 +314,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
 fi
 
 # Setup Brewfile
-if [ -n "$STRAP_GITHUB_USER" ] && ! [ -f "$HOME/.Brewfile" ]; then
+if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ]; }; then
   HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
 
   if git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
@@ -319,6 +338,21 @@ fi
 if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from user Brewfile on GitHub:"
   brew bundle check --global || brew bundle --global
+  logk
+fi
+
+# Tap a custom Homebrew tap
+if [ -n "$CUSTOM_HOMEBREW_TAP" ]; then
+  read -ra CUSTOM_HOMEBREW_TAP <<< "$CUSTOM_HOMEBREW_TAP"
+  log "Running 'brew tap ${CUSTOM_HOMEBREW_TAP[*]}':"
+  brew tap "${CUSTOM_HOMEBREW_TAP[@]}"
+  logk
+fi
+
+# Run a custom `brew` command
+if [ -n "$CUSTOM_BREW_COMMAND" ]; then
+  log "Executing 'brew $CUSTOM_BREW_COMMAND':"
+  brew "$CUSTOM_BREW_COMMAND"
   logk
 fi
 
