@@ -352,7 +352,7 @@ fi
 # Run a custom `brew` command
 if [ -n "$CUSTOM_BREW_COMMAND" ]; then
   log "Executing 'brew $CUSTOM_BREW_COMMAND':"
-  brew "$CUSTOM_BREW_COMMAND"
+  brew $CUSTOM_BREW_COMMAND
   logk
 fi
 
