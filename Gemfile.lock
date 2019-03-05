@@ -83,7 +83,7 @@ GEM
       ffi
     thor (0.19.4)
     tilt (2.0.9)
-    unicorn (5.4.1)
+    unicorn (5.5.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
 
