@@ -459,10 +459,7 @@ logk
 # fi
 
 STRAP_SUCCESS="1"
-log "System strap is complete."
+log "Box strap is complete."
 log "Next steps:"
-log "1. run 'strap daptiv-dotfiles'"
-log "2. run 'strap user-dotfiles'"
-log "3. run 'strap all-projects'"
-
-
+log "1. run 'strap-daptiv' to run daptiv-dotfiles scripts/setup"
+log "2. run 'strap-user' to run user dotfiles scripts/setup"
