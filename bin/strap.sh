@@ -302,7 +302,7 @@ fi
 logk
 
 # clone strap locally
-$STRAP_SRC_DIR="$HOME/src/strap"
+STRAP_SRC_DIR="$HOME/src/strap"
 log "Ensure strap is cloned locally and up to date"
 if [ ! -d "$STRAP_SRC_DIR" ]; then
   log "Cloning to $STRAP_SRC_DIR:"
