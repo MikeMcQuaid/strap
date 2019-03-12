@@ -3,14 +3,23 @@
 #/ Install development dependencies on macOS.
 set -e
 
+# If we are being called from sudo then we behave as an SUDO_ASKPASS helper
+if [ "$(ps -p $PPID -o comm=)" == "sudo" ]; then
+  if [ -n "$SUDO_PASSWD" ]; then
+    echo $SUDO_PASSWD
+    exit 0
+  else
+    exit 1
+  fi
+fi
+
 [ "$1" = "--debug" ] && STRAP_DEBUG="1"
 STRAP_SUCCESS=""
 
 cleanup() {
   set +e
-  if [ -n "$STRAP_SUDO_WAIT_PID" ]; then
-    sudo kill "$STRAP_SUDO_WAIT_PID"
-  fi
+  unset SUDO_PASSWD
+  unset SUDO_ASKPASS
   sudo -k
   rm -f "$CLT_PLACEHOLDER"
   if [ -z "$STRAP_SUCCESS" ]; then
@@ -52,22 +61,26 @@ STRAP_ISSUES_URL='https://github.com/MikeMcQuaid/strap/issues/new'
 # root stuff unexpectedly.
 sudo -k
 
-# Initialise (or reinitialise) sudo to save unhelpful prompts later.
+# Initialise sudo to save unhelpful prompts later.
 sudo_init() {
   if ! sudo -vn &>/dev/null; then
-    if [ -n "$STRAP_SUDOED_ONCE" ]; then
-      echo "--> Re-enter your password (for sudo access; sudo has timed out):"
-    else
-      echo "--> Enter your password (for sudo access):"
-    fi
-    sudo /usr/bin/true
-    STRAP_SUDOED_ONCE="1"
+    read -s -p "--> Enter your password (for sudo access): " password
+    export SUDO_PASSWD=${password}
+    export SUDO_ASKPASS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+  fi
+}
+
+sudo_refresh() {
+  if [ -n "$SUDO_ASKPASS" -a -n "$SUDO_PASSWD" ]; then
+    sudo -Av
+  else
+    sudo_init
   fi
 }
 
 abort() { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
-log()   { STRAP_STEP="$*"; sudo_init; echo "--> $*"; }
-logn()  { STRAP_STEP="$*"; sudo_init; printf -- "--> %s " "$*"; }
+log()   { STRAP_STEP="$*"; sudo_refresh; echo "--> $*"; }
+logn()  { STRAP_STEP="$*"; sudo_refresh; printf -- "--> %s " "$*"; }
 logk()  { STRAP_STEP="";   echo "OK"; }
 escape() {
   printf '%s' "${1//\'/\'}"
@@ -91,13 +104,13 @@ defaults write com.apple.Safari \
   -bool false
 defaults write com.apple.screensaver askForPassword -int 1
 defaults write com.apple.screensaver askForPasswordDelay -int 0
-sudo defaults write /Library/Preferences/com.apple.alf globalstate -int 1
-sudo launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
+sudo -A defaults write /Library/Preferences/com.apple.alf globalstate -int 1
+sudo -A launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
 
 if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
   LOGIN_TEXT=$(escape "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL.")
   echo "$LOGIN_TEXT" | grep -q '[()]' && LOGIN_TEXT="'$LOGIN_TEXT'"
-  sudo defaults write /Library/Preferences/com.apple.loginwindow \
+  sudo -A defaults write /Library/Preferences/com.apple.loginwindow \
     LoginwindowText \
     "$LOGIN_TEXT"
 fi
@@ -113,7 +126,7 @@ elif [ -n "$STRAP_CI" ]; then
 elif [ -n "$STRAP_INTERACTIVE" ]; then
   echo
   log "Enabling full-disk encryption on next reboot:"
-  sudo fdesetup enable -user "$USER" \
+  sudo -A fdesetup enable -user "$USER" \
     | tee ~/Desktop/"FileVault Recovery Key.txt"
   logk
 else
@@ -126,7 +139,7 @@ if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]
 then
   log "Installing the Xcode Command Line Tools:"
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
-  sudo touch "$CLT_PLACEHOLDER"
+  sudo -A touch "$CLT_PLACEHOLDER"
 
   # shellcheck disable=SC2086,SC2183
   printf -v MACOS_VERSION_NUMERIC "%02d%02d%02d" ${MACOS_VERSION//./ }
@@ -151,8 +164,8 @@ then
                 grep "$CLT_MACOS_VERSION" |
                 $CLT_SORT |
                 tail -n1)
-  sudo softwareupdate -i "$CLT_PACKAGE"
-  sudo rm -f "$CLT_PLACEHOLDER"
+  sudo -A softwareupdate -i "$CLT_PACKAGE"
+  sudo -A rm -f "$CLT_PLACEHOLDER"
   if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]
   then
     if [ -n "$STRAP_INTERACTIVE" ]; then
@@ -172,7 +185,7 @@ xcode_license() {
   if /usr/bin/xcrun clang 2>&1 | grep $Q license; then
     if [ -n "$STRAP_INTERACTIVE" ]; then
       logn "Asking for Xcode license confirmation:"
-      sudo xcodebuild -license
+      sudo -A xcodebuild -license
       logk
     else
       abort "Run 'sudo xcodebuild -license' to agree to the Xcode license."
@@ -222,21 +235,21 @@ logk
 logn "Installing Homebrew:"
 HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
 [ -n "$HOMEBREW_PREFIX" ] || HOMEBREW_PREFIX="/usr/local"
-[ -d "$HOMEBREW_PREFIX" ] || sudo mkdir -p "$HOMEBREW_PREFIX"
+[ -d "$HOMEBREW_PREFIX" ] || sudo -A mkdir -p "$HOMEBREW_PREFIX"
 if [ "$HOMEBREW_PREFIX" = "/usr/local" ]
 then
-  sudo chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
+  sudo -A chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
 fi
 (
   cd "$HOMEBREW_PREFIX"
-  sudo mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
-  sudo chown -R "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
+  sudo -A mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
+  sudo -A chown -R "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
 )
 
 HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
 [ -n "$HOMEBREW_REPOSITORY" ] || HOMEBREW_REPOSITORY="/usr/local/Homebrew"
-[ -d "$HOMEBREW_REPOSITORY" ] || sudo mkdir -p "$HOMEBREW_REPOSITORY"
-sudo chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
+[ -d "$HOMEBREW_REPOSITORY" ] || sudo -A mkdir -p "$HOMEBREW_REPOSITORY"
+sudo -A chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
 
 if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]
 then
@@ -276,7 +289,7 @@ else
   echo
   log "Installing software updates:"
   if [ -z "$STRAP_CI" ]; then
-    sudo softwareupdate --install --all
+    sudo -A softwareupdate --install --all
     xcode_license
   else
     echo "Skipping software updates for CI"
