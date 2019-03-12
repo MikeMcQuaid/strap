@@ -301,6 +301,21 @@ if ! softwareupdate -l 2>&1 | grep $Q "No new software available."; then
 fi
 logk
 
+# clone strap locally
+$STRAP_SRC_DIR="$HOME/src/strap"
+log "Ensure strap is cloned locally and up to date"
+if [ ! -d "$STRAP_SRC_DIR" ]; then
+  log "Cloning to $STRAP_SRC_DIR:"
+  git clone $Q "git@github.com:daptiv/strap" "$STRAP_SRC_DIR"
+else
+  (
+    log "Updating local repository."
+    cd "$STRAP_SRC_DIR"
+    git pull $Q --rebase --autostash
+  )
+fi
+logk
+
 # Setup dotfiles
 USER_DOTFILES_EXISTS=
 if [ -n "$STRAP_GITHUB_USER" ]; then
@@ -383,80 +398,6 @@ fi
   done
 )
 logk
-
-# Check for broken cask installs
-# DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
-# if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-#   log "Fix cask installs"
-#   python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile' "${STRAP_DEBUG:+--debug}"
-# fi
-
-# Install from Daptiv Brewfile
-# DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
-# if [ -f "$DAPTIV_BREWFILE" ]; then
-#   log "Installing from Daptiv Brewfile:"
-#   # if a blacklist exists use it; else just brew from Daptiv file
-#   if { DAPTIV_BREWFILE_BLACKLIST=$DAPTIV_BREWFILE.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; } \
-#       || { DAPTIV_BREWFILE_BLACKLIST=~/.dotfiles/.Daptiv.Brewfile.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; };
-#   then
-#     log "Generating brewfile blacklist from: $DAPTIV_BREWFILE_BLACKLIST"
-#     while read BLACKLIST_LINE
-#     do
-#       if [ ! -z $BLACKLIST_REGEX ]; then BLACKLIST_REGEX+="|"; fi
-#       BLACKLIST_REGEX+="\"$BLACKLIST_LINE\""
-#     done < $DAPTIV_BREWFILE_BLACKLIST
-
-#     BREWFILE_CLEAN='/tmp/daptiv.brewfile.clean'
-#     log "Using clean brewfile: $BREWFILE_CLEAN"
-#     sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE > $BREWFILE_CLEAN
-
-#     brew bundle check --file="$BREWFILE_CLEAN" || brew bundle --file="$BREWFILE_CLEAN"
-#   else
-#     brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
-#   fi
-#   logk
-# else
-#   log "Daptiv Brewfile not found at: $DAPTIV_BREWFILE"
-# fi
-
-# Run postbrew script from daptiv dotfiles
-# if [ -f "$DAPTIV_DOTFILES/script/postbrew" ] && [ -x "$DAPTIV_DOTFILES/script/postbrew" ]; then
-#   "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
-# fi
-
-# Run user dotfiles scripts
-# if [ -n "$USER_DOTFILES_EXISTS" ]; then
-#   (
-#     cd ~/.dotfiles
-#     for i in script/setup script/bootstrap; do
-#       if [ -f "$i" ] && [ -x "$i" ]; then
-#         log "Running dotfiles $i:"
-#         "$i" 2>/dev/null
-#         break
-#       fi
-#     done
-#   )
-#   logk
-# fi
-
-# Check for broken cask installs in user brewfile
-# if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-#   python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile' "${STRAP_DEBUG:+--debug}"
-# fi
-
-
-# Install from local Brewfile
-# if [ -f "$HOME/.Brewfile" ]; then
-#   log "Installing from user Brewfile:"
-#   brew bundle check --global || brew bundle --global
-#   logk
-# fi
-
-# Run postbrew script from user dotfiles
-# USER_DOTFILES="$HOME/.dotfiles"
-# if [ -f "$USER_DOTFILES/script/postbrew" ] && [ -x "$USER_DOTFILES/script/postbrew" ]; then
-#   "$USER_DOTFILES/script/postbrew" 2>/dev/null
-# fi
 
 STRAP_SUCCESS="1"
 log "Box strap is complete."
