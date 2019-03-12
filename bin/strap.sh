@@ -384,106 +384,82 @@ fi
 )
 logk
 
-# Uninstall non-Brew hostess
-if [ "$GOPATH/go/bin/hostess" -ef /usr/local/bin/hostess ]; then
-  log "Uninstalling non-Brew hostess"
-  rm -f /usr/local/bin/hostess
-  rm -f "$GOPATH/go/bin/hostess"
-fi
-
 # Check for broken cask installs
-DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
-if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-  log "Fix cask installs"
-  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile' "${STRAP_DEBUG:+--debug}"
-fi
+# DAPTIV_DOTFILES="$HOME/.daptiv-dotfiles"
+# if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
+#   log "Fix cask installs"
+#   python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Daptiv.Brewfile' "${STRAP_DEBUG:+--debug}"
+# fi
 
 # Install from Daptiv Brewfile
-DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
-if [ -f "$DAPTIV_BREWFILE" ]; then
-  log "Installing from Daptiv Brewfile:"
-  # if a blacklist exists use it; else just brew from Daptiv file
-  if { DAPTIV_BREWFILE_BLACKLIST=$DAPTIV_BREWFILE.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; } \
-      || { DAPTIV_BREWFILE_BLACKLIST=~/.dotfiles/.Daptiv.Brewfile.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; };
-  then
-    log "Generating brewfile blacklist from: $DAPTIV_BREWFILE_BLACKLIST"
-    while read BLACKLIST_LINE
-    do
-      if [ ! -z $BLACKLIST_REGEX ]; then BLACKLIST_REGEX+="|"; fi
-      BLACKLIST_REGEX+="\"$BLACKLIST_LINE\""
-    done < $DAPTIV_BREWFILE_BLACKLIST
+# DAPTIV_BREWFILE="$HOME/.Daptiv.Brewfile"
+# if [ -f "$DAPTIV_BREWFILE" ]; then
+#   log "Installing from Daptiv Brewfile:"
+#   # if a blacklist exists use it; else just brew from Daptiv file
+#   if { DAPTIV_BREWFILE_BLACKLIST=$DAPTIV_BREWFILE.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; } \
+#       || { DAPTIV_BREWFILE_BLACKLIST=~/.dotfiles/.Daptiv.Brewfile.blacklist && [ -e $DAPTIV_BREWFILE_BLACKLIST ]; };
+#   then
+#     log "Generating brewfile blacklist from: $DAPTIV_BREWFILE_BLACKLIST"
+#     while read BLACKLIST_LINE
+#     do
+#       if [ ! -z $BLACKLIST_REGEX ]; then BLACKLIST_REGEX+="|"; fi
+#       BLACKLIST_REGEX+="\"$BLACKLIST_LINE\""
+#     done < $DAPTIV_BREWFILE_BLACKLIST
 
-    BREWFILE_CLEAN='/tmp/daptiv.brewfile.clean'
-    log "Using clean brewfile: $BREWFILE_CLEAN"
-    sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE > $BREWFILE_CLEAN
+#     BREWFILE_CLEAN='/tmp/daptiv.brewfile.clean'
+#     log "Using clean brewfile: $BREWFILE_CLEAN"
+#     sed -E "/$BLACKLIST_REGEX/d" $DAPTIV_BREWFILE > $BREWFILE_CLEAN
 
-    brew bundle check --file="$BREWFILE_CLEAN" || brew bundle --file="$BREWFILE_CLEAN"
-  else
-    brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
-  fi
-  logk
-else
-  log "Daptiv Brewfile not found at: $DAPTIV_BREWFILE"
-fi
+#     brew bundle check --file="$BREWFILE_CLEAN" || brew bundle --file="$BREWFILE_CLEAN"
+#   else
+#     brew bundle check --file="$DAPTIV_BREWFILE" || brew bundle --file="$DAPTIV_BREWFILE"
+#   fi
+#   logk
+# else
+#   log "Daptiv Brewfile not found at: $DAPTIV_BREWFILE"
+# fi
 
 # Run postbrew script from daptiv dotfiles
-if [ -f "$DAPTIV_DOTFILES/script/postbrew" ] && [ -x "$DAPTIV_DOTFILES/script/postbrew" ]; then
-  "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
-fi
+# if [ -f "$DAPTIV_DOTFILES/script/postbrew" ] && [ -x "$DAPTIV_DOTFILES/script/postbrew" ]; then
+#   "$DAPTIV_DOTFILES/script/postbrew" 2>/dev/null
+# fi
 
 # Run user dotfiles scripts
-if [ -n "$USER_DOTFILES_EXISTS" ]; then
-  (
-    cd ~/.dotfiles
-    for i in script/setup script/bootstrap; do
-      if [ -f "$i" ] && [ -x "$i" ]; then
-        log "Running dotfiles $i:"
-        "$i" 2>/dev/null
-        break
-      fi
-    done
-  )
-  logk
-fi
+# if [ -n "$USER_DOTFILES_EXISTS" ]; then
+#   (
+#     cd ~/.dotfiles
+#     for i in script/setup script/bootstrap; do
+#       if [ -f "$i" ] && [ -x "$i" ]; then
+#         log "Running dotfiles $i:"
+#         "$i" 2>/dev/null
+#         break
+#       fi
+#     done
+#   )
+#   logk
+# fi
 
 # Check for broken cask installs in user brewfile
-if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
-  python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile' "${STRAP_DEBUG:+--debug}"
-fi
+# if [ -f "$DAPTIV_DOTFILES/script/fix-cask-installs.py" ]; then
+#   python "$DAPTIV_DOTFILES/script/fix-cask-installs.py" '.Brewfile' "${STRAP_DEBUG:+--debug}"
+# fi
 
-# Setup User Brewfile
-if [ -n "$STRAP_GITHUB_USER" ] && ( [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ] ); then
-  HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
-
-  if git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
-    log "Fetching $STRAP_GITHUB_USER/homebrew-brewfile from GitHub:"
-    if [ ! -d "$HOME/.homebrew-brewfile" ]; then
-      log "Cloning to ~/.homebrew-brewfile:"
-      git clone $Q "$HOMEBREW_BREWFILE_URL" ~/.homebrew-brewfile
-      logk
-    else
-      (
-        cd ~/.homebrew-brewfile
-        git pull $Q
-      )
-    fi
-    ln -sf ~/.homebrew-brewfile/Brewfile ~/.Brewfile
-    logk
-  fi
-fi
 
 # Install from local Brewfile
-if [ -f "$HOME/.Brewfile" ]; then
-  log "Installing from user Brewfile on GitHub:"
-  brew bundle check --global || brew bundle --global
-  logk
-fi
+# if [ -f "$HOME/.Brewfile" ]; then
+#   log "Installing from user Brewfile:"
+#   brew bundle check --global || brew bundle --global
+#   logk
+# fi
 
 # Run postbrew script from user dotfiles
-USER_DOTFILES="$HOME/.dotfiles"
-if [ -f "$USER_DOTFILES/script/postbrew" ] && [ -x "$USER_DOTFILES/script/postbrew" ]; then
-  "$USER_DOTFILES/script/postbrew" 2>/dev/null
-fi
+# USER_DOTFILES="$HOME/.dotfiles"
+# if [ -f "$USER_DOTFILES/script/postbrew" ] && [ -x "$USER_DOTFILES/script/postbrew" ]; then
+#   "$USER_DOTFILES/script/postbrew" 2>/dev/null
+# fi
 
 STRAP_SUCCESS="1"
-log "Your system is now Strap'd!"
+log "Box strap is complete."
+log "Next steps:"
+log "1. run 'strap-daptiv' to run daptiv-dotfiles scripts/setup"
+log "2. run 'strap-user' to run user dotfiles scripts/setup"
