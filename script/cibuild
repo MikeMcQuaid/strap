@@ -10,6 +10,35 @@ cleanup() {
 
 trap "cleanup" EXIT
 
+# assert that any reference of sudo uses -A (or is whitelisted for another reason)
+checkSudoAskpass() {
+  set +e
+  violations=$(
+    # find all sudo
+    grep "[^']sudo " bin/strap.sh | \
+      # filter out comments
+      grep -v "^#" | \
+      # filter out session resets
+      grep -v "sudo -k" | \
+      # filter out password prompt
+      grep -v "(for sudo access)" | \
+      # filter out check to see if sudo is required
+      grep -v "sudo -vn &>" | \
+      # filter out all correct usages with askpass
+      grep -cv "sudo -A"
+  )
+  set -e
+  if [ "$violations" -ne "0" ]; then
+    echo "!!! Potential use of sudo in strap.sh script without the -A parameter to enable"
+    echo "askpass helper (-A is used to avoid reprompting a user for their sudo password)."
+    echo
+    echo "Either add -A or add legitimate use to whitelist in cibuild script."
+    exit 1
+  fi
+}
+
+checkSudoAskpass
+
 script/bootstrap
 bundle exec foreman check
 script/server &>/dev/null &
