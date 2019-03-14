@@ -66,7 +66,10 @@ sudo_init() {
   if ! sudo -vn &>/dev/null; then
     read -s -p "--> Enter your password (for sudo access): " password
     export SUDO_PASSWD=${password}
-    export SUDO_ASKPASS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+    fq_script_filename=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")
+    # this must be executable
+    chmod +x "$fq_script_filename"
+    export SUDO_ASKPASS="$fq_script_filename"
   fi
 }
 
