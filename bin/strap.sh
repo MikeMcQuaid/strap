@@ -355,7 +355,8 @@ fi
 # Run a custom `brew` command
 if [ -n "$CUSTOM_BREW_COMMAND" ]; then
   log "Executing 'brew $CUSTOM_BREW_COMMAND':"
-  brew "$CUSTOM_BREW_COMMAND"
+  # shellcheck disable=SC2086
+  brew $CUSTOM_BREW_COMMAND
   logk
 fi
 
