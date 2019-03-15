@@ -81,7 +81,11 @@ run_dotfile_scripts() {
       for i in "$@"; do
         if [ -f "$i" ] && [ -x "$i" ]; then
           log "Running dotfiles $i:"
-          "$i" 2>/dev/null
+          if [ -z "$STRAP_DEBUG" ]; then
+            "$i" 2>/dev/null
+          else
+            "$i"
+          fi
           break
         fi
       done
