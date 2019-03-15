@@ -13,7 +13,7 @@ if [ "$(ps -p $PPID -o comm=)" == "sudo" ]; then
   fi
 fi
 
-[ "$1" = "--debug" ] && STRAP_DEBUG="1"
+[ "$1" = "--debug" -o -o xtrace ] && STRAP_DEBUG="1"
 STRAP_SUCCESS=""
 
 cleanup() {
@@ -61,11 +61,32 @@ STRAP_ISSUES_URL='https://github.com/MikeMcQuaid/strap/issues/new'
 # root stuff unexpectedly.
 sudo -k
 
+# functions for turning off debug for use when handling the user password
+clear_debug() {
+  set +x
+}
+
+reset_debug() {
+  if [ -n "$STRAP_DEBUG" ]; then
+    set -x
+  fi
+}
+
+have_sudo_passwd() {
+  clear_debug
+  if [ -n "$SUDO_PASSWD" ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+  reset_debug
+}
+
 # Initialise sudo to save unhelpful prompts later.
 sudo_init() {
   if ! sudo -vn &>/dev/null; then
     read -s -p "--> Enter your password (for sudo access): " password
-    export SUDO_PASSWD=${password}
+    clear_debug; export SUDO_PASSWD=${password}; reset_debug
     fq_script_filename=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")
     # this must be executable
     chmod +x "$fq_script_filename"
@@ -74,7 +95,7 @@ sudo_init() {
 }
 
 sudo_refresh() {
-  if [ -n "$SUDO_ASKPASS" -a -n "$SUDO_PASSWD" ]; then
+  if [ -n "$SUDO_ASKPASS" -a "$(have_sudo_passwd)" == "true" ]; then
     sudo -Av
   else
     sudo_init
@@ -129,7 +150,7 @@ elif [ -n "$STRAP_CI" ]; then
 elif [ -n "$STRAP_INTERACTIVE" ]; then
   echo
   log "Enabling full-disk encryption on next reboot:"
-  if [ -n "$SUDO_PASSWD" ]; then
+  if [ "$(have_sudo_passwd)" == "true" ]; then
     sudo -A fdesetup enable -inputplist <<PLIST \
       | tee ~/Desktop/"FileVault Recovery Key.txt"
         <plist>
