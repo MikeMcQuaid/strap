@@ -85,7 +85,20 @@ have_sudo_passwd() {
 # Initialise sudo to save unhelpful prompts later.
 sudo_init() {
   if ! sudo -vn &>/dev/null; then
-    read -s -p "--> Enter your password (for sudo access): " password
+    while true; do
+      read -s -p "--> Enter your password (for sudo access): " password
+      set +e
+      sudo -Sv 2>/dev/null <<PASSWORD
+$password
+PASSWORD
+      result=$?
+      set -e
+      if [ "$result" -ne "0" ]; then
+        echo "!!! Wrong password"
+      else
+        break
+      fi
+    done
     clear_debug; export SUDO_PASSWD=${password}; reset_debug
     fq_script_filename=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")
     # this must be executable
