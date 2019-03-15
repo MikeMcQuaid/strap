@@ -17,7 +17,7 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 - Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
 - Installs [Homebrew Cask](https://github.com/caskroom/homebrew-cask) (for installing graphical software)
 - Installs the latest macOS software updates (for better security)
-- Installs dotfiles from a user's `https://github.com/username/dotfiles` repository and runs `script/setup` to configure them.
+- Installs dotfiles from a user's `https://github.com/username/dotfiles` repository and runs `script/setup` to configure them; also runs `script/strap-after-setup` after setting up everything else
 - Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
 - A simple web application to set Git's name, email and GitHub token (needs authorized on any organisations you wish to access)
 - Idempotent
