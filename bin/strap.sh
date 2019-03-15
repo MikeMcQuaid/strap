@@ -129,8 +129,22 @@ elif [ -n "$STRAP_CI" ]; then
 elif [ -n "$STRAP_INTERACTIVE" ]; then
   echo
   log "Enabling full-disk encryption on next reboot:"
-  sudo -A fdesetup enable -user "$USER" \
-    | tee ~/Desktop/"FileVault Recovery Key.txt"
+  if [ -n "$SUDO_PASSWD" ]; then
+    sudo -A fdesetup enable -inputplist <<PLIST \
+      | tee ~/Desktop/"FileVault Recovery Key.txt"
+        <plist>
+          <dict>
+              <key>Username</key>
+              <string>${USER}</string>
+              <key>Password</key>
+              <string>${SUDO_PASSWD}</string>
+          </dict>
+        </plist>
+PLIST
+  else
+    sudo -A fdesetup enable -user "$USER" \
+      | tee ~/Desktop/"FileVault Recovery Key.txt"
+  fi
   logk
 else
   echo
