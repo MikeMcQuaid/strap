@@ -3,6 +3,14 @@
 #/ Install development dependencies on macOS.
 set -e
 
+RED="\033[0;31m"
+YELLOW="\033[0;33m"
+GREEN="\033[0;32m"
+OCHRE="\033[38;5;95m"
+BLUE="\033[0;34m"
+WHITE="\033[0;37m"
+RESET="\033[0m"
+
 # Keep sudo timestamp updated while Strap is running.
 if [ "$1" = "--sudo-wait" ]; then
   while true; do
@@ -68,7 +76,7 @@ STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 abort()  { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
 log()    { STRAP_STEP="$*"; echo "--> $*"; }
 logn()   { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
-logk()   { STRAP_STEP="";   echo "OK"; }
+logk()   { STRAP_STEP="";   echo -e "${GREEN}✔${RESET}"; }
 logdebug(){ STRAP_STEP="$*"; if [ -n "$STRAP_DEBUG" ]; then echo -e "\n$*" ; fi }
 
 sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13|14)" || {
@@ -80,13 +88,12 @@ groups | grep $Q admin || abort "Add $USER to the admin group."
 
 
 # Initialise sudo now to save prompting later.
-log "Enter your password (for sudo access):"
+echo "Enter your password (for sudo access):"
 sudo /usr/bin/true
 [ -f "$STRAP_FULL_PATH" ]
 sudo bash "$STRAP_FULL_PATH" --sudo-wait &
 STRAP_SUDO_WAIT_PID="$!"
 ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
-logk
 
 # Add user to staff group
 if ! groups | grep $Q staff; then
@@ -94,7 +101,7 @@ if ! groups | grep $Q staff; then
 fi
 
 # Set some basic security settings.
-logn "Configuring security settings:"
+logn "Configuring security settings..."
 defaults write com.apple.Safari \
   com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
   -bool false
@@ -115,7 +122,7 @@ fi
 logk
 
 # Check and enable full-disk encryption.
-logn "Checking full-disk encryption status:"
+logn "Checking full-disk encryption status..."
 if fdesetup status | grep $Q -E "FileVault is (On|Off, but will be enabled after the next restart)."; then
   logk
 elif [ -n "$STRAP_CI" ]; then
@@ -131,6 +138,7 @@ else
 fi
 
 # Install the Xcode Command Line Tools.
+logn "Install Xcode Command Line Tools..."
 if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]
 then
   logdebug "Installing the Xcode Command Line Tools:"
@@ -183,7 +191,7 @@ logk
 xcode_license() {
   if /usr/bin/xcrun clang 2>&1 | grep $Q license; then
     if [ -n "$STRAP_INTERACTIVE" ]; then
-      logn "Asking for Xcode license confirmation:"
+      logn "Asking for Xcode license confirmation..."
       sudo xcodebuild -license
       logk
     else
@@ -194,7 +202,7 @@ xcode_license() {
 xcode_license
 
 # Setup Git configuration.
-logn "Configuring Git:"
+logn "Configuring Git..."
 if [ -n "$STRAP_GIT_NAME" ] && ! git config user.name >/dev/null; then
   git config --global user.name "$STRAP_GIT_NAME"
 fi
@@ -214,7 +222,7 @@ fi
 logk
 
 # Setup GitHub HTTPS credentials.
-logn "Setting up GitHub HTTPS credentials:"
+logn "Setting up GitHub HTTPS credentials..."
 if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain" ; then
   if [ "$(git config --global credential.helper)" != "osxkeychain" ]; then
     logdebug "setting git credential helper to osxkeychain"
@@ -232,7 +240,7 @@ fi
 logk
 
 # add ssh key to github
-logn "Setting up GitHub SSH key:"
+logn "Setting up GitHub SSH key..."
 if ! [ -f "$HOME/.ssh/id_rsa" ]; then
   logdebug 'adding ssh key to github'
   ssh-keygen -t rsa -b 4096 -C "$STRAP_GIT_EMAIL" -N "" -f "$HOME/.ssh/id_rsa"
@@ -259,7 +267,7 @@ fi
 logk
 
 # Setup Homebrew directory and permissions.
-logn "Check for Homebrew:"
+logn "Check for Homebrew..."
 if ! type brew 1>/dev/null 2>&1 ; then
   logdebug "Installing Homebrew"
   BREW_INSTALL_SCRIPT="/tmp/brew-install.rb"
@@ -270,7 +278,7 @@ logk
 
 # Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
-logn "Updating Homebrew:"
+logn "Updating Homebrew..."
 if [ -n "$STRAP_DEBUG" ]; then
   brew update
 else
@@ -279,8 +287,8 @@ fi
 logk
 
 # Install Homebrew Bundle, Cask and Services tap.
-log "Installing Homebrew taps and extensions:"
-brew bundle --file=- <<EOF
+logn "Installing Homebrew taps and extensions..."
+brew bundle --file=- 1>/dev/null 2>&1 <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
@@ -289,7 +297,7 @@ EOF
 logk
 
 # Check and install any remaining software updates.
-logn "Checking for software updates:"
+logn "Checking for software updates..."
 if ! softwareupdate -l 2>&1 | grep $Q "No new software available."; then
   logdebug "Installing software updates:"
   if [ -z "$STRAP_CI" ]; then
@@ -303,13 +311,13 @@ logk
 
 # clone strap locally
 STRAP_SRC_DIR="$HOME/src/strap"
-log "Ensure strap is cloned locally and up to date"
+logn "Ensure strap is cloned locally and up to date..."
 if [ ! -d "$STRAP_SRC_DIR" ]; then
   log "Cloning to $STRAP_SRC_DIR:"
   git clone $Q "git@github.com:daptiv/strap" "$STRAP_SRC_DIR"
 else
   (
-    log "Updating local repository."
+    logdebug "Updating local repository."
     cd "$STRAP_SRC_DIR"
     git pull $Q --rebase --autostash
   )
@@ -325,35 +333,38 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
   fi
 
   DOTFILES_URL="git@github.com:$DOTFILES_REPO"
-  log "Checking for remotes on $DOTFILES_URL"
+  logn "Checking for remotes on $DOTFILES_URL..."
   if git ls-remote "$DOTFILES_URL" &>/dev/null; then USER_DOTFILES_EXISTS=1; fi
+  logk
   if [ -n "$USER_DOTFILES_EXISTS" ]; then
-    log "Fetching $DOTFILES_REPO from GitHub:"
+    logn "Fetching $DOTFILES_REPO from GitHub..."
     if [ ! -d "$HOME/.dotfiles" ]; then
-      log "Cloning to ~/.dotfiles:"
+      logn "Cloning to ~/.dotfiles..."
       git clone $Q "$DOTFILES_URL" ~/.dotfiles
+      logk
     else
       (
         cd ~/.dotfiles
         git pull $Q --rebase --autostash
       )
     fi
+    logk
     (
-      log "Updating local ~/.dotfiles repository"
+      logn "Updating local ~/.dotfiles repository..."
       cd ~/.dotfiles
       CURRENT_USER_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
       if [ "$USER_DOTFILES_BRANCH" != "$CURRENT_USER_DOTFILES_BRANCH" ]; then
         # check to make sure there are no pending changes in current branch
         if git diff-index --quiet HEAD -- ; then
-          log "Changing branch from '$CURRENT_USER_DOTFILES_BRANCH' to '$USER_DOTFILES_BRANCH'"
+          logdebug "Changing branch from '$CURRENT_USER_DOTFILES_BRANCH' to '$USER_DOTFILES_BRANCH'"
           git checkout $USER_DOTFILES_BRANCH
           git pull $Q --rebase --autostash
         else
           abort "Pending changes in ~/.dotfiles, unable to switch to branch: $USER_DOTFILES_BRANCH. If you want to run in this branch run strap with: USER_DOTFILES_BRANCH=$CURRENT_USER_DOTFILES_BRANCH"
         fi
       fi
+      logk
     )
-    logk
   else
     log "Couldn't get remotes for $DOTFILES_URL"
   fi
@@ -363,44 +374,46 @@ fi
 DOTFILES_URL="git@github.com:daptiv/dotfiles"
 DOTFILES_DIR="$HOME/.daptiv-dotfiles"
 
-log "Fetching daptiv/dotfiles from GitHub:"
+logn "Fetching daptiv/dotfiles from GitHub..."
 if [ ! -d "$DOTFILES_DIR" ]; then
-  log "Cloning to $DOTFILES_DIR:"
-  git clone $Q "$DOTFILES_URL" "$DOTFILES_DIR"
+  logdebug "Cloning to $DOTFILES_DIR:"
+  git clone $Q "$DOTFILES_URL" "$DOTFILES_DIR" 1>/dev/null 2>&1
 else
   (
-    log "Updating local repository."
+    logdebug "Updating local repository."
     cd "$DOTFILES_DIR"
-    git pull $Q --rebase --autostash
+    git pull $Q --rebase --autostash 1>/dev/null 2>&1
   )
 fi
+logk
 (
-  log "Check current branch of daptiv/dotfiles against requested branch"
+  logn "Check current branch of daptiv/dotfiles against requested branch..."
   cd "$DOTFILES_DIR"
   CURRENT_DAPTIV_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
   if [ "$DAPTIV_DOTFILES_BRANCH" != "$CURRENT_DAPTIV_DOTFILES_BRANCH" ]; then
     # check to make sure there are no pending changes in current branch
     if git diff-index --quiet HEAD -- ; then
-      log "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
+      logdebug "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
       git checkout $DAPTIV_DOTFILES_BRANCH
       git pull $Q --rebase --autostash
     else
       abort "Pending changes in $DOTFILES_DIR, unable to switch to branch: $DAPTIV_DOTFILES_BRANCH. If you want to run in this branch run strap with: DAPTIV_DOTFILES_BRANCH=$CURRENT_DAPTIV_DOTFILES_BRANCH"
     fi
   fi
+  logk
 
   for i in script/setup script/bootstrap; do
     if [ -f "$i" ] && [ -x "$i" ]; then
-      log "Running dotfiles $i:"
-      "$i" 2>/dev/null
+      logn "Running dotfiles $i..."
+      "$i" 1>/dev/null 2>&1
+      logk
       break
     fi
   done
 )
-logk
 
 STRAP_SUCCESS="1"
-log "Box strap is complete."
-log "Next steps:"
-log "1. run 'strap-daptiv' to run daptiv-dotfiles scripts/setup"
-log "2. run 'strap-user' to run user dotfiles scripts/setup"
+echo -e "${GREEN}Box strap is complete."
+echo -e "Next steps:"
+echo -e "1. run 'strap-daptiv' to run daptiv-dotfiles scripts/setup"
+echo -e "2. run 'strap-user' to run user dotfiles scripts/setup${RESET}"
