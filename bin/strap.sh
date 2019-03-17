@@ -288,12 +288,21 @@ logk
 
 # Install Homebrew Bundle, Cask and Services tap.
 logn "Installing Homebrew taps and extensions..."
+if [ -n "$STRAP_DEBUG" ]; then
+brew bundle --file=- <<EOF
+tap 'caskroom/cask'
+tap 'homebrew/core'
+tap 'homebrew/services'
+tap 'daptiv/homebrew-tap'
+EOF
+else
 brew bundle --file=- 1>/dev/null 2>&1 <<EOF
 tap 'caskroom/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
 tap 'daptiv/homebrew-tap'
 EOF
+fi
 logk
 
 # Check and install any remaining software updates.
@@ -339,9 +348,8 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
   if [ -n "$USER_DOTFILES_EXISTS" ]; then
     logn "Fetching $DOTFILES_REPO from GitHub..."
     if [ ! -d "$HOME/.dotfiles" ]; then
-      logn "Cloning to ~/.dotfiles..."
+      logdebug "Cloning to ~/.dotfiles..."
       git clone $Q "$DOTFILES_URL" ~/.dotfiles
-      logk
     else
       (
         cd ~/.dotfiles
