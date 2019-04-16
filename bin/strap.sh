@@ -73,6 +73,26 @@ escape() {
   printf '%s' "${1//\'/\'}"
 }
 
+# Given a list of scripts in the dotfiles repo, run the first one that exists
+run_dotfile_scripts() {
+  if [ -d ~/.dotfiles ]; then
+    (
+      cd ~/.dotfiles
+      for i in "$@"; do
+        if [ -f "$i" ] && [ -x "$i" ]; then
+          log "Running dotfiles $i:"
+          if [ -z "$STRAP_DEBUG" ]; then
+            "$i" 2>/dev/null
+          else
+            "$i"
+          fi
+          break
+        fi
+      done
+    )
+  fi
+}
+
 MACOS_VERSION="$(sw_vers -productVersion)"
 echo "$MACOS_VERSION" | grep $Q -E "^10.(9|10|11|12|13|14)" || {
   abort "Run Strap on macOS 10.9/10/11/12/13/14."
@@ -80,6 +100,9 @@ echo "$MACOS_VERSION" | grep $Q -E "^10.(9|10|11|12|13|14)" || {
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
 groups | grep $Q admin || abort "Add $USER to the admin group."
+
+# Prevent sleeping during script execution, as long as the machine is on AC power
+caffeinate -s -w $$ &
 
 # Set some basic security settings.
 logn "Configuring security settings:"
@@ -299,16 +322,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
         git pull $Q --rebase --autostash
       )
     fi
-    (
-      cd ~/.dotfiles
-      for i in script/setup script/bootstrap; do
-        if [ -f "$i" ] && [ -x "$i" ]; then
-          log "Running dotfiles $i:"
-          "$i" 2>/dev/null
-          break
-        fi
-      done
-    )
+    run_dotfile_scripts script/setup script/bootstrap
     logk
   fi
 fi
@@ -352,9 +366,13 @@ fi
 # Run a custom `brew` command
 if [ -n "$CUSTOM_BREW_COMMAND" ]; then
   log "Executing 'brew $CUSTOM_BREW_COMMAND':"
-  brew "$CUSTOM_BREW_COMMAND"
+  # shellcheck disable=SC2086
+  brew $CUSTOM_BREW_COMMAND
   logk
 fi
+
+# Run post-install dotfiles script
+run_dotfile_scripts script/strap-after-setup
 
 STRAP_SUCCESS="1"
 log "Your system is now Strap'd!"
