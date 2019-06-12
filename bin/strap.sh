@@ -145,8 +145,8 @@ run_dotfile_scripts() {
 }
 
 MACOS_VERSION="$(sw_vers -productVersion)"
-echo "$MACOS_VERSION" | grep $Q -E "^10.(9|10|11|12|13|14)" || {
-  abort "Run Strap on macOS 10.9/10/11/12/13/14."
+echo "$MACOS_VERSION" | grep $Q -E "^10.(9|10|11|12|13|14|15)" || {
+  abort "Run Strap on macOS 10.9/10/11/12/13/14/15."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
