@@ -4,6 +4,7 @@ require "sinatra"
 require "omniauth-github"
 require "octokit"
 require "securerandom"
+require "rack/protection"
 require "awesome_print" if ENV["RACK_ENV"] == "development"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
@@ -22,6 +23,10 @@ use OmniAuth::Builder do
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
+
+use Rack::Protection
+use Rack::Protection::AuthenticityToken
+use Rack::Protection::StrictTransport
 
 get "/auth/github/callback" do
   auth = request.env["omniauth.auth"]
