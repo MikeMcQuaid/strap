@@ -24,9 +24,8 @@ use OmniAuth::Builder do
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
 
-use Rack::Protection
-use Rack::Protection::AuthenticityToken
-use Rack::Protection::StrictTransport
+use Rack::Protection, use: %i[authenticity_token cookie_tossing form_token
+                              remote_referrer strict_transport]
 
 get "/auth/github/callback" do
   auth = request.env["omniauth.auth"]
@@ -127,6 +126,10 @@ get "/strap.sh" do
   env_sub(content, set_variables, set: true)
   env_sub(content, unset_variables, set: false)
 
+  # Manually set X-Frame-Options because Rack::Protection won't set it on
+  # non-HTML files:
+  # https://github.com/sinatra/sinatra/blob/v2.0.7/rack-protection/lib/rack/protection/frame_options.rb#L32
+  headers["X-Frame-Options"] = "DENY"
   content_type = if params["text"]
     "text/plain"
   else
