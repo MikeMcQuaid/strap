@@ -10,8 +10,7 @@ require "awesome_print" if ENV["RACK_ENV"] == "development"
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
-STRAP_ISSUES_URL_DEFAULT = "https://github.com/MikeMcQuaid/strap/issues/new"
-STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || STRAP_ISSUES_URL_DEFAULT
+STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
 CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
@@ -49,6 +48,12 @@ get "/" do
     before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>"
   end
 
+  debugging_text = if STRAP_ISSUES_URL.to_s.empty?
+    "try to debug it yourself"
+  else
+    %Q{file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>}
+  end
+
   @title = "👢 Strap"
   @text = <<~HTML
     To Strap your system:
@@ -75,7 +80,7 @@ get "/" do
       <li>
         If something failed, run Strap with more debugging output in
         Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and
-        file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>
+        #{debugging_text}.
       </li>
       <li>
         Delete the customised <code>strap.sh</code> (it has a GitHub token

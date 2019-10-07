@@ -21,7 +21,7 @@
       "required": false
     },
     "STRAP_ISSUES_URL": {
-      "description": "The URL where users should file issues (defaults to https://github.com/MikeMcQuaid/strap/issues/new).",
+      "description": "The URL where users should file issues (defaults to no URL).",
       "required": false
     },
     "STRAP_BEFORE_INSTALL": {
