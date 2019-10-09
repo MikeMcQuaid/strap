@@ -8,8 +8,7 @@ GEM
     faraday (0.17.0)
       multipart-post (>= 1.2, < 3)
     ffi (1.11.1)
-    foreman (0.85.0)
-      thor (~> 0.19.1)
+    foreman (0.86.0)
     formatador (0.2.5)
     guard (2.15.1)
       formatador (>= 0.2.4)
@@ -79,7 +78,7 @@ GEM
       tilt (~> 2.0)
     spoon (0.0.6)
       ffi
-    thor (0.19.4)
+    thor (0.20.3)
     tilt (2.0.10)
     unicorn (5.5.1)
       kgio (~> 2.6)
