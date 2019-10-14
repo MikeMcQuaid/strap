@@ -200,7 +200,7 @@ then
   CLT_PACKAGE=$(softwareupdate -l | \
                 grep -B 1 "Command Line Tools" | \
                 awk -F"*" '/^ *\*/ {print $2}' | \
-                sed -e 's/^* Label: //' -e 's/^ *//' | \
+                sed -e 's/^ *Label: //' -e 's/^ *//' | \
                 sort -V |
                 tail -n1)
   sudo_askpass softwareupdate -i "$CLT_PACKAGE"
