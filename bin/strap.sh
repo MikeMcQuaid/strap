@@ -144,11 +144,6 @@ run_dotfile_scripts() {
   fi
 }
 
-MACOS_VERSION="$(sw_vers -productVersion)"
-echo "$MACOS_VERSION" | grep $Q -E "^10.(9|10|11|12|13|14|15)" || {
-  abort "Run Strap on macOS 10.9/10/11/12/13/14/15."
-}
-
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."
 groups | grep $Q -E "\b(admin)\b" || abort "Add $USER to the admin group."
 
@@ -202,28 +197,11 @@ then
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo_askpass touch "$CLT_PLACEHOLDER"
 
-  # shellcheck disable=SC2086,SC2183
-  printf -v MACOS_VERSION_NUMERIC "%02d%02d%02d" ${MACOS_VERSION//./ }
-  if [ "$MACOS_VERSION_NUMERIC" -ge "100900" ] &&
-     [ "$MACOS_VERSION_NUMERIC" -lt "101000" ]
-  then
-    CLT_MACOS_VERSION="Mavericks"
-  else
-    CLT_MACOS_VERSION="$(echo "$MACOS_VERSION" | grep -E -o "10\\.\\d+")"
-  fi
-  if [ "$MACOS_VERSION_NUMERIC" -ge "101300" ]
-  then
-    CLT_SORT="sort -V"
-  else
-    CLT_SORT="sort"
-  fi
-
   CLT_PACKAGE=$(softwareupdate -l | \
-                grep -B 1 -E "Command Line (Developer|Tools)" | \
-                awk -F"*" '/^ +\*/ {print $2}' | \
-                sed 's/^ *//' | \
-                grep "$CLT_MACOS_VERSION" |
-                $CLT_SORT |
+                grep -B 1 "Command Line Tools" | \
+                awk -F"*" '/^ *\*/ {print $2}' | \
+                sed -e 's/^* Label: //' -e 's/^ *//' | \
+                sort -V |
                 tail -n1)
   sudo_askpass softwareupdate -i "$CLT_PACKAGE"
   sudo_askpass rm -f "$CLT_PLACEHOLDER"
