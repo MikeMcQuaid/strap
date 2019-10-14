@@ -290,14 +290,14 @@ logk
 logn "Installing Homebrew taps and extensions..."
 if [ -n "$STRAP_DEBUG" ]; then
 brew bundle --file=- <<EOF
-tap 'homebrew/cask-cask'
+tap 'homebrew/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
 tap 'daptiv/homebrew-tap'
 EOF
 else
 brew bundle --file=- 1>/dev/null 2>&1 <<EOF
-tap 'homebrew/cask-cask'
+tap 'homebrew/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
 tap 'daptiv/homebrew-tap'
