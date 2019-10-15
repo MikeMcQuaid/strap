@@ -95,10 +95,10 @@ echo "$SUDO_PASSWORD"
 BASH
 )"
     unset SUDO_PASSWORD
-    SUDO_ASKPASS_DIR="$(sudo mktemp -d)"
-    SUDO_ASKPASS="$(sudo mktemp "$SUDO_ASKPASS_DIR"/strap-askpass-XXXXXXXX)"
-    sudo chmod 1700 "$SUDO_ASKPASS_DIR" "$SUDO_ASKPASS"
-    sudo bash -c "cat > '$SUDO_ASKPASS'" <<<"$SUDO_PASSWORD_SCRIPT"
+    SUDO_ASKPASS_DIR="$(mktemp -d)"
+    SUDO_ASKPASS="$(mktemp "$SUDO_ASKPASS_DIR"/strap-askpass-XXXXXXXX)"
+    chmod 700 "$SUDO_ASKPASS_DIR" "$SUDO_ASKPASS"
+    bash -c "cat > '$SUDO_ASKPASS'" <<<"$SUDO_PASSWORD_SCRIPT"
     unset SUDO_PASSWORD_SCRIPT
     reset_debug
 
