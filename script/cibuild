@@ -47,7 +47,7 @@ EOS
 check_sudo_askpass
 
 RUBY_VERSION="$(cat .ruby-version)"
-if ! grep "   ruby $RUBY_VERSION" Gemfile.lock
+if ! git grep "   ruby $RUBY_VERSION" HEAD -- Gemfile.lock
 then
   echo "Error: Gemfile.lock does not contain 'ruby $RUBY_VERSION'!" >&2
   exit 1
