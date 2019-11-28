@@ -5,7 +5,7 @@ GEM
       public_suffix (>= 2.0.2, < 5.0)
     awesome_print (1.8.0)
     coderay (1.1.2)
-    faraday (0.17.0)
+    faraday (0.17.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.11.3)
     foreman (0.86.0)
