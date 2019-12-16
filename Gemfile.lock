@@ -78,7 +78,7 @@ GEM
       tilt (~> 2.0)
     spoon (0.0.6)
       ffi
-    thor (0.20.3)
+    thor (1.0.0)
     tilt (2.0.10)
     unicorn (5.5.1)
       kgio (~> 2.6)
