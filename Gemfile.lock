@@ -65,7 +65,7 @@ GEM
       rack
     raindrops (0.19.0)
     rb-fsevent (0.10.3)
-    rb-inotify (0.10.0)
+    rb-inotify (0.10.1)
       ffi (~> 1.0)
     sawyer (0.8.2)
       addressable (>= 2.3.5)
