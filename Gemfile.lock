@@ -7,7 +7,7 @@ GEM
     coderay (1.1.2)
     faraday (1.0.0)
       multipart-post (>= 1.2, < 3)
-    ffi (1.12.0)
+    ffi (1.12.1)
     foreman (0.87.0)
     formatador (0.2.5)
     guard (2.16.1)
