@@ -79,8 +79,8 @@ logn()   { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
 logk()   { STRAP_STEP="";   echo -e "${GREEN}✔${RESET}"; }
 logdebug(){ STRAP_STEP="$*"; if [ -n "$STRAP_DEBUG" ]; then echo -e "\n$*" ; fi }
 
-sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13|14)" || {
-  abort "Run Strap on macOS 10.9/10/11/12/13/14."
+sw_vers -productVersion | grep $Q -E "^10.(9|10|11|12|13|14|15)" || {
+  abort "Strap is only supported on macOS versions 10.9/10/11/12/13/14/15."
 }
 
 [ "$USER" = "root" ] && abort "Run Strap as yourself, not root."

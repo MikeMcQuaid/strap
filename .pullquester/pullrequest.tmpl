@@ -2,7 +2,7 @@
 
 <%= config.description %>
 <% if (config.reviewers && config.reviewers.length > 0) { %>### Code Review<% } %>
-<% _.forEach(config.reviewers, function(reviewer) { %> - [ ] <%- reviewer %>
+<% _.forEach(config.reviewers, function(reviewer) { %> - <%- reviewer %>
 <% }); %>
 
 <% if (config.testers && config.testers.length > 0) { %>### Testing<% }%>
