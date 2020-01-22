@@ -21,7 +21,26 @@ if [ "$1" = "--sudo-wait" ]; then
   exit 0
 fi
 
-[ "$1" = "--debug" ] && STRAP_DEBUG="1"
+#arg parsing
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -d|--debug)
+      STRAP_DEBUG="1"
+      shift
+      ;;
+    -k|--parallels-key)
+      # write license key to file
+      echo -n "$2" > "$HOME/.parallels-lk"
+      shift
+      shift
+      ;;
+    *)
+      echo "Unknown command line option: $1"
+      exit 1
+      ;;
+  esac
+done
+
 STRAP_SUCCESS=""
 
 cleanup() {
