@@ -55,7 +55,7 @@ Strap is a script to bootstrap a minimal macOS development system for Daptiv dev
       <li>You can <a href="/strap.sh?text=1">view the file</a> first if you want.</li>
     </ul>
   </li>
-  <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh --parallels-key <your-key-here></code> where you replace <code><your-key-here></code> with your parallels license key.</li>
+  <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh --parallels-key [your-key-here]</code> where you replace <code>[your-key-here]</code> with your parallels license key.</li>
   <li>Once Strap completes, delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a>.</li>
 </ol>
 
