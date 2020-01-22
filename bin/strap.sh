@@ -29,6 +29,11 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -k|--parallels-key)
+      if [ -z "$2" ]; then
+        echo "--parallels-key argument requires a value. Ex: --parallels-key XXXXXX-XXXXXX-XXXXXX-XXXXXX-XXXXXX"
+        exit 1
+      fi
+      
       # write license key to file
       echo -n "$2" > "$HOME/.parallels-lk"
       shift
