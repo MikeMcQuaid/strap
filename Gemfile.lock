@@ -8,7 +8,7 @@ GEM
     faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.12.2)
-    foreman (0.87.0)
+    foreman (0.87.1)
     formatador (0.2.5)
     guard (2.16.2)
       formatador (>= 0.2.4)
