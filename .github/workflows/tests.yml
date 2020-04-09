@@ -18,7 +18,6 @@ jobs:
         sudo rm -rf /usr/local/bin/brew /usr/local/.??* \
                     /Applications/Xcode.app /usr/local/Caskroom \
                     /Library/Developer/CommandLineTools
-        sudo pkgutil --forget com.apple.pkg.CLTools_Executables
 
     - name: Use newer Xcode
       run: sudo xcode-select --switch /Applications/Xcode_11.2.app/Contents/Developer
