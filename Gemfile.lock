@@ -83,7 +83,7 @@ GEM
       ffi
     thor (1.0.1)
     tilt (2.0.10)
-    unicorn (5.5.4)
+    unicorn (5.5.5)
       kgio (~> 2.6)
       raindrops (~> 0.7)
 
@@ -101,7 +101,7 @@ DEPENDENCIES
   unicorn
 
 RUBY VERSION
-   ruby 2.6.5p114
+   ruby 2.6.6p146
 
 BUNDLED WITH
    1.17.3
