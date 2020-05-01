@@ -66,7 +66,7 @@ GEM
     rack-protection (2.0.8.1)
       rack
     raindrops (0.19.1)
-    rb-fsevent (0.10.3)
+    rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     ruby2_keywords (0.0.2)
