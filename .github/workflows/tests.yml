@@ -1,0 +1,26 @@
+name: GitHub Actions CI
+on:
+  push:
+    branches: master
+  pull_request: []
+jobs:
+  tests:
+    runs-on: macOS-latest
+    steps:
+    - name: Set up Git repository
+      uses: actions/checkout@master
+
+    - name: Bootstrap
+      run: ./script/bootstrap
+
+    - name: Cleanup macOS
+      run: |
+        sudo rm -rf /usr/local/bin/brew /usr/local/.??* \
+                    /Applications/Xcode.app /usr/local/Caskroom \
+                    /Library/Developer/CommandLineTools
+
+    - name: Use newer Xcode
+      run: sudo xcode-select --switch /Applications/Xcode_11.2.app/Contents/Developer
+
+    - name: CI Tests
+      run: ./script/cibuild

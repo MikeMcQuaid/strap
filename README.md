@@ -55,15 +55,13 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 - `GITHUB_SECRET`: the GitHub.com Application Client Secret.
 - `SESSION_SECRET`: the secret used for cookie session storage.
 - `WEB_CONCURRENCY`: the number of Unicorn (web server) processes to run (defaults to 3).
-- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to https://github.com/MikeMcQuaid/strap/issues/new).
+- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to no URL).
 - `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
 - `CUSTOM_HOMEBREW_TAP`: an optional Homebrew tap to install with `brew tap`. Specify multiple arguments to brew tap by separating values with spaces.
 - `CUSTOM_BREW_COMMAND`: a single `brew` command that is run after all other stages have completed.
 
 ## Status
 Stable and in active development.
-
-[![Azure Pipelines](https://img.shields.io/vso/build/MikeMcQuaid/1aff1cc4-3d48-4767-8815-ead284940ec1/1.svg)](https://dev.azure.com/MikeMcQuaid/MikeMcQuaid/_build/latest?definitionId=1)
 
 ## Contact
 [Mike McQuaid](mailto:mike@mikemcquaid.com)

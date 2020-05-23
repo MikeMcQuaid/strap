@@ -4,13 +4,13 @@ require "sinatra"
 require "omniauth-github"
 require "octokit"
 require "securerandom"
+require "rack/protection"
 require "awesome_print" if ENV["RACK_ENV"] == "development"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
 SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
-STRAP_ISSUES_URL_DEFAULT = "https://github.com/MikeMcQuaid/strap/issues/new"
-STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || STRAP_ISSUES_URL_DEFAULT
+STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
 CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
@@ -18,10 +18,13 @@ CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
 set :sessions, secret: SESSION_SECRET
 
 use OmniAuth::Builder do
-  options = { scope: "user:email,repo" }
+  options = { scope: "user:email,repo,workflow" }
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
+
+use Rack::Protection, use: %i[authenticity_token cookie_tossing form_token
+                              remote_referrer strict_transport]
 
 get "/auth/github/callback" do
   auth = request.env["omniauth.auth"]
@@ -43,6 +46,12 @@ get "/" do
   before_install_list_item = nil
   if STRAP_BEFORE_INSTALL
     before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>"
+  end
+
+  debugging_text = if STRAP_ISSUES_URL.to_s.empty?
+    "try to debug it yourself"
+  else
+    %Q{file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>}
   end
 
   @title = "👢 Strap"
@@ -71,7 +80,7 @@ get "/" do
       <li>
         If something failed, run Strap with more debugging output in
         Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and
-        file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>
+        #{debugging_text}.
       </li>
       <li>
         Delete the customised <code>strap.sh</code> (it has a GitHub token
@@ -122,6 +131,10 @@ get "/strap.sh" do
   env_sub(content, set_variables, set: true)
   env_sub(content, unset_variables, set: false)
 
+  # Manually set X-Frame-Options because Rack::Protection won't set it on
+  # non-HTML files:
+  # https://github.com/sinatra/sinatra/blob/v2.0.7/rack-protection/lib/rack/protection/frame_options.rb#L32
+  headers["X-Frame-Options"] = "DENY"
   content_type = if params["text"]
     "text/plain"
   else

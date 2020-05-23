@@ -10,12 +10,57 @@ cleanup() {
 
 trap "cleanup" EXIT
 
+# assert that any reference of sudo uses --askpass (or is whitelisted for another reason)
+check_sudo_askpass() {
+  violations=$(
+    # find all sudo
+    grep --line-number "[^'\"]sudo " bin/strap.sh |
+      # filter out comments
+      grep -Ev "^\d*:#" |
+      # filter out session resets
+      grep -v "sudo --reset-timestamp" |
+      # filter out password prompt
+      grep -v "(for sudo access)" |
+      # filter out creating askpass paths
+      grep -v "sudo mktemp" |
+      # filter out protecting askpass
+      grep -v "sudo chmod 1700" |
+      # filter writing askpass
+      grep -v "sudo bash -c \"cat > '\$SUDO_ASKPASS'\"" |
+      # allow using askpass
+      grep -v "sudo --askpass" |
+      # accept sudo passthrough without askpass
+      grep -v 'sudo "$@"' |
+      # filter out check to see if sudo is required
+      grep -v "sudo --validate" || true
+  )
+  if [ -n "$violations" ]; then
+    cat <<EOS
+Error: Use of sudo in strap.sh script without the sudo_askpass function to use
+askpass helper (to avoid reprompting a user for their sudo password).
+Either use sudo_askpass or add legitimate use to whitelist in script/cibuild.
+$violations
+EOS
+    exit 1
+  fi
+}
+check_sudo_askpass
+
+RUBY_VERSION="$(cat .ruby-version)"
+if ! git grep "   ruby $RUBY_VERSION" HEAD -- Gemfile.lock
+then
+  echo "Error: Gemfile.lock does not contain 'ruby $RUBY_VERSION'!" >&2
+  exit 1
+fi
+unset RUBY_VERSION
+
 script/bootstrap
 bundle exec foreman check
 script/server &>/dev/null &
 SERVER_PID="$!"
 sleep 15
 curl -O http://localhost:5000/strap.sh
+curl -sSL -D - -o /dev/null http://localhost:5000/strap.sh | grep "X-Frame-Options: DENY"
 kill "$SERVER_PID"
 wait "$SERVER_PID" || true
 SERVER_PID=

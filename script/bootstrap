@@ -3,7 +3,7 @@ set -e
 cd "$(dirname "$0")/.."
 
 (which bundle 2>&1 >/dev/null && bundle -v 2>&1 >/dev/null) || {
-  gem install bundler
+  gem install bundler -v "~>1"
 }
 
 bundle check 2>&1 >/dev/null || {
