@@ -130,14 +130,21 @@ run_dotfile_scripts() {
     (
       cd ~/.dotfiles
       for i in "$@"; do
-        if [ -f "$i" ] && [ -x "$i" ]; then
-          log "Running dotfiles $i:"
-          if [ -z "$STRAP_DEBUG" ]; then
-            "$i" 2>/dev/null
+        if [ -f "$i" ]; then
+          if [ -x "$i" ]; then
+            log "Running dotfiles $i:"
+            if [ -z "$STRAP_DEBUG" ]; then
+              "$i" 2>/dev/null
+            else
+              "$i"
+            fi
+            break
           else
+            filepath="$(pwd $i)/$i"
+            log "No permissions to run $i. Changing them now for $filepath"
+            chmod +x "$filepath"
             "$i"
           fi
-          break
         fi
       done
     )
