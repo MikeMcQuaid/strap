@@ -1,10 +1,13 @@
 # Strap
+
 A script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
 ## Motivation
+
 Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.com/) with a better tool. This post outlines the problems with Boxen and requirements for Strap and other tools used by GitHub: https://mikemcquaid.com/2016/06/15/replacing-boxen/
 
 ## Features
+
 - Disables Java in Safari (for better security)
 - Enables the macOS screensaver password immediately (for better security)
 - Enables the macOS application firewall (for better security)
@@ -23,6 +26,7 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 - Idempotent
 
 ## Out of Scope Features
+
 - Enabling any network services by default (instead enable them when needed)
 - Installing Homebrew formulae by default for everyone in an organisation (install them with `Brewfile`s in project repositories instead of mandating formulae for the whole organisation)
 - Opting-out of any macOS updates (Apple's security updates and macOS updates are there for a reason)
@@ -30,9 +34,11 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 - Add phone number to security screen message (want to avoid prompting users for information on installation)
 
 ## Usage
+
 Open https://macos-strap.herokuapp.com/ in your web browser.
 
 Instead, to run Strap locally run:
+
 ```bash
 git clone https://github.com/MikeMcQuaid/strap
 cd strap
@@ -40,6 +46,7 @@ bash bin/strap.sh # or bash bin/strap.sh --debug for more debugging output
 ```
 
 Instead, to run the web application locally run:
+
 ```bash
 git clone https://github.com/MikeMcQuaid/strap
 cd strap
@@ -50,7 +57,10 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
+Make sure that scripts in your `dotfiles/script` directory [are executable](https://askubuntu.com/questions/229589/how-to-make-a-file-e-g-a-sh-script-executable-so-it-can-be-run-from-a-termi)
+
 ## Web Application Configuration Environment Variables
+
 - `GITHUB_KEY`: the GitHub.com Application Client ID.
 - `GITHUB_SECRET`: the GitHub.com Application Client Secret.
 - `SESSION_SECRET`: the secret used for cookie session storage.
@@ -61,11 +71,14 @@ Instead, to deploy to [Heroku](https://www.heroku.com) click:
 - `CUSTOM_BREW_COMMAND`: a single `brew` command that is run after all other stages have completed.
 
 ## Status
+
 Stable and in active development.
 
 ## Contact
+
 [Mike McQuaid](mailto:mike@mikemcquaid.com)
 
 ## License
+
 Licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
 The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/master/LICENSE.txt).
