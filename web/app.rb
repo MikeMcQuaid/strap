@@ -18,7 +18,8 @@ CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
 set :sessions, secret: SESSION_SECRET
 
 use OmniAuth::Builder do
-  options = { scope: "user:email,repo,workflow,write:packages,read:packages" }
+ # access is given for gh cli, packages, git client setup and repo checkouts
+  options = { scope: "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions" }
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
