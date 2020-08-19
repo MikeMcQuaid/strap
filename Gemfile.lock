@@ -24,7 +24,7 @@ GEM
       guard-compat (~> 1.2, >= 1.2.1)
       spoon (~> 0.0.1)
     hashie (4.1.0)
-    jwt (2.2.1)
+    jwt (2.2.2)
     kgio (2.11.3)
     listen (3.2.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
