@@ -16,6 +16,7 @@ jobs:
     - name: Cleanup macOS
       run: |
         sudo rm -rf /usr/local/bin/brew /usr/local/.??* \
+                    /usr/local/Homebrew \
                     /Applications/Xcode.app /usr/local/Caskroom \
                     /Library/Developer/CommandLineTools
 
