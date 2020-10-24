@@ -172,6 +172,12 @@ if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
 fi
 logk
 
+# PROPOSAL: Don't do by default full disk encryption if running under VMware, as it has it's own disk encryption.
+# Running Big Sur on my Macbook Pro: `sysctl -n hw.model` -> `MacBookPro15,1`
+# Running Big Sure under VMware Fusion Pro 12 on same hardware: ``sysctl -n hw.model` -> `VMware7,1`
+# Have not tested other popular hypervisors but they may give other values.
+# Testing will require how far this `sysctl` goes back with MacOS, and how far back with VMware Fusion versions.
+
 # Check and enable full-disk encryption.
 logn "Checking full-disk encryption status:"
 if fdesetup status | grep $Q -E "FileVault is (On|Off, but will be enabled after the next restart)."; then
