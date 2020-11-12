@@ -5,13 +5,10 @@ on:
   pull_request: []
 jobs:
   tests:
-    runs-on: macOS-latest
+    runs-on: macOS-11.0
     steps:
     - name: Set up Git repository
       uses: actions/checkout@master
-
-    - name: Bootstrap
-      run: ./script/bootstrap
 
     - name: Cleanup macOS
       run: |
@@ -21,7 +18,24 @@ jobs:
                     /Library/Developer/CommandLineTools
 
     - name: Use newer Xcode
-      run: sudo xcode-select --switch /Applications/Xcode_11.2.app/Contents/Developer
+      run: sudo xcode-select --switch /Applications/Xcode_12.2.app/Contents/Developer
 
-    - name: CI Tests
-      run: ./script/cibuild
+    - run: script/bootstrap
+
+    - run: script/cibuild
+
+    - run: brew config
+
+    - run: brew test-bot --only-cleanup-before
+
+    - run: brew doctor
+      env:
+        HOMEBREW_GITHUB_ACTIONS_BIG_SUR_TESTING: 1 # TODO: remove when Big Sur is released.
+
+    - run: brew install --build-from-source libfaketime
+
+    - run: brew cask install orka
+
+    - run: brew install shellcheck
+
+    - run: shellcheck strap.sh
