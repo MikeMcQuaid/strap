@@ -10,9 +10,6 @@ jobs:
     - name: Set up Git repository
       uses: actions/checkout@master
 
-    - name: Bootstrap
-      run: ./script/bootstrap
-
     - name: Cleanup macOS
       run: |
         sudo rm -rf /usr/local/bin/brew /usr/local/.??* \
@@ -23,5 +20,20 @@ jobs:
     - name: Use newer Xcode
       run: sudo xcode-select --switch /Applications/Xcode_12.2.app/Contents/Developer
 
-    - name: CI Tests
-      run: ./script/cibuild
+    - run: script/bootstrap
+
+    - run: script/cibuild
+
+    - run: brew config
+
+    - run: brew test-bot --only-cleanup-before
+
+    - run: brew doctor
+
+    - run: brew install --build-from-source libfaketime
+
+    - run: brew cask install orka
+
+    - run: brew install shellcheck
+
+    - run: shellcheck strap.sh

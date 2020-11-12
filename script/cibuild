@@ -68,11 +68,3 @@ SERVER_PID=
 export STRAP_CI=1
 export STRAP_DEBUG=1
 bash strap.sh
-
-brew config
-brew doctor
-brew install --build-from-source libfaketime
-brew cask install orka
-brew install shellcheck
-
-shellcheck strap.sh
