@@ -29,6 +29,8 @@ jobs:
     - run: brew test-bot --only-cleanup-before
 
     - run: brew doctor
+      env:
+        HOMEBREW_GITHUB_ACTIONS_BIG_SUR_TESTING: 1 # TODO: remove when Big Sur is released.
 
     - run: brew install --build-from-source libfaketime
 
