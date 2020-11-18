@@ -8,7 +8,9 @@ jobs:
     runs-on: macOS-11.0
     steps:
     - name: Set up Git repository
-      uses: actions/checkout@master
+      uses: actions/checkout@main
+
+    - run: brew test-bot --only-cleanup-before
 
     - name: Cleanup macOS
       run: |
@@ -20,15 +22,30 @@ jobs:
     - name: Use newer Xcode
       run: sudo xcode-select --switch /Applications/Xcode_12.2.app/Contents/Developer
 
-    - run: script/bootstrap
-
-    - run: script/cibuild
+    - run: bin/strap.sh
+      env:
+        STRAP_CI: 1
+        STRAP_DEBUG: 1
 
     - run: brew config
 
-    - run: brew test-bot --only-cleanup-before
-
     - run: brew doctor
+
+    - name: Get Ruby version
+      run: echo "::set-output name=RUBY_VERSION::$(cat .ruby-version)"
+      id: ruby_version
+
+    - name: Set up Ruby
+      uses: actions/setup-ruby@main
+      with:
+        ruby-version: "${{ steps.ruby_version.outputs.RUBY_VERSION }}"
+
+    - name: Install Ruby dependencies
+      run: brew install gmp openssl@1.1 libyaml
+
+    - run: script/bootstrap
+
+    - run: script/cibuild
 
     - run: brew install --build-from-source libfaketime
 
@@ -36,4 +53,6 @@ jobs:
 
     - run: brew install shellcheck
 
-    - run: shellcheck strap.sh
+    - run: shellcheck bin/strap.sh
+
+    - run: bundle exec rubocop
