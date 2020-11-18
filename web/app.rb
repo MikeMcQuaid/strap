@@ -17,6 +17,7 @@ CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
 
 set :sessions, secret: SESSION_SECRET
 
+OmniAuth.config.allowed_request_methods = [:post]
 use OmniAuth::Builder do
  # access is given for gh cli, packages, git client setup and repo checkouts
   options = { scope: "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions" }
