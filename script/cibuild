@@ -64,7 +64,3 @@ curl -sSL -D - -o /dev/null http://localhost:5000/strap.sh | grep "X-Frame-Optio
 kill "$SERVER_PID"
 wait "$SERVER_PID" || true
 SERVER_PID=
-
-export STRAP_CI=1
-export STRAP_DEBUG=1
-bash strap.sh

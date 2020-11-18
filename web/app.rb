@@ -19,7 +19,7 @@ set :sessions, secret: SESSION_SECRET
 
 OmniAuth.config.allowed_request_methods = [:post]
 use OmniAuth::Builder do
- # access is given for gh cli, packages, git client setup and repo checkouts
+  # access is given for gh cli, packages, git client setup and repo checkouts
   options = { scope: "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions" }
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
@@ -46,14 +46,12 @@ get "/" do
   end
 
   before_install_list_item = nil
-  if STRAP_BEFORE_INSTALL
-    before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>"
-  end
+  before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>" if STRAP_BEFORE_INSTALL
 
   debugging_text = if STRAP_ISSUES_URL.to_s.empty?
     "try to debug it yourself"
   else
-    %Q{file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>}
+    %(file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>)
   end
 
   @title = "👢 Strap"
@@ -115,13 +113,9 @@ get "/strap.sh" do
   set_variables = { STRAP_ISSUES_URL: STRAP_ISSUES_URL }
   unset_variables = {}
 
-  if CUSTOM_HOMEBREW_TAP
-    unset_variables[:CUSTOM_HOMEBREW_TAP] = CUSTOM_HOMEBREW_TAP
-  end
+  unset_variables[:CUSTOM_HOMEBREW_TAP] = CUSTOM_HOMEBREW_TAP if CUSTOM_HOMEBREW_TAP
 
-  if CUSTOM_BREW_COMMAND
-    unset_variables[:CUSTOM_BREW_COMMAND] = CUSTOM_BREW_COMMAND
-  end
+  unset_variables[:CUSTOM_BREW_COMMAND] = CUSTOM_BREW_COMMAND if CUSTOM_BREW_COMMAND
 
   if auth
     unset_variables.merge! STRAP_GIT_NAME:     auth["info"]["name"],
@@ -150,6 +144,7 @@ private
 def env_sub(content, variables, set:)
   variables.each do |key, value|
     next if value.to_s.empty?
+
     regex = if set
       /^#{key}='.*'$/
     else
