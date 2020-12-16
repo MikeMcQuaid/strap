@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 guard "process", name: "foreman", command: "foreman start" do
   watch "config.ru"
   watch "Gemfile.lock"

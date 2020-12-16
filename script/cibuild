@@ -46,12 +46,19 @@ EOS
 }
 check_sudo_askpass
 
+check_ruby_version() {
+  file="$1"
+
+  if ! git grep "ruby.$RUBY_VERSION" HEAD -- "$file"
+  then
+    echo "Error: $file does not contain 'ruby $RUBY_VERSION'!" >&2
+    exit 1
+  fi
+}
+
 RUBY_VERSION="$(cat .ruby-version)"
-if ! git grep "   ruby $RUBY_VERSION" HEAD -- Gemfile.lock
-then
-  echo "Error: Gemfile.lock does not contain 'ruby $RUBY_VERSION'!" >&2
-  exit 1
-fi
+check_ruby_version Gemfile.lock
+check_ruby_version Dockerfile
 unset RUBY_VERSION
 
 script/bootstrap
@@ -64,13 +71,3 @@ curl -sSL -D - -o /dev/null http://localhost:5000/strap.sh | grep "X-Frame-Optio
 kill "$SERVER_PID"
 wait "$SERVER_PID" || true
 SERVER_PID=
-
-export STRAP_CI=1
-export STRAP_DEBUG=1
-bash strap.sh
-
-brew install --build-from-source libffi
-brew cask install flux
-brew install shellcheck
-
-shellcheck strap.sh
