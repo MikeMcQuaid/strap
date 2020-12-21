@@ -88,8 +88,7 @@ get "/" do
       </li>
       <li>
         Install additional software with
-        <code>brew install</code> and
-        <code>brew cask install</code>.
+        <code>brew install</code>.
       </li>
     </ol>
   HTML
