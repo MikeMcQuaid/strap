@@ -9,7 +9,7 @@ GEM
     faraday (1.1.0)
       multipart-post (>= 1.2, < 3)
       ruby2_keywords
-    ffi (1.14.1)
+    ffi (1.14.2)
     foreman (0.87.2)
     formatador (0.2.5)
     guard (2.16.2)
