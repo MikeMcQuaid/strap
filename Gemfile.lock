@@ -104,7 +104,7 @@ GEM
     thor (1.0.1)
     tilt (2.0.10)
     unicode-display_width (1.7.0)
-    unicorn (5.7.0)
+    unicorn (5.8.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
 
