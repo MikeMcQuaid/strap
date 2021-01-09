@@ -14,6 +14,11 @@ STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
 CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
+OMNIAUTH_FULL_HOST = ENV["OMNIAUTH_FULL_HOST"]
+
+# In some configurations, the full host may have been
+# set to something other than the canonical URL.
+OmniAuth.config.full_host = OMNIAUTH_FULL_HOST if OMNIAUTH_FULL_HOST
 
 set :sessions, secret: SESSION_SECRET
 
