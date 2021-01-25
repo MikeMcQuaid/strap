@@ -40,7 +40,7 @@ get "/auth/github/callback" do
   }
 
   return_to = session.delete :return_to
-  return_to = "/" if !return_to || return_to.empty?
+  return_to = "/strap.sh" if !return_to || return_to.empty?
   redirect to return_to
 end
 
@@ -64,8 +64,9 @@ get "/" do
     <ol>
       #{before_install_list_item}
       <li>
-        <a href="/strap.sh">
-          <button type="button" class="btn btn-outline-primary btn-sm">
+        <form method="post" action="/auth/github">
+          <input type="hidden" name="authenticity_token" value="#{request.env['rack.session']['csrf']}">
+          <button type="submit" class="btn btn-outline-primary btn-sm">
             Download the <code>strap.sh</code>
           </button>
         </a>
@@ -102,13 +103,6 @@ end
 
 get "/strap.sh" do
   auth = session[:auth]
-
-  if !auth && GITHUB_KEY && GITHUB_SECRET
-    query = request.query_string
-    query = "?#{query}" if query && !query.empty?
-    session[:return_to] = "#{request.path}#{query}"
-    redirect to "/auth/github"
-  end
 
   script = File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh")
   content = IO.read(script)
