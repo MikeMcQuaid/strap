@@ -52,7 +52,6 @@ get "/" do
     redirect to "https://#{request.host}#{request.fullpath}"
   end
 
-  before_install_list_item = nil
   before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>" if STRAP_BEFORE_INSTALL
 
   debugging_text = if STRAP_ISSUES_URL.blank?
