@@ -5,6 +5,7 @@ require "omniauth-github"
 require "octokit"
 require "securerandom"
 require "rack/protection"
+require "active_support/core_ext/object/blank"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
@@ -51,7 +52,7 @@ get "/" do
   before_install_list_item = nil
   before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>" if STRAP_BEFORE_INSTALL
 
-  debugging_text = if STRAP_ISSUES_URL.to_s.empty?
+  debugging_text = if STRAP_ISSUES_URL.blank?
     "try to debug it yourself"
   else
     %(file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>)
@@ -139,7 +140,7 @@ private
 
 def env_sub(content, variables, set:)
   variables.each do |key, value|
-    next if value.to_s.empty?
+    next if value.blank?
 
     regex = if set
       /^#{key}='.*'$/
