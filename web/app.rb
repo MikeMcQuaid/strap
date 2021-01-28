@@ -25,6 +25,7 @@ use OmniAuth::Builder do
   options = {
     # access is given for gh cli, packages, git client setup and repo checkouts
     scope:        "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions",
+    allow_signup: false,
   }
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
