@@ -15,15 +15,17 @@ CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
 CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
 OMNIAUTH_FULL_HOST = ENV["OMNIAUTH_FULL_HOST"]
 
-# In some configurations, the full host may have been
-# set to something other than the canonical URL.
+# In some configurations, the full host may need to be set to something other
+# than the canonical URL.
 OmniAuth.config.full_host = OMNIAUTH_FULL_HOST if OMNIAUTH_FULL_HOST
 
 set :sessions, secret: SESSION_SECRET
 
 use OmniAuth::Builder do
-  # access is given for gh cli, packages, git client setup and repo checkouts
-  options = { scope: "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions" }
+  options = {
+    # access is given for gh cli, packages, git client setup and repo checkouts
+    scope:        "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions",
+  }
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
@@ -33,6 +35,7 @@ use Rack::Protection, use: %i[authenticity_token cookie_tossing form_token
 
 get "/auth/github/callback" do
   auth = request.env["omniauth.auth"]
+
   session[:auth] = {
     "info"        => auth["info"],
     "credentials" => auth["credentials"],
@@ -78,19 +81,23 @@ get "/" do
         and is not otherwise used by this web application or stored
         anywhere.
       </li>
+
       <li>
         Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.
       </li>
+
       <li>
         If something failed, run Strap with more debugging output in
         Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and
         #{debugging_text}.
       </li>
+
       <li>
         Delete the customised <code>strap.sh</code> (it has a GitHub token
         in it) in Terminal.app with
         <code>rm -f ~/Downloads/strap.sh</code>
       </li>
+
       <li>
         Install additional software with
         <code>brew install</code>.
