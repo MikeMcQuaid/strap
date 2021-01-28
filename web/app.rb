@@ -3,13 +3,12 @@
 require "sinatra"
 require "omniauth-github"
 require "octokit"
-require "securerandom"
 require "rack/protection"
 require "active_support/core_ext/object/blank"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
-SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
+SESSION_SECRET = ENV["SESSION_SECRET"]
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
