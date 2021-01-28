@@ -3,28 +3,30 @@
 require "sinatra"
 require "omniauth-github"
 require "octokit"
-require "securerandom"
 require "rack/protection"
-require "awesome_print" if ENV["RACK_ENV"] == "development"
+require "active_support/core_ext/object/blank"
 
-GITHUB_KEY = ENV["GITHUB_KEY"]
-GITHUB_SECRET = ENV["GITHUB_SECRET"]
-SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
+GITHUB_KEY = ENV["GITHUB_KEY"] || "b28d0c47b8925e999e49"
+GITHUB_SECRET = ENV["GITHUB_SECRET"] || "cd4c391320f669e5807615611d0096414bc9af68"
+SESSION_SECRET = ENV["SESSION_SECRET"]
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
 CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
 OMNIAUTH_FULL_HOST = ENV["OMNIAUTH_FULL_HOST"]
 
-# In some configurations, the full host may have been
-# set to something other than the canonical URL.
+# In some configurations, the full host may need to be set to something other
+# than the canonical URL.
 OmniAuth.config.full_host = OMNIAUTH_FULL_HOST if OMNIAUTH_FULL_HOST
 
 set :sessions, secret: SESSION_SECRET
 
 use OmniAuth::Builder do
-  # access is given for gh cli, packages, git client setup and repo checkouts
-  options = { scope: "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions" }
+  options = {
+    # access is given for gh cli, packages, git client setup and repo checkouts
+    scope:        "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions",
+    allow_signup: false,
+  }
   options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
@@ -34,14 +36,13 @@ use Rack::Protection, use: %i[authenticity_token cookie_tossing form_token
 
 get "/auth/github/callback" do
   auth = request.env["omniauth.auth"]
+
   session[:auth] = {
     "info"        => auth["info"],
     "credentials" => auth["credentials"],
   }
 
-  return_to = session.delete :return_to
-  return_to = "/" if !return_to || return_to.empty?
-  redirect to return_to
+  redirect to "/"
 end
 
 get "/" do
@@ -49,13 +50,42 @@ get "/" do
     redirect to "https://#{request.host}#{request.fullpath}"
   end
 
-  before_install_list_item = nil
   before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>" if STRAP_BEFORE_INSTALL
 
-  debugging_text = if STRAP_ISSUES_URL.to_s.empty?
+  debugging_text = if STRAP_ISSUES_URL.blank?
     "try to debug it yourself"
   else
     %(file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>)
+  end
+
+  download_button_text = "Download the <code>strap.sh</code> script"
+
+  if session[:auth].present?
+    login_step = "You authorized Strap on GitHub ✅"
+    download_button_or_text = <<~HTML
+      <a href="/strap.sh" class="btn btn-outline-primary btn-sm">
+        #{download_button_text}
+      </a>
+    HTML
+    view_link_text = "view it in your browser"
+  else
+    csrf = request.env["rack.session"]["csrf"]
+    login_step = <<~HTML
+      <form method="post" action="/auth/github">
+        <input type="hidden" name="authenticity_token" value="#{csrf}">
+        <button type="submit" class="btn btn-outline-primary btn-sm">
+          Authorize Strap on GitHub
+        </button>
+        which will prompt for access to your email, public and private
+        repositories; you'll need to provide access to any organizations whose
+        repositories you need to be able to <code>git clone</code>. This is
+        used to add a GitHub access token to the <code>strap.sh</code> script
+        and is not otherwise used by this web application or stored
+        anywhere.
+      </form>
+    HTML
+    download_button_or_text = download_button_text
+    view_link_text = "view the uncustomised version in your browser"
   end
 
   @title = "👢 Strap"
@@ -63,34 +93,36 @@ get "/" do
     To Strap your system:
     <ol>
       #{before_install_list_item}
+
       <li>
-        <a href="/strap.sh">
-          <button type="button" class="btn btn-outline-primary btn-sm">
-            Download the <code>strap.sh</code>
-          </button>
-        </a>
-        that's been customised for your GitHub user (or
-        <a href="/strap.sh?text=1">view it</a>
-        first). This will prompt for access to your email, public and private
-        repositories; you'll need to provide access to any organizations whose
-        repositories you need to be able to <code>git clone</code>. This is
-        used to add a GitHub access token to the <code>strap.sh</code> script
-        and is not otherwise used by this web application or stored
-        anywhere.
+        #{login_step}
       </li>
+
+      <li>
+        #{download_button_or_text}
+        that's been customised for your GitHub user (or
+        <a href="/strap.sh?text=1">
+          #{view_link_text}
+        </a>
+        first).
+      </li>
+
       <li>
         Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.
       </li>
+
       <li>
         If something failed, run Strap with more debugging output in
         Terminal.app with <code>bash ~/Downloads/strap.sh --debug</code> and
         #{debugging_text}.
       </li>
+
       <li>
         Delete the customised <code>strap.sh</code> (it has a GitHub token
         in it) in Terminal.app with
         <code>rm -f ~/Downloads/strap.sh</code>
       </li>
+
       <li>
         Install additional software with
         <code>brew install</code>.
@@ -102,13 +134,6 @@ end
 
 get "/strap.sh" do
   auth = session[:auth]
-
-  if !auth && GITHUB_KEY && GITHUB_SECRET
-    query = request.query_string
-    query = "?#{query}" if query && !query.empty?
-    session[:return_to] = "#{request.path}#{query}"
-    redirect to "/auth/github"
-  end
 
   script = File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh")
   content = IO.read(script)
@@ -146,7 +171,7 @@ private
 
 def env_sub(content, variables, set:)
   variables.each do |key, value|
-    next if value.to_s.empty?
+    next if value.blank?
 
     regex = if set
       /^#{key}='.*'$/
