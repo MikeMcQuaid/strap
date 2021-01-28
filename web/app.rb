@@ -5,7 +5,6 @@ require "omniauth-github"
 require "octokit"
 require "securerandom"
 require "rack/protection"
-require "awesome_print" if ENV["RACK_ENV"] == "development"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
