@@ -6,8 +6,8 @@ require "octokit"
 require "rack/protection"
 require "active_support/core_ext/object/blank"
 
-GITHUB_KEY = ENV["GITHUB_KEY"]
-GITHUB_SECRET = ENV["GITHUB_SECRET"]
+GITHUB_KEY = ENV["GITHUB_KEY"] || "b28d0c47b8925e999e49"
+GITHUB_SECRET = ENV["GITHUB_SECRET"] || "cd4c391320f669e5807615611d0096414bc9af68"
 SESSION_SECRET = ENV["SESSION_SECRET"]
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
@@ -42,9 +42,7 @@ get "/auth/github/callback" do
     "credentials" => auth["credentials"],
   }
 
-  return_to = session.delete :return_to
-  return_to = "/strap.sh" if !return_to || return_to.empty?
-  redirect to return_to
+  redirect to "/"
 end
 
 get "/" do
@@ -60,26 +58,53 @@ get "/" do
     %(file an issue at <a href="#{STRAP_ISSUES_URL}">#{STRAP_ISSUES_URL}</a>)
   end
 
-  @title = "👢 Strap"
-  @text = <<~HTML
-    To Strap your system:
-    <ol>
-      #{before_install_list_item}
-      <li>
-        <form method="post" action="/auth/github">
-          <input type="hidden" name="authenticity_token" value="#{request.env['rack.session']['csrf']}">
-          <button type="submit" class="btn btn-outline-primary btn-sm">
-            Download the <code>strap.sh</code>
-          </button>
-        </a>
-        that's been customised for your GitHub user (or
-        <a href="/strap.sh?text=1">view it</a>
-        first). This will prompt for access to your email, public and private
+  download_button_text = "Download the <code>strap.sh</code> script"
+
+  if session[:auth].present?
+    login_step = "You authorized Strap on GitHub ✅"
+    download_button_or_text = <<~HTML
+      <a href="/strap.sh" class="btn btn-outline-primary btn-sm">
+        #{download_button_text}
+      </a>
+    HTML
+    view_link_text = "view it in your browser"
+  else
+    csrf = request.env["rack.session"]["csrf"]
+    login_step = <<~HTML
+      <form method="post" action="/auth/github">
+        <input type="hidden" name="authenticity_token" value="#{csrf}">
+        <button type="submit" class="btn btn-outline-primary btn-sm">
+          Authorize Strap on GitHub
+        </button>
+        which will prompt for access to your email, public and private
         repositories; you'll need to provide access to any organizations whose
         repositories you need to be able to <code>git clone</code>. This is
         used to add a GitHub access token to the <code>strap.sh</code> script
         and is not otherwise used by this web application or stored
         anywhere.
+      </form>
+    HTML
+    download_button_or_text = download_button_text
+    view_link_text = "view the uncustomised version in your browser"
+  end
+
+  @title = "👢 Strap"
+  @text = <<~HTML
+    To Strap your system:
+    <ol>
+      #{before_install_list_item}
+
+      <li>
+        #{login_step}
+      </li>
+
+      <li>
+        #{download_button_or_text}
+        that's been customised for your GitHub user (or
+        <a href="/strap.sh?text=1">
+          #{view_link_text}
+        </a>
+        first).
       </li>
 
       <li>
