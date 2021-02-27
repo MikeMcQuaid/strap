@@ -314,7 +314,6 @@ logk
 # Install Homebrew Bundle, Cask and Services tap.
 log "Installing Homebrew taps and extensions:"
 brew bundle --file=- <<RUBY
-tap 'homebrew/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
 RUBY
