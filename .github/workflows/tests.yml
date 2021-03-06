@@ -27,6 +27,12 @@ jobs:
           STRAP_CI: 1
           STRAP_DEBUG: 1
 
+      - name: Rerun bin/strap.sh
+        run: bin/strap.sh
+        env:
+          STRAP_CI: 1
+          STRAP_DEBUG: 1
+
       - run: brew config
 
       - run: brew doctor

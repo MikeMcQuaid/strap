@@ -273,7 +273,8 @@ logk
 # Setup Homebrew directory and permissions.
 logn "Installing Homebrew:"
 HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
-if [ -z "$HOMEBREW_PREFIX" ]; then
+HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
+if [ -z "$HOMEBREW_PREFIX" ] || [ -z "$HOMEBREW_REPOSITORY" ]; then
   UNAME_MACHINE="$(/usr/bin/uname -m)"
   if [[ "$UNAME_MACHINE" == "arm64" ]]; then
     HOMEBREW_PREFIX="/opt/homebrew"
