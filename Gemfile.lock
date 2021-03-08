@@ -17,7 +17,7 @@ GEM
       multipart-post (>= 1.2, < 3)
       ruby2_keywords
     faraday-net_http (1.0.1)
-    ffi (1.14.2)
+    ffi (1.15.0)
     foreman (0.87.2)
     formatador (0.2.5)
     guard (2.16.2)
