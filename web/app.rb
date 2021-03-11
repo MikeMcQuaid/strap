@@ -20,6 +20,10 @@ use OmniAuth::Builder do
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
 
+
+use Rack::Protection, use: %i[authenticity_token cookie_tossing form_token
+                              remote_referrer strict_transport]
+
 get "/auth/github/callback" do
   session[:auth] = request.env["omniauth.auth"]
   return_to = session.delete :return_to
@@ -37,6 +41,35 @@ get "/" do
     before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>"
   end
 
+  download_button_text = "Download the <code>strap.sh</code> script"
+
+  if session[:auth].present?
+    login_step = "You authorized Strap on GitHub ✅"
+    download_button_or_text = <<~HTML
+      <a href="/strap.sh" class="btn btn-outline-primary btn-sm">
+        #{download_button_text}
+      </a>
+    HTML
+    view_link_text = "view it in your browser"
+  else
+    csrf = request.env["rack.session"]["csrf"]
+    login_step = <<~HTML
+      <form method="post" action="/auth/github">
+        <input type="hidden" name="authenticity_token" value="#{csrf}">
+        <button type="submit" class="btn btn-outline-primary btn-sm">
+          Authorize Strap on GitHub
+        </button>
+        which This will prompt for access to your email, public and private repositories; 
+        you'll need to provide access to the Daptiv organization so Strap can access its repositories. This is
+        used to add a GitHub access token to the <code>strap.sh</code> script
+        and is not otherwise used by this web application or stored
+        anywhere.
+      </form>
+    HTML
+    download_button_or_text = download_button_text
+    view_link_text = "view the uncustomised version in your browser"
+  end
+
   @title = "Strap"
   @head = <<-EOS
 <link rel="stylesheet" href="app.css">
@@ -48,12 +81,16 @@ Strap is a script to bootstrap a minimal macOS development system for Daptiv dev
 <p class="note">(If you have locally-downloaded your Vagrant box, see alternate instructions below.)</p>
 <ol>
   #{before_install_list_item}
-  <li><a href="/strap.sh">Download the <code>strap.sh</code></a> that's been customised for your GitHub user.
-    <ul>
-      <li>This will prompt for access to your email, public and private repositories; you'll need to provide access to the Daptiv organization so Strap can access its repositories.</li>
-      <li>The permissions above are used to add a GitHub access token to the <code>strap.sh</code> script and is not otherwise used by this web application or stored anywhere.</li>
-      <li>You can <a href="/strap.sh?text=1">view the file</a> first if you want.</li>
-    </ul>
+  <li>
+    #{login_step}
+  </li>
+  <li>
+    #{download_button_or_text}
+    that's been customised for your GitHub user ( or 
+    <a href="/strap.sh?text=1">
+      #{view_link_text}
+    </a>
+    first)
   </li>
   <li>Run Strap in Terminal.app with <code>bash ~/Downloads/strap.sh --parallels-key [your-key-here]</code> where you replace <code>[your-key-here]</code> with your parallels license key.</li>
   <li>Once Strap completes, delete the customised <code>strap.sh</code></a> (it has a GitHub token in it) in Terminal.app with <code>rm -f ~/Downloads/strap.sh</code></a>.</li>
