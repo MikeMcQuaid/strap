@@ -2,6 +2,8 @@ require "sinatra"
 require "omniauth-github"
 require "octokit"
 require "securerandom"
+require "rack/protection"
+require "active_support/core_ext/object/blank"
 require "awesome_print" if ENV["RACK_ENV"] == "development"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
@@ -11,6 +13,10 @@ STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
                    "https://github.com/daptiv/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 STRAP_CONTACT_PHONE = ENV["STRAP_CONTACT_PHONE"]
+
+# In some configurations, the full host may need to be set to something other
+# than the canonical URL.
+OmniAuth.config.full_host = OMNIAUTH_FULL_HOST if OMNIAUTH_FULL_HOST
 
 set :sessions, secret: SESSION_SECRET
 
@@ -25,10 +31,14 @@ use Rack::Protection, use: %i[authenticity_token cookie_tossing form_token
                               remote_referrer strict_transport]
 
 get "/auth/github/callback" do
-  session[:auth] = request.env["omniauth.auth"]
-  return_to = session.delete :return_to
-  return_to = "/" if !return_to || return_to.empty?
-  redirect to return_to
+  auth = request.env["omniauth.auth"]
+
+  session[:auth] = {
+    "info"        => auth["info"],
+    "credentials" => auth["credentials"],
+  }
+
+  redirect to "/"
 end
 
 get "/" do
@@ -129,6 +139,10 @@ get "/strap.sh" do
   content = IO.read(File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh"))
   content.gsub!(/^STRAP_ISSUES_URL=.*$/, "STRAP_ISSUES_URL='#{STRAP_ISSUES_URL}'")
 
+  # Manually set X-Frame-Options because Rack::Protection won't set it on
+  # non-HTML files:
+  # https://github.com/sinatra/sinatra/blob/v2.0.7/rack-protection/lib/rack/protection/frame_options.rb#L32
+  headers["X-Frame-Options"] = "DENY"
   content_type = params["text"] ? "text/plain" : "application/octet-stream"
 
   if auth
