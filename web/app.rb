@@ -1,14 +1,13 @@
 require "sinatra"
 require "omniauth-github"
 require "octokit"
-require "securerandom"
 require "rack/protection"
 require "active_support/core_ext/object/blank"
 require "awesome_print" if ENV["RACK_ENV"] == "development"
 
 GITHUB_KEY = ENV["GITHUB_KEY"]
 GITHUB_SECRET = ENV["GITHUB_SECRET"]
-SESSION_SECRET = ENV["SESSION_SECRET"] || SecureRandom.hex
+SESSION_SECRET = ENV["SESSION_SECRET"]
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
                    "https://github.com/daptiv/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
