@@ -4,19 +4,18 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css">
     <title><%= @title %></title>
     <%= @head %>
   </head>
   <body>
     <div class="container">
-      <div class="page-header">
-        <h1><a href="/"><%= @title %></a></h1>
-      </div>
+        <h1 class="display-1"><a href="/"><%= @title %></a></h1>
     </div>
     <div class="container">
+      <div class="lead">
       <%= @text %>
+      </div>
     </div>
   </body>
 </html>
