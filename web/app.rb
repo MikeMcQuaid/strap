@@ -13,6 +13,7 @@ STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"] || \
                    "https://github.com/daptiv/strap/issues/new"
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
 STRAP_CONTACT_PHONE = ENV["STRAP_CONTACT_PHONE"]
+OMNIAUTH_FULL_HOST = ENV["OMNIAUTH_FULL_HOST"]
 
 # In some configurations, the full host may need to be set to something other
 # than the canonical URL.
