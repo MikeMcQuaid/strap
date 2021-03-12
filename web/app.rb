@@ -69,7 +69,7 @@ get "/" do
         <button type="submit" class="btn btn-outline-primary btn-sm">
           Authorize Strap on GitHub
         </button>
-        which This will prompt for access to your email, public and private repositories; 
+        which will prompt for access to your email, public and private repositories; 
         you'll need to provide access to the Daptiv organization so Strap can access its repositories. This is
         used to add a GitHub access token to the <code>strap.sh</code> script
         and is not otherwise used by this web application or stored
