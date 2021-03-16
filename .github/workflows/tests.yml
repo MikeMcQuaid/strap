@@ -31,7 +31,6 @@ jobs:
         run: bin/strap.sh
         env:
           STRAP_CI: 1
-          STRAP_DEBUG: 1
 
       - run: brew config
 
