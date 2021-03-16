@@ -177,8 +177,7 @@ logn "Checking full-disk encryption status:"
 if fdesetup status | grep $Q -E "FileVault is (On|Off, but will be enabled after the next restart)."; then
   logk
 elif [ -n "$STRAP_CI" ]; then
-  echo
-  logn "Skipping full-disk encryption for CI"
+  echo "SKIPPED (for CI)"
 elif [ -n "$STRAP_INTERACTIVE" ]; then
   echo
   log "Enabling full-disk encryption on next reboot:"
@@ -315,16 +314,16 @@ logk
 
 # Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
-log "Updating Homebrew:"
-brew update
+logn "Updating Homebrew:"
+brew update --quiet
 logk
 
 # Install Homebrew Bundle, Cask and Services tap.
 log "Installing Homebrew taps and extensions:"
-brew bundle --file=- <<RUBY
-tap 'homebrew/cask'
-tap 'homebrew/core'
-tap 'homebrew/services'
+brew bundle --quiet --file=- <<RUBY
+tap "homebrew/cask"
+tap "homebrew/core"
+tap "homebrew/services"
 RUBY
 logk
 
@@ -338,10 +337,10 @@ else
   if [ -z "$STRAP_CI" ]; then
     sudo_askpass softwareupdate --install --all
     xcode_license
+    logk
   else
-    echo "Skipping software updates for CI"
+    echo "SKIPPED (for CI)"
   fi
-  logk
 fi
 
 # Setup dotfiles
