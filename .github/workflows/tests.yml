@@ -40,13 +40,13 @@ jobs:
         run: echo "::set-output name=RUBY_VERSION::$(cat .ruby-version)"
         id: ruby_version
 
-      - name: Set up Ruby
-        uses: actions/setup-ruby@main
-        with:
-          ruby-version: "${{ steps.ruby_version.outputs.RUBY_VERSION }}"
-
       - name: Install Ruby dependencies
         run: brew install gmp openssl@1.1 libyaml
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@master
+        with:
+          ruby-version: "${{ steps.ruby_version.outputs.RUBY_VERSION }}"
 
       - run: script/bootstrap
 
