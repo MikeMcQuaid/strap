@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/ Usage: bin/strap.sh [--debug]
 #/ Install development dependencies on macOS.
-set -e
+set -eo pipefail
 
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
@@ -13,9 +13,15 @@ RESET="\033[0m"
 
 # Keep sudo timestamp updated while Strap is running.
 if [ "$1" = "--sudo-wait" ]; then
+  SUDO_WAIT_PATH="/var/db/sudo/$SUDO_USER"
+  rm -f "$SUDO_WAIT_PATH/endwait"
   while true; do
-    mkdir -p "/var/db/sudo/$SUDO_USER"
-    touch "/var/db/sudo/$SUDO_USER"
+    mkdir -p "$SUDO_WAIT_PATH"
+    touch "$SUDO_WAIT_PATH"
+    if [ -f "$SUDO_WAIT_PATH/endwait" ]; then
+      rm -f "$SUDO_WAIT_PATH/endwait"
+      exit 0
+    fi
     sleep 1
   done
   exit 0
@@ -39,6 +45,10 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --keep-sudo-waiting)
+      KEEP_SUDO_WAITING=1
+      shift
+      ;;
     *)
       echo "Unknown command line option: $1"
       exit 1
@@ -50,8 +60,8 @@ STRAP_SUCCESS=""
 
 cleanup() {
   set +e
-  if [ -n "$STRAP_SUDO_WAIT_PID" ]; then
-    sudo kill "$STRAP_SUDO_WAIT_PID"
+  if (( SUDO_WAITING && ! KEEP_SUDO_WAITING )); then
+    sudo touch "/var/db/sudo/$USER/endwait"
   fi
   rm -f "$CLT_PLACEHOLDER"
   if [ -z "$STRAP_SUCCESS" ]; then
@@ -98,7 +108,7 @@ STRAP_ISSUES_URL='https://github.com/daptiv/strap/issues/new'
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 
 abort()  { STRAP_STEP="";   echo "!!! $*" >&2; exit 1; }
-log()    { STRAP_STEP="$*"; echo "--> $*"; }
+log()    { STRAP_STEP="$*"; echo -e "--> $*"; }
 logn()   { STRAP_STEP="$*"; printf -- "--> %s " "$*"; }
 logk()   { STRAP_STEP="";   echo -e "${GREEN}✔${RESET}"; }
 logdebug(){ STRAP_STEP="$*"; if [ -n "$STRAP_DEBUG" ]; then echo -e "\n$*" ; fi }
@@ -114,10 +124,11 @@ groups | grep $Q admin || abort "Add $USER to the admin group."
 # Initialise sudo now to save prompting later.
 echo "Enter your password (for sudo access):"
 sudo /usr/bin/true
-[ -f "$STRAP_FULL_PATH" ]
-sudo bash "$STRAP_FULL_PATH" --sudo-wait &
-STRAP_SUDO_WAIT_PID="$!"
-ps -p "$STRAP_SUDO_WAIT_PID" &>/dev/null
+if (( ! SUDO_WAITING )); then
+  [ -f "$STRAP_FULL_PATH" ]
+  sudo bash "$STRAP_FULL_PATH" --sudo-wait &
+  export SUDO_WAITING=1
+fi
 
 # Add user to staff group
 if ! groups | grep $Q staff; then
@@ -328,6 +339,37 @@ tap 'daptiv/homebrew-tap'
 EOF
 fi
 logk
+
+if (( "${BASH_VERSINFO[0]}" < 5 )); then
+  logn 'Installing latest bash...'
+  brew bundle install -q --no-lock --file=- << EOF
+brew "bash"
+EOF
+  BASH_BIN="$(brew --prefix)/bin/bash"
+
+  # add new bash to list of acceptable shells
+  if ! grep -q "$BASH_BIN" /private/etc/shells; then
+    echo "$BASH_BIN" | sudo tee -a /private/etc/shells
+  fi
+
+  # if user's default shell is /bin/bash, set it to new bash
+  DEFAULT_SHELL=$(dscl . -read ~/ UserShell | sed 's/UserShell: //')
+  if [ "$DEFAULT_SHELL" = '/bin/bash' ]; then
+    sudo chpass -s "$BASH_BIN" "$USER"
+  fi
+
+  log "${YELLOW}Rerunning strap in new bash. You will now see duplicate setup steps!${RESET}"
+  logk
+
+  NEWBASH_CMDLINE=("$BASH_BIN" "$STRAP_FULL_PATH")
+  if [ -n "$STRAP_DEBUG" ]; then NEWBASH_CMDLINE+=('--debug'); fi
+  NEWBASH_CMDLINE+=('--keep-sudo-waiting')
+
+  "${NEWBASH_CMDLINE[@]}"
+
+  STRAP_SUCCESS='1'
+  exit 0
+fi
 
 # Check and install any remaining software updates.
 logn "Checking for software updates..."
