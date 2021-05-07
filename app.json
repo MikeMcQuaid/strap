@@ -3,8 +3,12 @@
   "description": "Bootstrap a minimal macOS development system",
   "website": "https://github.com/MikeMcQuaid/strap",
   "repository": "https://github.com/MikeMcQuaid/strap",
-  "keywords": ["ruby", "strap"],
+  "keywords": [
+    "ruby",
+    "strap"
+  ],
   "success_url": "/",
+  "stack": "container",
   "env": {
     "GITHUB_KEY": {
       "description": "The GitHub.com Application Client ID."

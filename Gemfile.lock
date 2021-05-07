@@ -22,7 +22,6 @@ GEM
     faraday-net_http (1.0.1)
     faraday-net_http_persistent (1.1.0)
     ffi (1.15.0)
-    foreman (0.87.2)
     formatador (0.2.5)
     guard (2.16.2)
       formatador (>= 0.2.4)
@@ -132,7 +131,6 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport
-  foreman
   guard
   guard-process
   octokit
@@ -142,7 +140,7 @@ DEPENDENCIES
   unicorn
 
 RUBY VERSION
-   ruby 2.7.2p137
+   ruby 2.7.3p183
 
 BUNDLED WITH
-   2.1.4
+   2.2.15

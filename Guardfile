@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-guard "process", name: "foreman", command: "foreman start" do
+guard "process", name: "server", command: "script/server" do
   watch "config.ru"
   watch "Gemfile.lock"
   watch "web/app.rb"
