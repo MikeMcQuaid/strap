@@ -11,7 +11,6 @@ gem "sinatra"
 gem "unicorn"
 
 group :development do
-  gem "foreman"
   gem "guard"
   gem "guard-process"
   gem "rubocop"

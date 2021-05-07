@@ -62,7 +62,6 @@ check_ruby_version Dockerfile
 unset RUBY_VERSION
 
 script/bootstrap
-bundle exec foreman check
 script/server &>/dev/null &
 SERVER_PID="$!"
 sleep 15

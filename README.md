@@ -50,12 +50,15 @@ Instead, to run the web application locally run:
 ```bash
 git clone https://github.com/MikeMcQuaid/strap
 cd strap
+./script/bootstrap
 GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
 ```
 
 Instead, to deploy to [Heroku](https://www.heroku.com) click:
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+Strap is also available as a Docker image on [Docker Hub (`mikemcquaid/strap`)](https://hub.docker.com/repository/docker/mikemcquaid/strap) and [GitHub Packages (`ghcr.io/mikemcquaid/strap`)](https://github.com/users/MikeMcQuaid/packages/container/package/strap).
 
 ## Web Application Configuration Environment Variables
 
