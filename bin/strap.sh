@@ -311,8 +311,21 @@ if ! type brew 1>/dev/null 2>&1 ; then
 fi
 logk
 
-# Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+
+# Unshallow old Homebrew taps
+for d in 'homebrew/core' 'homebrew/cask' 'homebrew/services' 'daptiv/homebrew-tap'; do
+  HOMEBREW_REPO="$(brew --repo $d)"
+  if [ -d "$HOMEBREW_REPO" ] && [ "$(git -C "$HOMEBREW_REPO" rev-parse --is-shallow-repository)" = 'true' ]; then
+    logn "Unshallowing $HOMEBREW_REPO..."
+    git -C "$HOMEBREW_REPO" fetch --unshallow
+    logk
+  else
+    logdebug "$HOMEBREW_REPO does not exist or doesn't need to be unshallowed."
+  fi
+done
+
+# Update Homebrew.
 logn "Updating Homebrew..."
 if [ -n "$STRAP_DEBUG" ]; then
   brew update
@@ -349,13 +362,19 @@ EOF
 
   # add new bash to list of acceptable shells
   if ! grep -q "$BASH_BIN" /private/etc/shells; then
+    logdebug "Adding new bash to list of acceptable shells"
     echo "$BASH_BIN" | sudo tee -a /private/etc/shells
+  else
+    logdebug "New bash is already in list of acceptable shells"
   fi
 
   # if user's default shell is /bin/bash, set it to new bash
   DEFAULT_SHELL=$(dscl . -read ~/ UserShell | sed 's/UserShell: //')
   if [ "$DEFAULT_SHELL" = '/bin/bash' ]; then
+    logdebug "Default shell is old bash. Changing to new bash..."
     sudo chpass -s "$BASH_BIN" "$USER"
+  else
+    logdebug "User's default shell ($DEFAULT_SHELL) is not old bash, so not replacing."
   fi
 
   log "${YELLOW}Rerunning strap in new bash. You will now see duplicate setup steps!${RESET}"
@@ -369,6 +388,8 @@ EOF
 
   STRAP_SUCCESS='1'
   exit 0
+else
+  logdebug "Newer bash version is in use: $BASH_VERSION"
 fi
 
 # Check and install any remaining software updates.
