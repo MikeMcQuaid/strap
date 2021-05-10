@@ -311,6 +311,8 @@ if ! type brew 1>/dev/null 2>&1 ; then
 fi
 logk
 
+export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+
 # Unshallow old Homebrew taps
 for d in 'homebrew/core' 'homebrew/cask' 'homebrew/services' 'daptiv/homebrew-tap'; do
   HOMEBREW_REPO="$(brew --repo $d)"
@@ -324,7 +326,6 @@ for d in 'homebrew/core' 'homebrew/cask' 'homebrew/services' 'daptiv/homebrew-ta
 done
 
 # Update Homebrew.
-export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 logn "Updating Homebrew..."
 if [ -n "$STRAP_DEBUG" ]; then
   brew update
