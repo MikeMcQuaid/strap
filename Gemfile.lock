@@ -87,7 +87,7 @@ GEM
       rack
     rainbow (3.0.0)
     raindrops (0.19.1)
-    rb-fsevent (0.10.4)
+    rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     regexp_parser (2.1.1)
