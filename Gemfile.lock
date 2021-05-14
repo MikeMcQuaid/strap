@@ -23,7 +23,7 @@ GEM
     faraday-net_http_persistent (1.1.0)
     ffi (1.15.0)
     formatador (0.2.5)
-    guard (2.16.2)
+    guard (2.17.0)
       formatador (>= 0.2.4)
       listen (>= 2.7, < 4.0)
       lumberjack (>= 1.0.12, < 2.0)
