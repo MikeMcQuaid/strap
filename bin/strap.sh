@@ -391,11 +391,14 @@ if [ -f "$HOME/.Brewfile" ]; then
   logk
 fi
 
-# Tap a custom Homebrew tap
+# Tap custom Homebrew taps
 if [ -n "$CUSTOM_HOMEBREW_TAP" ]; then
-  read -ra CUSTOM_HOMEBREW_TAP <<< "$CUSTOM_HOMEBREW_TAP"
-  log "Running 'brew tap ${CUSTOM_HOMEBREW_TAP[*]}':"
-  brew tap "${CUSTOM_HOMEBREW_TAP[@]}"
+  while IFS=',' read -ra TAPS; do
+      for tap in "${TAPS[@]}"; do
+        log "Running 'brew tap ${tap}':"
+        brew tap "${tap}"
+    done
+  done <<< "$CUSTOM_HOMEBREW_TAP"
   logk
 fi
 
