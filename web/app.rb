@@ -17,7 +17,12 @@ OMNIAUTH_FULL_HOST = ENV["OMNIAUTH_FULL_HOST"]
 
 # In some configurations, the full host may need to be set to something other
 # than the canonical URL.
-OmniAuth.config.full_host = OMNIAUTH_FULL_HOST if OMNIAUTH_FULL_HOST
+if OMNIAUTH_FULL_HOST
+  OmniAuth.config.full_host = OMNIAUTH_FULL_HOST
+
+  # For some reason this needs to be a no-op when using OMNIAUTH_FULL_HOST
+  OmniAuth.config.request_validation_phase = nil
+end
 
 set :sessions, secret: SESSION_SECRET
 
