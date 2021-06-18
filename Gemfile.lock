@@ -26,7 +26,7 @@ GEM
     faraday-net_http (1.0.1)
     faraday-net_http_persistent (1.1.0)
     ffi (1.15.3)
-    formatador (0.2.5)
+    formatador (0.3.0)
     guard (2.17.0)
       formatador (>= 0.2.4)
       listen (>= 2.7, < 4.0)
