@@ -291,7 +291,7 @@ fi
 (
   cd "$HOMEBREW_PREFIX"
   sudo_askpass mkdir -p               Cellar Frameworks bin etc include lib opt sbin share var
-  sudo_askpass chown -R "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
+  sudo_askpass chown "$USER:admin" Cellar Frameworks bin etc include lib opt sbin share var
 )
 
 [ -d "$HOMEBREW_REPOSITORY" ] || sudo_askpass mkdir -p "$HOMEBREW_REPOSITORY"
