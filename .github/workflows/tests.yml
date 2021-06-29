@@ -21,7 +21,7 @@ jobs:
                       /Library/Developer/CommandLineTools
 
       - name: Use newer Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_12.2.app/Contents/Developer
+        run: sudo xcode-select --switch /Applications/Xcode_13.0.app/Contents/Developer
 
       - run: bin/strap.sh
         env:
