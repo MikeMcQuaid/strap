@@ -6,8 +6,11 @@ require "octokit"
 require "rack/protection"
 require "active_support/core_ext/object/blank"
 
+# Don't worry: these credentials are not sensitive but just use for
+# "Strap (development)" with the URL and callback both set to localhost.
 GITHUB_KEY = ENV["GITHUB_KEY"] || "b28d0c47b8925e999e49"
 GITHUB_SECRET = ENV["GITHUB_SECRET"] || "cd4c391320f669e5807615611d0096414bc9af68"
+
 SESSION_SECRET = ENV["SESSION_SECRET"]
 STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
 STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
