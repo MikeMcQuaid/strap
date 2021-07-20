@@ -76,11 +76,6 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           echo ${{secrets.GHCR_TOKEN}} | \
-            docker login ghcr.io -u mikemcquaid --password-stdin
-          docker tag strap "ghcr.io/mikemcquaid/strap:master"
-          docker push "ghcr.io/mikemcquaid/strap:master"
-
-          echo ${{secrets.DOCKER_TOKEN}} | \
-            docker login -u mikemcquaid --password-stdin
-          docker tag strap "mikemcquaid/strap:master"
-          docker push "mikemcquaid/strap:master"
+            docker login ghcr.io -u packagebot --password-stdin
+          docker tag strap "ghcr.io/github/strap:master"
+          docker push "ghcr.io/github/strap:master"
