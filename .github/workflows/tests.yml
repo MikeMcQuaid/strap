@@ -75,12 +75,8 @@ jobs:
       - name: Deploy the Docker image to GitHub Packages and Docker Hub
         if: github.ref == 'refs/heads/master'
         run: |
-          echo ${{secrets.GITHUB_TOKEN}} | \
-            docker login ghcr.io -u mikemcquaid --password-stdin
-          docker tag strap "ghcr.io/mikemcquaid/strap:master"
-          docker push "ghcr.io/mikemcquaid/strap:master"
+          echo ${{secrets.GHCR_TOKEN}} | \
+            docker login ghcr.io -u ${{secrets.GHCR_USER}} --password-stdin
+          docker tag strap "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
+          docker push "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
 
-          echo ${{secrets.DOCKER_TOKEN}} | \
-            docker login -u mikemcquaid --password-stdin
-          docker tag strap "mikemcquaid/strap:master"
-          docker push "mikemcquaid/strap:master"
