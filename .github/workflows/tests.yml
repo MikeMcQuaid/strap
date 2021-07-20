@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   tests:
-    runs-on: macos-11.0
+    runs-on: macos-11
     steps:
       - name: Set up Git repository
         uses: actions/checkout@main
