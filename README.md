@@ -4,7 +4,7 @@ A script to bootstrap a minimal macOS development system. This does not assume y
 
 ## Motivation
 
-Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.com/) with a better tool. This post outlines the problems with Boxen and requirements for Strap and other tools used by GitHub: <https://mikemcquaid.com/2016/06/15/replacing-boxen/>
+Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com/) with a better tool. This post outlines the problems with Boxen and requirements for Strap and other tools used by GitHub: <https://mikemcquaid.com/2016/06/15/replacing-boxen/>
 
 ## Features
 
@@ -15,10 +15,10 @@ Replacing [Boxen](https://github.com/boxen/boxen/) in [GitHub](https://github.co
 - Enables full-disk encryption and saves the FileVault Recovery Key to the Desktop (for better security)
 - Installs the Xcode Command Line Tools (for compilers and Unix tools)
 - Agree to the Xcode license (for using compilers without prompts)
-- Installs [Homebrew](http://brew.sh) (for installing command-line software)
+- Installs [Homebrew](https://brew.sh) (for installing command-line software)
 - Installs [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle) (for `bundler`-like `Brewfile` support)
 - Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
-- Installs [Homebrew Cask](https://github.com/caskroom/homebrew-cask) (for installing graphical software)
+- Installs [Homebrew Cask](https://github.com/Homebrew/homebrew-cask) (for installing graphical software)
 - Installs the latest macOS software updates (for better security)
 - Installs dotfiles from a user's `https://github.com/username/dotfiles` repository. If they exist and are executable: runs `script/setup` to configure the dotfiles and `script/strap-after-setup` after setting up everything else.
 - Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
@@ -81,5 +81,5 @@ Stable and in active development.
 
 ## License
 
-Licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
+Licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/master/LICENSE.txt).
