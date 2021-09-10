@@ -254,7 +254,9 @@ fi
 # Setup GitHub HTTPS credentials.
 if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"
 then
-  if [[ "$(git config --global credential.helper)" != *"osxkeychain"* ]]
+  # Actually execute the credential in case it's a wrapper script for credential-osxkeychain
+  if git "credential-$(git config --global credential.helper 2>/dev/null)" 2>&1 \
+     | grep -v $Q "git.credential-osxkeychain"
   then
     git config --global credential.helper osxkeychain
   fi
