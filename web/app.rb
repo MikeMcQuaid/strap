@@ -144,7 +144,7 @@ get "/strap.sh" do
   auth = session[:auth]
 
   script = File.expand_path("#{File.dirname(__FILE__)}/../bin/strap.sh")
-  content = IO.read(script)
+  content = File.read(script)
 
   set_variables = { STRAP_ISSUES_URL: STRAP_ISSUES_URL }
   unset_variables = {}
