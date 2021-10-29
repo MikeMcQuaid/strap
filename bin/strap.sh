@@ -152,14 +152,14 @@ caffeinate -s -w $$ &
 
 # Set some basic security settings.
 logn "Configuring security settings:"
-defaults write com.apple.Safari \
+sudo_askpass defaults write com.apple.Safari \
   com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
   -bool false
-defaults write com.apple.Safari \
+sudo_askpass defaults write com.apple.Safari \
   com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles \
   -bool false
-defaults write com.apple.screensaver askForPassword -int 1
-defaults write com.apple.screensaver askForPasswordDelay -int 0
+sudo_askpass defaults write com.apple.screensaver askForPassword -int 1
+sudo_askpass defaults write com.apple.screensaver askForPasswordDelay -int 0
 sudo_askpass defaults write /Library/Preferences/com.apple.alf globalstate -int 1
 sudo_askpass launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
 
