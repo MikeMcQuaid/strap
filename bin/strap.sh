@@ -74,6 +74,11 @@ sudo_init() {
     return
   fi
 
+  # If TouchID for sudo is setup: use that instead.
+  if grep -q pam_tid /etc/pam.d/sudo; then
+    return
+  fi
+
   local SUDO_PASSWORD SUDO_PASSWORD_SCRIPT
 
   if ! sudo --validate --non-interactive &>/dev/null; then
