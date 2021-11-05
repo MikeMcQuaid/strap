@@ -16,7 +16,7 @@ check_sudo_askpass() {
     # find all sudo
     grep --line-number "[^'\"]sudo " bin/strap.sh |
       # filter out comments
-      grep -Ev "^\d*:#" |
+      grep -Ev "^\d*: *#" |
       # filter out session resets
       grep -v "sudo --reset-timestamp" |
       # filter out password prompt
