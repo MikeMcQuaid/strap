@@ -1,12 +1,11 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (6.1.4.3)
+    activesupport (7.0.0)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
-      zeitwerk (~> 2.3)
     addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     ast (2.4.2)
@@ -134,7 +133,6 @@ GEM
     unicorn (6.0.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
-    zeitwerk (2.5.1)
 
 PLATFORMS
   ruby
