@@ -50,7 +50,7 @@ GEM
       guard-compat (~> 1.2, >= 1.2.1)
       spoon (~> 0.0.1)
     hashie (5.0.0)
-    i18n (1.8.11)
+    i18n (1.9.0)
       concurrent-ruby (~> 1.0)
     jwt (2.3.0)
     kgio (2.11.4)
