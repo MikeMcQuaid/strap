@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: daily
       time: "08:45"
-      timezone: "Europe/London"
+      timezone: "America/Los_Angeles"
     open-pull-requests-limit: 10
     allow:
       - dependency-type: direct
