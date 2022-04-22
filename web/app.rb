@@ -8,15 +8,16 @@ require "active_support/core_ext/object/blank"
 
 # Don't worry: these credentials are not sensitive but just use for
 # "Strap (development)" with the URL and callback both set to localhost.
-GITHUB_KEY = ENV["GITHUB_KEY"] || "b28d0c47b8925e999e49"
-GITHUB_SECRET = ENV["GITHUB_SECRET"] || "cd4c391320f669e5807615611d0096414bc9af68"
+GITHUB_KEY = ENV.fetch("GITHUB_KEY", "b28d0c47b8925e999e49")
+GITHUB_SECRET = ENV.fetch("GITHUB_SECRET", "cd4c391320f669e5807615611d0096414bc9af68")
 
-SESSION_SECRET = ENV["SESSION_SECRET"]
-STRAP_ISSUES_URL = ENV["STRAP_ISSUES_URL"]
-STRAP_BEFORE_INSTALL = ENV["STRAP_BEFORE_INSTALL"]
-CUSTOM_HOMEBREW_TAP = ENV["CUSTOM_HOMEBREW_TAP"]
-CUSTOM_BREW_COMMAND = ENV["CUSTOM_BREW_COMMAND"]
-OMNIAUTH_FULL_HOST = ENV["OMNIAUTH_FULL_HOST"]
+SESSION_SECRET = ENV.fetch("SESSION_SECRET")
+STRAP_ISSUES_URL = ENV.fetch("STRAP_ISSUES_URL", nil)
+STRAP_BEFORE_INSTALL = ENV.fetch("STRAP_BEFORE_INSTALL", nil)
+CUSTOM_HOMEBREW_TAP = ENV.fetch("CUSTOM_HOMEBREW_TAP", nil)
+CUSTOM_BREW_COMMAND = ENV.fetch("CUSTOM_BREW_COMMAND", nil)
+OMNIAUTH_FULL_HOST = ENV.fetch("OMNIAUTH_FULL_HOST", nil)
+RACK_ENV = ENV.fetch("RACK_ENV", nil)
 
 # In some configurations, the full host may need to be set to something other
 # than the canonical URL.
@@ -35,7 +36,7 @@ use OmniAuth::Builder do
     scope:        "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions",
     allow_signup: false,
   }
-  options[:provider_ignores_state] = true if ENV["RACK_ENV"] == "development"
+  options[:provider_ignores_state] = true if RACK_ENV == "development"
   provider :github, GITHUB_KEY, GITHUB_SECRET, options
 end
 
@@ -54,9 +55,7 @@ get "/auth/github/callback" do
 end
 
 get "/" do
-  if request.scheme == "http" && ENV["RACK_ENV"] != "development"
-    redirect to "https://#{request.host}#{request.fullpath}"
-  end
+  redirect to "https://#{request.host}#{request.fullpath}" if request.scheme == "http" && RACK_ENV != "development"
 
   before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>" if STRAP_BEFORE_INSTALL
 
