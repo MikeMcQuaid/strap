@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (7.0.2.3)
+    activesupport (7.0.2.4)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
@@ -103,15 +103,15 @@ GEM
     rb-fsevent (0.11.1)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    regexp_parser (2.3.0)
+    regexp_parser (2.3.1)
     rexml (3.2.5)
-    rubocop (1.27.0)
+    rubocop (1.28.2)
       parallel (~> 1.10)
       parser (>= 3.1.0.0)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml
-      rubocop-ast (>= 1.16.0, < 2.0)
+      rubocop-ast (>= 1.17.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.17.0)
@@ -152,7 +152,7 @@ DEPENDENCIES
   unicorn
 
 RUBY VERSION
-   ruby 2.7.4p191
+   ruby 3.1.2p20
 
 BUNDLED WITH
-   2.2.22
+   2.3.11
