@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   tests:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Set up Git repository
         uses: actions/checkout@main
@@ -21,7 +21,9 @@ jobs:
                       /Library/Developer/CommandLineTools
 
       - name: Use newer Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_13.0.app/Contents/Developer
+        run: |
+          ls /Applications/Xcode*.app
+          sudo xcode-select --switch /Applications/Xcode_13.3.1.app/Contents/Developer
 
       - run: bin/strap.sh
         env:
@@ -68,11 +70,12 @@ jobs:
       - name: Build Docker image
         run: docker build --tag strap .
 
-      - name: Deploy the Docker image to GitHub Packages and Docker Hub
-        if: github.ref == 'refs/heads/master'
+      - name: Login to and tag for GitHub Packages
         run: |
           echo ${{secrets.GHCR_TOKEN}} | \
-            docker login ghcr.io -u ${{secrets.GHCR_USER}} --password-stdin
-          docker tag strap "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
-          docker push "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
+            docker login --username=${{secrets.GHCR_USER}} --password-stdin ghcr.io
+          docker tag strap ghcr.io/${{secrets.GHCR_ORG}}/strap:master
 
+      - name: Deploy the Docker image to GitHub Packages
+        if: github.ref == 'refs/heads/master'
+        run: docker push "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
