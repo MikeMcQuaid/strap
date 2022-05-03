@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   tests:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Set up Git repository
         uses: actions/checkout@main
@@ -21,7 +21,9 @@ jobs:
                       /Library/Developer/CommandLineTools
 
       - name: Use newer Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_13.0.app/Contents/Developer
+        run: |
+          ls /Applications/Xcode*.app
+          sudo xcode-select --switch /Applications/Xcode_13.3.1.app/Contents/Developer
 
       - run: bin/strap.sh
         env:
@@ -68,15 +70,34 @@ jobs:
       - name: Build Docker image
         run: docker build --tag strap .
 
+      - name: Login to and tag for Docker Hub
+        run: |
+          echo ${{secrets.DOCKER_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin
+          docker tag strap mikemcquaid/strap:master
+
+      - name: Login to and tag for GitHub Packages
+        run: |
+          echo ${{secrets.GITHUB_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin ghcr.io
+          docker tag strap ghcr.io/mikemcquaid/strap:master
+
+      - name: Login to and tag for Heroku
+        run: |
+          echo ${{secrets.HEROKU_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin registry.heroku.com
+          docker tag strap registry.heroku.com/macos-strap/web
+
       - name: Deploy the Docker image to GitHub Packages and Docker Hub
         if: github.ref == 'refs/heads/master'
         run: |
-          echo ${{secrets.GITHUB_TOKEN}} | \
-            docker login ghcr.io -u mikemcquaid --password-stdin
-          docker tag strap "ghcr.io/mikemcquaid/strap:master"
-          docker push "ghcr.io/mikemcquaid/strap:master"
+          docker push ghcr.io/mikemcquaid/strap:master
+          docker push mikemcquaid/strap:master
 
-          echo ${{secrets.DOCKER_TOKEN}} | \
-            docker login -u mikemcquaid --password-stdin
-          docker tag strap "mikemcquaid/strap:master"
-          docker push "mikemcquaid/strap:master"
+      - name: Deploy to and release the Docker image on Heroku
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker push registry.heroku.com/macos-strap/web
+          heroku container:release web --app=macos-strap
+        env:
+          HEROKU_API_KEY: ${{secrets.HEROKU_TOKEN}}
