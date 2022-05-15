@@ -67,36 +67,32 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@main
 
-      - name: Build Docker image
-        run: docker build --tag strap .
-
-      - name: Login to and tag for Docker Hub
+      - name: Build and tag Docker image
         run: |
-          echo ${{secrets.DOCKER_TOKEN}} | \
-            docker login --username=mikemcquaid --password-stdin
+          docker build --tag strap .
           docker tag strap mikemcquaid/strap:master
+          docker tag strap ghcr.io/mikemcquaid/strap:master
+          docker tag strap registry.heroku.com/macos-strap/web
 
-      - name: Login to and tag for GitHub Packages
+      - name: Deploy the Docker image to GitHub Packages
+        if: github.ref == 'refs/heads/master'
         run: |
           echo ${{secrets.GITHUB_TOKEN}} | \
             docker login --username=mikemcquaid --password-stdin ghcr.io
-          docker tag strap ghcr.io/mikemcquaid/strap:master
+          docker push ghcr.io/mikemcquaid/strap:master
 
-      - name: Login to and tag for Heroku
-        run: |
-          echo ${{secrets.HEROKU_TOKEN}} | \
-            docker login --username=mikemcquaid --password-stdin registry.heroku.com
-          docker tag strap registry.heroku.com/macos-strap/web
-
-      - name: Deploy the Docker image to GitHub Packages and Docker Hub
+      - name: Deploy the Docker image to Docker Hub
         if: github.ref == 'refs/heads/master'
         run: |
-          docker push ghcr.io/mikemcquaid/strap:master
+          echo ${{secrets.DOCKER_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin
           docker push mikemcquaid/strap:master
 
       - name: Deploy to and release the Docker image on Heroku
         if: github.ref == 'refs/heads/master'
         run: |
+          echo ${{secrets.HEROKU_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin registry.heroku.com
           docker push registry.heroku.com/macos-strap/web
           heroku container:release web --app=macos-strap
         env:
