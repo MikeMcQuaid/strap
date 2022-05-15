@@ -42,6 +42,9 @@ sudo_askpass_style() {
       # accept sudo passthrough without askpass
       grep -v 'sudo "$@"' \
       |
+      # accept sudo log message
+      grep -v 'Configuring sudo authentication using TouchID:' \
+      |
       # filter out check to see if sudo is required
       grep -v "sudo --validate" || true
   )
