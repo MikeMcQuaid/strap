@@ -3,4 +3,4 @@ set -e
 cd "$(dirname "$0")/.."
 
 export PORT="${PORT:-5000}"
-bundle exec unicorn --port $PORT --config-file web/unicorn.rb
+bundle exec unicorn --port "$PORT" --config-file web/unicorn.rb
