@@ -5,6 +5,24 @@ on:
       - master
   pull_request:
 jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@main
+
+      - name: Install shfmt
+        run: |
+          brew update
+          brew install shfmt
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@master
+        with:
+          bundler-cache: true
+
+      - run: script/style
+
   tests:
     runs-on: macos-12
     steps:
@@ -49,17 +67,13 @@ jobs:
 
       - run: script/bootstrap
 
-      - run: script/cibuild
+      - run: script/tests
 
       - run: brew install --build-from-source --formula libfaketime
 
       - run: brew install --cask orka
 
-      - run: brew install --formula shellcheck
-
-      - run: shellcheck bin/strap.sh
-
-      - run: bundle exec rubocop
+      - run: brew install --formula xz
 
   docker:
     runs-on: ubuntu-latest

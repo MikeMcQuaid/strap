@@ -2,10 +2,10 @@
 set -e
 cd "$(dirname "$0")/.."
 
-(which bundle 2>&1 >/dev/null && bundle -v 2>&1 >/dev/null) || {
+(command -v bundle >/dev/null 2>&1 && bundle -v >/dev/null 2>&1) || {
   gem install bundler
 }
 
-bundle check 2>&1 >/dev/null || {
+bundle check >/dev/null 2>&1 || {
   bundle install
 }

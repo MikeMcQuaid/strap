@@ -1,0 +1,117 @@
+#!/bin/bash
+set -e
+cd "$(dirname "$0")/.."
+
+[[ $1 == "--fix" ]] && STYLE_FIX="1"
+
+# assert that any reference of sudo uses --askpass (or is whitelisted for another reason)
+sudo_askpass_style() {
+  local grep_regex_arg
+  if [ "$(uname -s)" == "Darwin" ]; then
+    grep_regex_arg="-E"
+  else
+    grep_regex_arg="-P"
+  fi
+
+  local violations
+  violations=$(
+    # find all sudo
+    grep --line-number "[^'\"]sudo " bin/strap.sh \
+      |
+      # filter out comments
+      grep "$grep_regex_arg" -v "^\d*: *#" \
+      |
+      # filter out session resets
+      grep -v "sudo --reset-timestamp" \
+      |
+      # filter out password prompt
+      grep -v "(for sudo access)" \
+      |
+      # filter out creating askpass paths
+      grep -v "sudo mktemp" \
+      |
+      # filter out protecting askpass
+      grep -v "sudo chmod 1700" \
+      |
+      # filter writing askpass
+      grep -v "sudo bash -c \"cat > '\$SUDO_ASKPASS'\"" \
+      |
+      # allow using askpass
+      grep -v "sudo --askpass" \
+      |
+      # accept sudo passthrough without askpass
+      grep -v 'sudo "$@"' \
+      |
+      # accept sudo log message
+      grep -v 'Configuring sudo authentication using TouchID:' \
+      |
+      # filter out check to see if sudo is required
+      grep -v "sudo --validate" || true
+  )
+
+  if [ -n "$violations" ]; then
+    cat <<EOS
+Error: Use of sudo in strap.sh script without the sudo_askpass function to use
+askpass helper (to avoid reprompting a user for their sudo password).
+Either use sudo_askpass or add legitimate use to whitelist in script/cibuild.
+$violations
+EOS
+    exit 1
+  fi
+}
+
+ruby_version_style() {
+  local ruby_version
+  ruby_version="$(cat .ruby-version)"
+
+  for file in "$@"; do
+    if ! git grep --quiet "ruby.${ruby_version}" HEAD -- "$file"; then
+      echo "Error: $file does not contain 'ruby ${ruby_version}'!" >&2
+      exit 1
+    fi
+  done
+}
+
+shell_style() {
+  local shfmt_args="--indent 2 --binary-next-line --simplify"
+
+  if [ -n "$STYLE_FIX" ]; then
+    for file in "$@"; do
+      # Want to expand shfmt_args
+      # shellcheck disable=SC2086
+      shfmt $shfmt_args --write "$file" "$file"
+    done
+  fi
+
+  local shfmt_diff
+  # Want to expand shfmt_args
+  # shellcheck disable=SC2086
+  shfmt_diff="$(shfmt $shfmt_args --diff "$@")"
+
+  if [ -n "$shfmt_diff" ]; then
+    # Don't care about expanding escape sequences
+    # shellcheck disable=SC2028
+    echo "Error: shfmt failed:\n\n$shfmt_diff" >&2
+    exit 1
+  fi
+
+  shellcheck "$@"
+}
+
+ruby_style() {
+  if [ -n "$STYLE_FIX" ]; then
+    local rubocop_args="--auto-correct-all"
+  fi
+
+  bundle exec rubocop --format quiet $rubocop_args
+}
+
+script/bootstrap
+
+sudo_askpass_style
+
+ruby_version_style Gemfile.lock Dockerfile
+
+shell_style bin/strap.sh script/*
+
+ruby_style

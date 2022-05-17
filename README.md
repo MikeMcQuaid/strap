@@ -8,6 +8,7 @@ Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com
 
 ## Features
 
+- Enables `sudo` using TouchID
 - Disables Java in Safari (for better security)
 - Enables the macOS screensaver password immediately (for better security)
 - Enables the macOS application firewall (for better security)
