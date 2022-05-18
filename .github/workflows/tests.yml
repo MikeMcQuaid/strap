@@ -84,12 +84,10 @@ jobs:
       - name: Build Docker image
         run: docker build --tag strap .
 
-      - name: Login to and tag for GitHub Packages
+      - name: Login to, tag for, deploy to GitHub Packages
+        if: github.ref == 'refs/heads/master'
         run: |
           echo ${{secrets.GHCR_TOKEN}} | \
             docker login --username=${{secrets.GHCR_USER}} --password-stdin ghcr.io
           docker tag strap ghcr.io/${{secrets.GHCR_ORG}}/strap:master
-
-      - name: Deploy the Docker image to GitHub Packages
-        if: github.ref == 'refs/heads/master'
-        run: docker push "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
+          docker push "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
