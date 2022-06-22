@@ -41,7 +41,6 @@ GEM
     lumberjack (1.2.8)
     method_source (1.0.0)
     minitest (5.16.1)
-    multi_json (1.15.0)
     multi_xml (0.6.0)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
@@ -49,12 +48,13 @@ GEM
     notiffany (0.1.3)
       nenv (~> 0.1)
       shellany (~> 0.0)
-    oauth2 (1.4.9)
+    oauth2 (2.0.0)
       faraday (>= 0.17.3, < 3.0)
       jwt (>= 1.0, < 3.0)
-      multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (>= 1.2, < 3)
+      rash_alt (>= 0.4, < 1)
+      version_gem (~> 1.0)
     octokit (4.25.0)
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
@@ -80,6 +80,8 @@ GEM
       rack
     rainbow (3.1.1)
     raindrops (0.20.0)
+    rash_alt (0.4.12)
+      hashie (>= 3.4)
     rb-fsevent (0.11.1)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
@@ -117,6 +119,7 @@ GEM
     unicorn (6.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
+    version_gem (1.0.0)
 
 PLATFORMS
   ruby
