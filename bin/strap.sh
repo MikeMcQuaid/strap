@@ -101,8 +101,6 @@ STDIN_FILE_DESCRIPTOR="0"
 # DOCKER_USERNAME=
 # DOCKER_PASSWORD=
 
-DAPTIV_DOTFILES_BRANCH="${DAPTIV_DOTFILES_BRANCH:-master}"
-USER_DOTFILES_BRANCH="${USER_DOTFILES_BRANCH:-master}"
 STRAP_ISSUES_URL='https://github.com/daptiv/strap/issues/new'
 
 STRAP_FULL_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
@@ -341,56 +339,15 @@ brew bundle --file=- <<EOF
 tap 'homebrew/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
-tap 'daptiv/homebrew-tap'
 EOF
 else
 brew bundle --file=- 1>/dev/null 2>&1 <<EOF
 tap 'homebrew/cask'
 tap 'homebrew/core'
 tap 'homebrew/services'
-tap 'daptiv/homebrew-tap'
 EOF
 fi
 logk
-
-if (( "${BASH_VERSINFO[0]}" < 5 )); then
-  logn 'Installing latest bash...'
-  brew bundle install -q --no-lock --file=- << EOF
-brew "bash"
-EOF
-  BASH_BIN="$(brew --prefix)/bin/bash"
-
-  # add new bash to list of acceptable shells
-  if ! grep -q "$BASH_BIN" /private/etc/shells; then
-    logdebug "Adding new bash to list of acceptable shells"
-    echo "$BASH_BIN" | sudo tee -a /private/etc/shells
-  else
-    logdebug "New bash is already in list of acceptable shells"
-  fi
-
-  # if user's default shell is /bin/bash, set it to new bash
-  DEFAULT_SHELL=$(dscl . -read ~/ UserShell | sed 's/UserShell: //')
-  if [ "$DEFAULT_SHELL" = '/bin/bash' ]; then
-    logdebug "Default shell is old bash. Changing to new bash..."
-    sudo chpass -s "$BASH_BIN" "$USER"
-  else
-    logdebug "User's default shell ($DEFAULT_SHELL) is not old bash, so not replacing."
-  fi
-
-  log "${YELLOW}Rerunning strap in new bash. You will now see duplicate setup steps!${RESET}"
-  logk
-
-  NEWBASH_CMDLINE=("$BASH_BIN" "$STRAP_FULL_PATH")
-  if [ -n "$STRAP_DEBUG" ]; then NEWBASH_CMDLINE+=('--debug'); fi
-  NEWBASH_CMDLINE+=('--keep-sudo-waiting')
-
-  "${NEWBASH_CMDLINE[@]}"
-
-  STRAP_SUCCESS='1'
-  exit 0
-else
-  logdebug "Newer bash version is in use: $BASH_VERSION"
-fi
 
 # Check and install any remaining software updates.
 logn "Checking for software updates..."
@@ -405,7 +362,7 @@ if ! softwareupdate -l 2>&1 | grep $Q "No new software available."; then
 fi
 logk
 
-# clone strap locally
+# clone strap locally when running from Daptiv heroku app
 STRAP_SRC_DIR="$HOME/src/strap"
 logn "Ensure strap is cloned locally and up to date..."
 if [ ! -d "$STRAP_SRC_DIR" ]; then
@@ -465,50 +422,8 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
   fi
 fi
 
-# Setup Daptiv dotfiles
-DOTFILES_URL="git@github.com:daptiv/dotfiles"
-DOTFILES_DIR="$HOME/.daptiv-dotfiles"
-
-logn "Fetching daptiv/dotfiles from GitHub..."
-if [ ! -d "$DOTFILES_DIR" ]; then
-  logdebug "Cloning to $DOTFILES_DIR:"
-  git clone $Q "$DOTFILES_URL" "$DOTFILES_DIR" 1>/dev/null 2>&1
-else
-  (
-    logdebug "Updating local repository."
-    cd "$DOTFILES_DIR"
-    git pull $Q --rebase --autostash 1>/dev/null 2>&1
-  )
-fi
-logk
-(
-  logn "Check current branch of daptiv/dotfiles against requested branch..."
-  cd "$DOTFILES_DIR"
-  CURRENT_DAPTIV_DOTFILES_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-  if [ "$DAPTIV_DOTFILES_BRANCH" != "$CURRENT_DAPTIV_DOTFILES_BRANCH" ]; then
-    # check to make sure there are no pending changes in current branch
-    if git diff-index --quiet HEAD -- ; then
-      logdebug "Changing branch from '$CURRENT_DAPTIV_DOTFILES_BRANCH' to '$DAPTIV_DOTFILES_BRANCH'"
-      git checkout $DAPTIV_DOTFILES_BRANCH
-      git pull $Q --rebase --autostash
-    else
-      abort "Pending changes in $DOTFILES_DIR, unable to switch to branch: $DAPTIV_DOTFILES_BRANCH. If you want to run in this branch run strap with: DAPTIV_DOTFILES_BRANCH=$CURRENT_DAPTIV_DOTFILES_BRANCH"
-    fi
-  fi
-  logk
-
-  for i in script/setup script/bootstrap; do
-    if [ -f "$i" ] && [ -x "$i" ]; then
-      logn "Running dotfiles $i..."
-      "$i" 1>/dev/null 2>&1
-      logk
-      break
-    fi
-  done
-)
+# custom-strap.sh exists
+[ -f ./custom-strap.sh ] && source ./custom-strap.sh
 
 STRAP_SUCCESS="1"
 echo -e "${GREEN}Box strap is complete."
-echo -e "Next steps:"
-echo -e "1. run 'strap-daptiv' to run daptiv-dotfiles scripts/setup"
-echo -e "2. run 'strap-user' to run user dotfiles scripts/setup${RESET}"

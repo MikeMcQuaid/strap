@@ -1,0 +1,113 @@
+name: GitHub Actions CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@main
+
+      - name: Install shfmt
+        run: |
+          brew update
+          brew install shfmt
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@master
+        with:
+          bundler-cache: true
+
+      - run: script/style
+
+  tests:
+    runs-on: macos-12
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@main
+
+      - run: brew test-bot --only-cleanup-before
+
+      - name: Cleanup macOS
+        run: |
+          sudo rm -rf /usr/local/bin/brew /usr/local/.??* \
+                      /usr/local/Homebrew \
+                      /Applications/Xcode.app /usr/local/Caskroom \
+                      /Library/Developer/CommandLineTools
+
+      - name: Use newer Xcode
+        run: |
+          ls /Applications/Xcode*.app
+          sudo xcode-select --switch /Applications/Xcode_13.3.1.app/Contents/Developer
+
+      - run: bin/strap.sh
+        env:
+          STRAP_CI: 1
+          STRAP_DEBUG: 1
+
+      - name: Rerun bin/strap.sh
+        run: bin/strap.sh
+        env:
+          STRAP_CI: 1
+
+      - run: brew config
+
+      - run: brew doctor
+
+      - name: Install Ruby dependencies
+        run: brew install gmp openssl@1.1 libyaml
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@master
+        with:
+          bundler-cache: true
+
+      - run: script/bootstrap
+
+      - run: script/tests
+
+      - run: brew install --build-from-source --formula libfaketime
+
+      - run: brew install --cask orka
+
+      - run: brew install --formula xz
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@main
+
+      - name: Build and tag Docker image
+        run: |
+          docker build --tag strap .
+          docker tag strap mikemcquaid/strap:master
+          docker tag strap ghcr.io/mikemcquaid/strap:master
+          docker tag strap registry.heroku.com/macos-strap/web
+
+      - name: Deploy the Docker image to GitHub Packages
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo ${{secrets.GITHUB_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin ghcr.io
+          docker push ghcr.io/mikemcquaid/strap:master
+
+      - name: Deploy the Docker image to Docker Hub
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo ${{secrets.DOCKER_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin
+          docker push mikemcquaid/strap:master
+
+      - name: Deploy to and release the Docker image on Heroku
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo ${{secrets.HEROKU_TOKEN}} | \
+            docker login --username=mikemcquaid --password-stdin registry.heroku.com
+          docker push registry.heroku.com/macos-strap/web
+          heroku container:release web --app=macos-strap
+        env:
+          HEROKU_API_KEY: ${{secrets.HEROKU_TOKEN}}

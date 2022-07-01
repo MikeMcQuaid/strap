@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+cd "$(dirname "$0")/.."
+
+tests_cleanup() {
+  if [ -n "$SERVER_PID" ]; then
+    kill "$SERVER_PID"
+  fi
+}
+
+trap "tests_cleanup" EXIT
+
+script/bootstrap
+script/server &>/dev/null &
+SERVER_PID="$!"
+
+sleep 15
+
+curl -O http://localhost:5000/strap.sh
+curl -sSL -D - -o /dev/null http://localhost:5000/strap.sh | grep "X-Frame-Options: DENY"
+
+kill "$SERVER_PID"
+wait "$SERVER_PID" || true
+unset SERVER_PID
