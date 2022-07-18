@@ -43,7 +43,7 @@ GEM
     method_source (1.0.0)
     minitest (5.16.2)
     multi_xml (0.6.0)
-    mustermann (1.1.1)
+    mustermann (1.1.2)
       ruby2_keywords (~> 0.0.1)
     nenv (0.3.0)
     notiffany (0.1.3)
