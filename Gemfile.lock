@@ -114,7 +114,7 @@ GEM
     spoon (0.0.6)
       ffi
     thor (1.2.1)
-    tilt (2.0.10)
+    tilt (2.0.11)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.2.0)
