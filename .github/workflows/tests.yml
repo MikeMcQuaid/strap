@@ -86,7 +86,6 @@ jobs:
           docker build --tag strap .
           docker tag strap mikemcquaid/strap:master
           docker tag strap ghcr.io/mikemcquaid/strap:master
-          docker tag strap registry.heroku.com/macos-strap/web
 
       - name: Deploy the Docker image to GitHub Packages
         if: github.ref == 'refs/heads/master'
@@ -101,13 +100,3 @@ jobs:
           echo ${{secrets.DOCKER_TOKEN}} | \
             docker login --username=mikemcquaid --password-stdin
           docker push mikemcquaid/strap:master
-
-      - name: Deploy to and release the Docker image on Heroku
-        if: github.ref == 'refs/heads/master'
-        run: |
-          echo ${{secrets.HEROKU_TOKEN}} | \
-            docker login --username=mikemcquaid --password-stdin registry.heroku.com
-          docker push registry.heroku.com/macos-strap/web
-          heroku container:release web --app=macos-strap
-        env:
-          HEROKU_API_KEY: ${{secrets.HEROKU_TOKEN}}
