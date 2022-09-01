@@ -4,4 +4,4 @@ worker_processes ENV.fetch("WEB_CONCURRENCY", 3).to_i
 
 # needed to avoid multiple workers from having different session secrets
 require "securerandom"
-ENV["SESSION_SECRET"] = SecureRandom.hex unless ENV["SESSION_SECRET"]
+ENV["SESSION_SECRET"] = SecureRandom.hex(64) unless ENV["SESSION_SECRET"]
