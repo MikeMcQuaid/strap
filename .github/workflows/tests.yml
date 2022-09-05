@@ -81,13 +81,14 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@main
 
-      - name: Build Docker image
-        run: docker build --tag strap .
+      - name: Build and tag Docker image
+        run: |
+          docker build --tag strap .
+          docker tag strap ghcr.io/github/strap:master
 
-      - name: Login to, tag for, deploy to GitHub Packages
+      - name: Deploy the Docker image to GitHub Packages
         if: github.ref == 'refs/heads/master'
         run: |
           echo ${{secrets.GHCR_TOKEN}} | \
             docker login --username=${{secrets.GHCR_USER}} --password-stdin ghcr.io
-          docker tag strap ghcr.io/${{secrets.GHCR_ORG}}/strap:master
-          docker push "ghcr.io/${{secrets.GHCR_ORG}}/strap:master"
+          docker push ghcr.io/github/strap:master

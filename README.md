@@ -36,7 +36,7 @@ Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com
 
 ## Usage
 
-Open <https://macos-strap.herokuapp.com/> in your web browser.
+Open <https://strap.mikemcquaid.com/> in your web browser.
 
 Instead, to run Strap locally run:
 
@@ -54,10 +54,6 @@ cd strap
 ./script/bootstrap
 GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
 ```
-
-Instead, to deploy to [Heroku](https://www.heroku.com) click:
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 Strap is also available as a Docker image on [Docker Hub (`mikemcquaid/strap`)](https://hub.docker.com/repository/docker/mikemcquaid/strap) and [GitHub Packages (`ghcr.io/mikemcquaid/strap`)](https://github.com/users/MikeMcQuaid/packages/container/package/strap).
 
