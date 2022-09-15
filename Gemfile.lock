@@ -118,7 +118,7 @@ GEM
     tilt (2.0.11)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
-    unicode-display_width (2.2.0)
+    unicode-display_width (2.3.0)
     unicorn (6.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
