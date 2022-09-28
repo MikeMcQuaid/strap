@@ -6,20 +6,21 @@ on:
   pull_request:
 jobs:
   style:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Set up Git repository
         uses: actions/checkout@main
 
-      - name: Install shfmt
-        run: |
-          brew update
-          brew install shfmt
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@master
         with:
           bundler-cache: true
+
+      - name: Install shfmt
+        run: brew install shfmt
 
       - run: script/style
 
