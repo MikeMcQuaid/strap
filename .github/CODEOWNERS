@@ -3,4 +3,4 @@
 # https://docs.github.com/articles/about-codeowners
 # https://git-scm.com/docs/gitignore
 
-/* @github/devcon @MikeMcQuaid
+/* @github/dev-frameworks @MikeMcQuaid
