@@ -1,0 +1,26 @@
+name: CodeQL
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: "39 8 * * 5"
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@main
+
+      - name: Set up CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ruby
+          queries: security-and-quality
+          config-file: ./.github/codeql.yml
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v2
