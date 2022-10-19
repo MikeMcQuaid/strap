@@ -55,8 +55,6 @@ get "/auth/github/callback" do
 end
 
 get "/" do
-  redirect to "https://#{request.host}#{request.fullpath}" if request.scheme == "http" && RACK_ENV != "development"
-
   before_install_list_item = "<li>#{STRAP_BEFORE_INSTALL}</li>" if STRAP_BEFORE_INSTALL
 
   debugging_text = if STRAP_ISSUES_URL.blank?
