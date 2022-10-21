@@ -109,9 +109,9 @@ GEM
       rack (~> 2.2, >= 2.2.4)
       rack-protection (= 3.0.2)
       tilt (~> 2.0)
-    snaky_hash (2.0.0)
+    snaky_hash (2.0.1)
       hashie
-      version_gem (~> 1.1)
+      version_gem (~> 1.1, >= 1.1.1)
     spoon (0.0.6)
       ffi
     thor (1.2.1)
