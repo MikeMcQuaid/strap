@@ -77,7 +77,7 @@ GEM
       method_source (~> 1.0)
     public_suffix (5.0.0)
     rack (2.2.4)
-    rack-protection (3.0.3)
+    rack-protection (3.0.4)
       rack
     rainbow (3.1.1)
     raindrops (0.20.0)
@@ -104,10 +104,10 @@ GEM
       addressable (>= 2.3.5)
       faraday (>= 0.17.3, < 3)
     shellany (0.0.1)
-    sinatra (3.0.3)
+    sinatra (3.0.4)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
-      rack-protection (= 3.0.3)
+      rack-protection (= 3.0.4)
       tilt (~> 2.0)
     snaky_hash (2.0.1)
       hashie
