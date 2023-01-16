@@ -16,8 +16,8 @@ SERVER_PID="$!"
 
 sleep 15
 
-curl -O http://localhost:5000/strap.sh
-curl -sSL -D - -o /dev/null http://localhost:5000/strap.sh | grep "X-Frame-Options: DENY"
+curl -O http://localhost:3000/strap.sh
+curl -sSL -D - -o /dev/null http://localhost:3000/strap.sh | grep "X-Frame-Options: DENY"
 
 kill "$SERVER_PID"
 wait "$SERVER_PID" || true
