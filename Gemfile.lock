@@ -116,7 +116,7 @@ GEM
       ffi
     thor (1.2.1)
     tilt (2.0.11)
-    tzinfo (2.0.5)
+    tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
     unicorn (6.1.0)
