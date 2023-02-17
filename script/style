@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 cd "$(dirname "$0")/.."
 
 [[ $1 == "--fix" ]] && STYLE_FIX="1"
@@ -15,27 +16,17 @@ sudo_askpass_style() {
 
   local violations
   violations=$(
-    # find all sudo
+    # find all sudo and filter out allowed calls
     grep --line-number "[^'\"]sudo " bin/strap.sh |
-      # filter out comments
       grep "$grep_regex_arg" -v "^\d*: *#" |
-      # filter out session resets
       grep -v "sudo --reset-timestamp" |
-      # filter out password prompt
       grep -v "(for sudo access)" |
-      # filter out creating askpass paths
       grep -v "sudo mktemp" |
-      # filter out protecting askpass
       grep -v "sudo chmod 1700" |
-      # filter writing askpass
       grep -v "sudo bash -c \"cat > '\$SUDO_ASKPASS'\"" |
-      # allow using askpass
       grep -v "sudo --askpass" |
-      # accept sudo passthrough without askpass
       grep -v 'sudo "$@"' |
-      # accept sudo log message
       grep -v 'Configuring sudo authentication using TouchID:' |
-      # filter out check to see if sudo is required
       grep -v "sudo --validate" || true
   )
 
