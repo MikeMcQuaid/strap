@@ -2,7 +2,7 @@ AllCops:
   TargetRubyVersion: 2.7
   NewCops: enable
   Exclude:
-    - '**/vendor/**/*'
+    - "**/vendor/**/*"
 
 Layout/EndAlignment:
   EnforcedStyleAlignWith: start_of_line
