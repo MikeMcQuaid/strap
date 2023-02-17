@@ -233,8 +233,8 @@ elif [ -n "$STRAP_CI" ]; then
 elif [ -n "$STRAP_INTERACTIVE" ]; then
   echo
   log "Enabling full-disk encryption on next reboot:"
-  sudo_askpass fdesetup enable -user "$USER" \
-    | tee ~/Desktop/"FileVault Recovery Key.txt"
+  sudo_askpass fdesetup enable -user "$USER" |
+    tee ~/Desktop/"FileVault Recovery Key.txt"
   logk
 else
   echo
@@ -247,12 +247,12 @@ if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]; then
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo_askpass touch "$CLT_PLACEHOLDER"
 
-  CLT_PACKAGE=$(softwareupdate -l \
-    | grep -B 1 "Command Line Tools" \
-    | awk -F"*" '/^ *\*/ {print $2}' \
-    | sed -e 's/^ *Label: //' -e 's/^ *//' \
-    | sort -V \
-    | tail -n1)
+  CLT_PACKAGE=$(softwareupdate -l |
+    grep -B 1 "Command Line Tools" |
+    awk -F"*" '/^ *\*/ {print $2}' |
+    sed -e 's/^ *Label: //' -e 's/^ *//' |
+    sort -V |
+    tail -n1)
   sudo_askpass softwareupdate -i "$CLT_PACKAGE"
   sudo_askpass rm -f "$CLT_PLACEHOLDER"
   if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]; then
@@ -304,16 +304,16 @@ fi
 # Setup GitHub HTTPS credentials.
 if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"; then
   # Actually execute the credential in case it's a wrapper script for credential-osxkeychain
-  if git "credential-$(git config --global credential.helper 2>/dev/null)" 2>&1 \
-    | grep -v $Q "git.credential-osxkeychain"; then
+  if git "credential-$(git config --global credential.helper 2>/dev/null)" 2>&1 |
+    grep -v $Q "git.credential-osxkeychain"; then
     git config --global credential.helper osxkeychain
   fi
 
   if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]; then
     printf 'protocol=https\nhost=github.com\n' | git credential reject
     printf 'protocol=https\nhost=github.com\nusername=%s\npassword=%s\n' \
-      "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" \
-      | git credential approve
+      "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" |
+      git credential approve
   fi
 fi
 logk
