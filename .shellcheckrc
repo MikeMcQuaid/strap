@@ -1,0 +1,18 @@
+# Regularly want to allow unquoted, empty argument lists.
+disable=SC2248
+disable=SC2086
+
+# Suggest adding a default case in `case` statements
+enable=add-default-case
+
+# Suggest explicitly using -n in `[ $var ]`
+enable=avoid-nullary-conditions
+
+# Warn when uppercase variables are unassigned
+enable=check-unassigned-uppercase
+
+# Suggest 'command -v' instead of 'which'
+enable=deprecate-which
+
+# Turn on warnings for unquoted variables with safe values
+enable=quote-safe-variables

@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 cd "$(dirname "$0")/.."
 
 [[ $1 == "--fix" ]] && STYLE_FIX="1"
@@ -54,34 +53,27 @@ ruby_version_style() {
 }
 
 shell_style() {
-  local shfmt_args="--indent 2 --binary-next-line --simplify"
+  local shfmt_args="--indent 2 --simplify"
 
   if [ -n "$STYLE_FIX" ]; then
     for file in "$@"; do
       # Want to expand shfmt_args
       # shellcheck disable=SC2086
       shfmt $shfmt_args --write "$file" "$file"
+      shellcheck --format=diff "${file}" | patch -p1
     done
   fi
 
-  local shfmt_diff
   # Want to expand shfmt_args
   # shellcheck disable=SC2086
-  shfmt_diff="$(shfmt $shfmt_args --diff "$@")"
-
-  if [ -n "$shfmt_diff" ]; then
-    # Don't care about expanding escape sequences
-    # shellcheck disable=SC2028
-    echo "Error: shfmt failed:\n\n$shfmt_diff" >&2
-    exit 1
-  fi
+  shfmt ${shfmt_args} --diff "$@"
 
   shellcheck "$@"
 }
 
 ruby_style() {
   if [ -n "$STYLE_FIX" ]; then
-    local rubocop_args="--auto-correct-all"
+    local rubocop_args="--autocorrect-all"
   fi
 
   bundle exec rubocop --format quiet $rubocop_args
