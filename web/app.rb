@@ -93,6 +93,20 @@ get "/" do
     view_link_text = "view the uncustomised version in your browser"
   end
 
+  if session[:auth].present?
+    revoke_step = <<~HTML
+      <ul>
+        <li>
+          Optionally, <a href="https://github.com/settings/applications" class="btn btn-outline-primary btn-sm">
+            Revoke Strap on GitHub
+          </a>
+        </li>
+      </ul>  
+    HTML
+  else
+    revoke_step = ""
+  end
+
   @title = "👢 Strap"
   @text = <<~HTML
     To Strap your system:
@@ -126,6 +140,7 @@ get "/" do
         Delete the customised <code>strap.sh</code> (it has a GitHub token
         in it) in Terminal.app with
         <code>rm -f ~/Downloads/strap.sh</code>
+        #{revoke_step}
       </li>
 
       <li>
