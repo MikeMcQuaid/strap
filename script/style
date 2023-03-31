@@ -40,18 +40,6 @@ EOS
   fi
 }
 
-ruby_version_style() {
-  local ruby_version
-  ruby_version="$(cat .ruby-version)"
-
-  for file in "$@"; do
-    if ! git grep --quiet "ruby.${ruby_version}" HEAD -- "$file"; then
-      echo "Error: $file does not contain 'ruby ${ruby_version}'!" >&2
-      exit 1
-    fi
-  done
-}
-
 shell_style() {
   local shfmt_args="--indent 2 --simplify"
 
@@ -82,8 +70,6 @@ ruby_style() {
 script/bootstrap
 
 sudo_askpass_style
-
-ruby_version_style Gemfile.lock Dockerfile
 
 shell_style bin/strap.sh script/*
 

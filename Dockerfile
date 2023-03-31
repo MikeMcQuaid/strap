@@ -1,14 +1,14 @@
-FROM ruby:3.2.1
-
-WORKDIR /app
-COPY . .
+ARG RUBY_VERSION
+FROM ruby:$RUBY_VERSION
 
 # Apply security updates.
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home strap
-
 USER strap
+
+WORKDIR /app
+COPY . .
 
 RUN script/bootstrap
 
