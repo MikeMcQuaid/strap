@@ -84,7 +84,7 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          docker build --tag strap .
+          docker build --build-arg RUBY_VERSION=$(cat .ruby-version) --tag strap .
           docker tag strap mikemcquaid/strap:master
           docker tag strap ghcr.io/mikemcquaid/strap:master
 
