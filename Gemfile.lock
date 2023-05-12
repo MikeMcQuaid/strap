@@ -114,7 +114,7 @@ GEM
       version_gem (~> 1.1, >= 1.1.1)
     spoon (0.0.6)
       ffi
-    thor (1.2.1)
+    thor (1.2.2)
     tilt (2.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
