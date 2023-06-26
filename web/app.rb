@@ -183,7 +183,7 @@ def env_sub(content, variables, set:)
     else
       /^# #{key}=$/
     end
-    escaped_value = value.gsub(/'/, "\\\\\\\\'")
+    escaped_value = value.gsub("'", "\\\\\\\\'")
     content.gsub!(regex, "#{key}='#{escaped_value}'")
   end
 end
