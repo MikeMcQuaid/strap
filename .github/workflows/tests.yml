@@ -30,6 +30,9 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@main
 
+      - name: Set up Homebrew to install from API
+        run: echo HOMEBREW_NO_INSTALL_FROM_API= >> "$GITHUB_ENV"
+
       - run: brew test-bot --only-cleanup-before
 
       - name: Cleanup macOS
