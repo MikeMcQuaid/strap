@@ -80,8 +80,8 @@ GEM
     public_suffix (5.0.3)
     racc (1.7.1)
     rack (2.2.8)
-    rack-protection (3.0.6)
-      rack
+    rack-protection (3.1.0)
+      rack (~> 2.2, >= 2.2.4)
     rainbow (3.1.1)
     raindrops (0.20.1)
     rb-fsevent (0.11.2)
@@ -108,10 +108,10 @@ GEM
       addressable (>= 2.3.5)
       faraday (>= 0.17.3, < 3)
     shellany (0.0.1)
-    sinatra (3.0.6)
+    sinatra (3.1.0)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
-      rack-protection (= 3.0.6)
+      rack-protection (= 3.1.0)
       tilt (~> 2.0)
     snaky_hash (2.0.1)
       hashie
