@@ -75,7 +75,7 @@ sudo_init() {
   fi
 
   # If TouchID for sudo is setup: use that instead.
-  if grep -q pam_tid /etc/pam.d/sudo; then
+  if grep -q pam_tid /etc/pam.d/sudo /etc/pam.d/sudo_local 2>/dev/null; then
     return
   fi
 
@@ -186,8 +186,17 @@ caffeinate -s -w $$ &
 # shellcheck disable=SC2010
 if ls /usr/lib/pam | grep $Q "pam_tid.so"; then
   logn "Configuring sudo authentication using TouchID:"
-  PAM_FILE="/etc/pam.d/sudo"
-  FIRST_LINE="# sudo: auth account password session"
+  if [[ -f /etc/pam.d/sudo_local || -f /etc/pam.d/sudo_local.template ]]; then
+    # New in macOS Sonoma, survives updates.
+    PAM_FILE="/etc/pam.d/sudo_local"
+    FIRST_LINE="# sudo_local: local config file which survives system update and is included for sudo"
+    if [[ ! -f "/etc/pam.d/sudo_local" ]]; then
+      echo "$FIRST_LINE" | sudo_askpass tee "$PAM_FILE" >/dev/null
+    fi
+  else
+    PAM_FILE="/etc/pam.d/sudo"
+    FIRST_LINE="# sudo: auth account password session"
+  fi
   if grep $Q pam_tid.so "$PAM_FILE"; then
     logk
   elif ! head -n1 "$PAM_FILE" | grep $Q "$FIRST_LINE"; then
@@ -425,7 +434,7 @@ fi
 # Install from local Brewfile
 if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from user Brewfile on GitHub:"
-  brew bundle check --global || brew bundle --global
+  brew bundle check --global &>/dev/null || brew bundle --global
   logk
 fi
 
