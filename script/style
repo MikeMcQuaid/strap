@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 # assert that any reference of sudo uses --askpass (or is whitelisted for another reason)
 sudo_askpass_style() {
   local grep_regex_arg
-  if [ "$(uname -s)" == "Darwin" ]; then
+  if [[ "$(uname -s)" == "Darwin" ]]; then
     grep_regex_arg="-E"
   else
     grep_regex_arg="-P"
@@ -17,7 +17,8 @@ sudo_askpass_style() {
   violations=$(
     # find all sudo and filter out allowed calls
     grep --line-number "[^'\"]sudo " bin/strap.sh |
-      grep "$grep_regex_arg" -v "^\d*: *#" |
+      grep "${grep_regex_arg}" -v "^\d*: *#" |
+      grep -v "pam_tid /etc/pam.d/sudo /etc/pam.d/sudo_local" |
       grep -v "sudo --reset-timestamp" |
       grep -v "(for sudo access)" |
       grep -v "sudo mktemp" |
@@ -29,12 +30,12 @@ sudo_askpass_style() {
       grep -v "sudo --validate" || true
   )
 
-  if [ -n "$violations" ]; then
+  if [[ -n ${violations} ]]; then
     cat <<EOS
 Error: Use of sudo in strap.sh script without the sudo_askpass function to use
 askpass helper (to avoid reprompting a user for their sudo password).
-Either use sudo_askpass or add legitimate use to whitelist in script/cibuild.
-$violations
+Either use sudo_askpass or add legitimate use to allowlist in script/style.
+${violations}
 EOS
     exit 1
   fi
@@ -45,21 +46,21 @@ ruby_version_style() {
   ruby_version="$(cat .ruby-version)"
 
   for file in "$@"; do
-    if ! git grep --quiet "ruby.${ruby_version}" HEAD -- "$file"; then
-      echo "Error: $file does not contain 'ruby ${ruby_version}'!" >&2
+    if ! git grep --quiet "ruby.${ruby_version}" HEAD -- "${file}"; then
+      echo "Error: ${file} does not contain 'ruby ${ruby_version}'!" >&2
       exit 1
     fi
   done
 }
 
 shell_style() {
-  local shfmt_args="--indent 2 --simplify"
+  local shfmt_args="--indent 2 --simplify --language-dialect=bash"
 
-  if [ -n "$STYLE_FIX" ]; then
+  if [[ -n ${STYLE_FIX} ]]; then
     for file in "$@"; do
       # Want to expand shfmt_args
       # shellcheck disable=SC2086
-      shfmt $shfmt_args --write "$file" "$file"
+      shfmt ${shfmt_args} --write "${file}" "${file}"
       shellcheck --format=diff "${file}" | patch -p1
     done
   fi
@@ -72,11 +73,11 @@ shell_style() {
 }
 
 ruby_style() {
-  if [ -n "$STYLE_FIX" ]; then
+  if [[ -n ${STYLE_FIX} ]]; then
     local rubocop_args="--autocorrect-all"
   fi
 
-  bundle exec rubocop --format quiet $rubocop_args
+  bundle exec rubocop --format quiet ${rubocop_args}
 }
 
 script/bootstrap
