@@ -73,7 +73,7 @@ GEM
       oauth2 (>= 1.4, < 3)
       omniauth (>= 1.9, < 3)
     parallel (1.23.0)
-    parser (3.2.2.3)
+    parser (3.2.2.4)
       ast (~> 2.4.1)
       racc
     pry (0.14.2)
