@@ -51,7 +51,7 @@ GEM
     listen (3.8.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
-    lumberjack (1.2.9)
+    lumberjack (1.2.10)
     method_source (1.0.0)
     minitest (5.20.0)
     multi_xml (0.6.0)
