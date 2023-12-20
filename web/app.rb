@@ -9,7 +9,7 @@ require "active_support/core_ext/object/blank"
 # Don't worry: these credentials are not sensitive but just use for
 # "Strap (development)" with the URL and callback both set to localhost.
 GITHUB_KEY = ENV.fetch("GITHUB_KEY", "b28d0c47b8925e999e49")
-GITHUB_SECRET = ENV.fetch("GITHUB_SECRET", "cd4c391320f669e5807615611d0096414bc9af68")
+GITHUB_SECRET = ENV.fetch("GITHUB_SECRET", "037ac891e2e0b8bc91558d5ff358d2ff4fa1beb7")
 
 SESSION_SECRET = ENV.fetch("SESSION_SECRET")
 STRAP_ISSUES_URL = ENV.fetch("STRAP_ISSUES_URL", nil)
