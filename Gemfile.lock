@@ -21,7 +21,7 @@ GEM
     connection_pool (2.4.1)
     drb (2.2.0)
       ruby2_keywords
-    faraday (2.7.12)
+    faraday (2.8.1)
       base64
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
