@@ -105,7 +105,7 @@ jobs:
           docker push ghcr.io/mikemcquaid/strap:latest
 
       - name: Deploy the Docker image to Docker Hub
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: |
           echo ${{secrets.DOCKER_TOKEN}} | \
             docker login --username=mikemcquaid --password-stdin
