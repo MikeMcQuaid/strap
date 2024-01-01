@@ -2,7 +2,7 @@ name: GitHub Actions CI
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 jobs:
   style:
@@ -89,14 +89,20 @@ jobs:
         run: |
           docker build --build-arg RUBY_VERSION=$(cat .ruby-version) --tag strap .
           docker tag strap mikemcquaid/strap:master
+          docker tag strap mikemcquaid/strap:main
+          docker tag strap mikemcquaid/strap:latest
           docker tag strap ghcr.io/mikemcquaid/strap:master
+          docker tag strap ghcr.io/mikemcquaid/strap:main
+          docker tag strap ghcr.io/mikemcquaid/strap:latest
 
       - name: Deploy the Docker image to GitHub Packages
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: |
           echo ${{secrets.GITHUB_TOKEN}} | \
             docker login --username=mikemcquaid --password-stdin ghcr.io
           docker push ghcr.io/mikemcquaid/strap:master
+          docker push ghcr.io/mikemcquaid/strap:main
+          docker push ghcr.io/mikemcquaid/strap:latest
 
       - name: Deploy the Docker image to Docker Hub
         if: github.ref == 'refs/heads/master'
@@ -104,3 +110,5 @@ jobs:
           echo ${{secrets.DOCKER_TOKEN}} | \
             docker login --username=mikemcquaid --password-stdin
           docker push mikemcquaid/strap:master
+          docker push mikemcquaid/strap:main
+          docker push mikemcquaid/strap:latest

@@ -79,4 +79,4 @@ Stable and in active development.
 ## License
 
 Licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
-The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/master/LICENSE.txt).
+The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/main/LICENSE.txt).
