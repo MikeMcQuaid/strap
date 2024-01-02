@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@master
+        uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
 
@@ -28,7 +28,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Set up Homebrew to install from API
         run: echo HOMEBREW_NO_INSTALL_FROM_API= >> "$GITHUB_ENV"
@@ -65,7 +65,7 @@ jobs:
         run: brew install gmp openssl@1.1 libyaml
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@master
+        uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
 
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Build and tag Docker image
         run: |
