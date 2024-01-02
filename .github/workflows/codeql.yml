@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Set up CodeQL
         uses: github/codeql-action/init@v2
