@@ -1,6 +1,9 @@
 #!/bin/bash
 set -xeuo pipefail
+
 cd "$(dirname "$0")/.."
+
+export PUMA_PIDFILE="puma.pid"
 
 tests_cleanup() {
   if [[ -n ${SERVER_PID-} ]]; then
@@ -11,14 +14,12 @@ tests_cleanup() {
 trap "tests_cleanup" EXIT
 
 script/bootstrap
-script/server &>/dev/null &
-SERVER_PID="$!"
+script/server &
+sleep 5
 
-sleep 15
+SERVER_PID=$(cat "${PUMA_PIDFILE}")
 
 curl -O http://localhost:3000/strap.sh
 curl -sSL -D - -o /dev/null http://localhost:3000/strap.sh | grep -i "x-frame-options: DENY"
 
 kill "$SERVER_PID"
-wait "$SERVER_PID" || true
-unset SERVER_PID

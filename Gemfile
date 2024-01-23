@@ -8,8 +8,8 @@ gem "activesupport"
 gem "faraday-retry"
 gem "octokit"
 gem "omniauth-github"
+gem "puma"
 gem "sinatra"
-gem "unicorn"
 
 group :development do
   gem "guard"
