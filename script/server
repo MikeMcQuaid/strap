@@ -4,4 +4,4 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 export PORT="${PORT:-3000}"
-bundle exec unicorn --port "$PORT" --config-file web/unicorn.rb
+bundle exec puma --port "$PORT" --config web/puma.rb
