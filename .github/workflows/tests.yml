@@ -36,16 +36,16 @@ jobs:
       - run: brew test-bot --only-cleanup-before
 
       - name: Cleanup macOS
-        run: |
-          sudo rm -rf /usr/local/bin/brew /usr/local/.??* \
-                      /usr/local/Homebrew \
-                      /Applications/Xcode.app /usr/local/Caskroom \
-                      /Library/Developer/CommandLineTools
+        run: sudo rm -rf /usr/local/bin/brew /usr/local/.??*
+                         /usr/local/Homebrew
+                         /Applications/Xcode.app /usr/local/Caskroom
+                         /Library/Developer/CommandLineTools
+
+      - name: Check installed Xcodes
+        run: ls /Applications/Xcode*.app
 
       - name: Use newer Xcode
-        run: |
-          ls /Applications/Xcode*.app
-          sudo xcode-select --switch /Applications/Xcode_13.3.1.app/Contents/Developer
+        run: sudo xcode-select --switch /Applications/Xcode_13.3.1.app/Contents/Developer
 
       - run: bin/strap.sh
         env:
@@ -87,6 +87,8 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
+          set -euo pipefail
+
           docker build --build-arg RUBY_VERSION=$(cat .ruby-version) --tag strap .
           docker tag strap mikemcquaid/strap:master
           docker tag strap mikemcquaid/strap:main
@@ -98,6 +100,8 @@ jobs:
       - name: Deploy the Docker image to GitHub Packages
         if: github.ref == 'refs/heads/main'
         run: |
+          set -euo pipefail
+
           echo ${{secrets.GITHUB_TOKEN}} | \
             docker login --username=mikemcquaid --password-stdin ghcr.io
           docker push ghcr.io/mikemcquaid/strap:master
@@ -107,6 +111,8 @@ jobs:
       - name: Deploy the Docker image to Docker Hub
         if: github.ref == 'refs/heads/main'
         run: |
+          set -euo pipefail
+
           echo ${{secrets.DOCKER_TOKEN}} | \
             docker login --username=mikemcquaid --password-stdin
           docker push mikemcquaid/strap:master
