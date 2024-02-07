@@ -25,7 +25,7 @@ jobs:
       - run: script/style
 
   tests:
-    runs-on: macos-12
+    runs-on: macos-14
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
 
       - name: Cleanup macOS
         run: sudo rm -rf /usr/local/bin/brew /usr/local/.??*
-                         /usr/local/Homebrew
+                         /usr/local/Homebrew /opt/homebrew
                          /Applications/Xcode.app /usr/local/Caskroom
                          /Library/Developer/CommandLineTools
 
@@ -45,7 +45,7 @@ jobs:
         run: ls /Applications/Xcode*.app
 
       - name: Use newer Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_13.3.1.app/Contents/Developer
+        run: sudo xcode-select --switch /Applications/Xcode_15.2.app/Contents/Developer
 
       - run: bin/strap.sh
         env:
