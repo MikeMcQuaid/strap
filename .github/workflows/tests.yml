@@ -85,36 +85,50 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v4
 
-      - name: Build and tag Docker image
+      - name: Set RUBY_VERSION
         run: |
-          set -euo pipefail
+          set -xeuo pipefail
 
-          docker build --build-arg RUBY_VERSION=$(cat .ruby-version) --tag strap .
-          docker tag strap mikemcquaid/strap:master
-          docker tag strap mikemcquaid/strap:main
-          docker tag strap mikemcquaid/strap:latest
-          docker tag strap ghcr.io/mikemcquaid/strap:master
-          docker tag strap ghcr.io/mikemcquaid/strap:main
-          docker tag strap ghcr.io/mikemcquaid/strap:latest
+          RUBY_VERSION=$(cat .ruby-version)
+          echo "RUBY_VERSION=${RUBY_VERSION}" >> "${GITHUB_ENV}"
 
-      - name: Deploy the Docker image to GitHub Packages
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -euo pipefail
+      - uses: docker/setup-buildx-action@v3
 
-          echo ${{secrets.GITHUB_TOKEN}} | \
-            docker login --username=mikemcquaid --password-stdin ghcr.io
-          docker push ghcr.io/mikemcquaid/strap:master
-          docker push ghcr.io/mikemcquaid/strap:main
-          docker push ghcr.io/mikemcquaid/strap:latest
+      # We don't give Dependabot access to tokens.
+      - if: github.actor != 'dependabot[bot]'
+        name: Login to DigitalOcean
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITAL_OCEAN_TOKEN }}
 
-      - name: Deploy the Docker image to Docker Hub
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -euo pipefail
+      # We don't give Dependabot access to tokens.
+      - if: github.actor != 'dependabot[bot]'
+        name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: mikemcquaid
+          password: ${{ secrets.DOCKER_TOKEN }}
 
-          echo ${{secrets.DOCKER_TOKEN}} | \
-            docker login --username=mikemcquaid --password-stdin
-          docker push mikemcquaid/strap:master
-          docker push mikemcquaid/strap:main
-          docker push mikemcquaid/strap:latest
+      # We don't give Dependabot access to tokens.
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: mikemcquaid
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: |
+            mikemcquaid/strap:latest
+            mikemcquaid/strap:main
+            mikemcquaid/strap:master
+            ghcr.io/mikemcquaid/strap:latest
+            ghcr.io/mikemcquaid/strap:main
+            ghcr.io/mikemcquaid/strap:master
+            registry.digitalocean.com/mikemcquaid/strap:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            RUBY_VERSION=${{ env.RUBY_VERSION }}
