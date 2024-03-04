@@ -90,7 +90,6 @@ GEM
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
-    prism (0.24.0)
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -121,9 +120,8 @@ GEM
       rubocop-ast (>= 1.30.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 3.0)
-    rubocop-ast (1.31.0)
+    rubocop-ast (1.31.1)
       parser (>= 3.3.0.4)
-      prism (>= 0.24.0)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     sawyer (0.9.2)
