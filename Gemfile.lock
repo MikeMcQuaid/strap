@@ -42,8 +42,9 @@ GEM
       guard-compat (~> 1.2, >= 1.2.1)
       spoon (~> 0.0.1)
     hashie (5.0.0)
-    i18n (1.14.1)
+    i18n (1.14.3)
       concurrent-ruby (~> 1.0)
+      racc (~> 1.7)
     json (2.7.1)
     jwt (2.8.1)
       base64
