@@ -120,6 +120,10 @@ jobs:
       - if: github.actor != 'dependabot[bot]'
         run: doctl registry login --expiry-seconds 300
 
+      # We don't give Dependabot access to tokens.
+      - if: github.actor != 'dependabot[bot]'
+        run: doctl registry garbage-collection start --include-untagged-manifests --force
+
       - uses: docker/build-push-action@v5
         with:
           push: ${{ github.ref == 'refs/heads/main' }}
