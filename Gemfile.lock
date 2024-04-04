@@ -44,7 +44,7 @@ GEM
     hashie (5.0.0)
     i18n (1.14.4)
       concurrent-ruby (~> 1.0)
-    json (2.7.1)
+    json (2.7.2)
     jwt (2.8.1)
       base64
     language_server-protocol (3.17.0.3)
