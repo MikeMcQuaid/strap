@@ -54,7 +54,7 @@ GEM
     lumberjack (1.2.10)
     method_source (1.1.0)
     minitest (5.22.3)
-    multi_xml (0.7.0)
+    multi_xml (0.7.1)
       bigdecimal (~> 3.1)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
