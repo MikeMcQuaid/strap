@@ -62,7 +62,7 @@ GEM
     nenv (0.3.0)
     net-http (0.4.1)
       uri
-    nio4r (2.7.1)
+    nio4r (2.7.3)
     notiffany (0.1.3)
       nenv (~> 0.1)
       shellany (~> 0.0)
