@@ -1,4 +1,4 @@
-ARG RUBY_VERSION
+ARG RUBY_VERSION=3
 FROM ruby:$RUBY_VERSION-alpine
 
 RUN apk --update add build-base
@@ -8,6 +8,10 @@ USER strap
 
 WORKDIR /app
 COPY . .
+
+ENV RACK_ENV="production" \
+  BUNDLE_DEPLOYMENT="1" \
+  BUNDLE_WITHOUT="development"
 
 RUN script/bootstrap
 
