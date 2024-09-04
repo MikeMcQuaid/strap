@@ -59,7 +59,7 @@ GEM
     minitest (5.25.1)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
-    mustermann (3.0.2)
+    mustermann (3.0.3)
       ruby2_keywords (~> 0.0.1)
     nenv (0.3.0)
     net-http (0.4.1)
