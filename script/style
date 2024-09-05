@@ -17,7 +17,7 @@ sudo_askpass_style() {
   local violations
   violations=$(
     # find all sudo and filter out allowed calls
-    grep --line-number "[^'\"]sudo " bin/strap.sh |
+    grep --line-number "[^'\"]sudo " strap.sh |
       grep "${grep_regex_arg}" -v "^\d*: *#" |
       grep -v "pam_tid /etc/pam.d/sudo /etc/pam.d/sudo_local" |
       grep -v "sudo --reset-timestamp" |
@@ -42,18 +42,6 @@ EOS
   fi
 }
 
-ruby_version_style() {
-  local ruby_version
-  ruby_version="$(cat .ruby-version)"
-
-  for file in "$@"; do
-    if ! git grep --quiet "ruby.${ruby_version}" HEAD -- "${file}"; then
-      echo "Error: ${file} does not contain 'ruby ${ruby_version}'!" >&2
-      exit 1
-    fi
-  done
-}
-
 shell_style() {
   local shfmt_args="--indent 2 --simplify --language-dialect=bash"
 
@@ -73,20 +61,8 @@ shell_style() {
   shellcheck "$@"
 }
 
-ruby_style() {
-  if [[ -n ${STYLE_FIX-} ]]; then
-    local rubocop_args="--autocorrect-all"
-  fi
-
-  bundle exec rubocop --format quiet ${rubocop_args-}
-}
-
 script/bootstrap
 
 sudo_askpass_style
 
-ruby_version_style Gemfile.lock
-
-shell_style bin/strap.sh script/*
-
-ruby_style
+shell_style strap.sh script/*
