@@ -6,13 +6,13 @@ on:
   pull_request:
 jobs:
   style:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v4
 
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
