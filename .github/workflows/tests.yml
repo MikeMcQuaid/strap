@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@main
@@ -28,7 +28,7 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Set up Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Homebrew to install from API
         run: echo HOMEBREW_NO_INSTALL_FROM_API= >> "$GITHUB_ENV"
