@@ -1,12 +1,14 @@
 name: GitHub Actions CI
+
 on:
   push:
     branches:
       - main
   pull_request:
+
 jobs:
   style:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v5
@@ -25,27 +27,13 @@ jobs:
       - run: script/style
 
   tests:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v5
 
-      - name: Set up Homebrew to install from API
-        run: echo HOMEBREW_NO_INSTALL_FROM_API= >> "$GITHUB_ENV"
-
-      - run: brew test-bot --only-cleanup-before
-
       - name: Cleanup macOS
-        run: sudo rm -rf /usr/local/bin/brew /usr/local/.??*
-                         /usr/local/Homebrew /opt/homebrew
-                         /Applications/Xcode.app /usr/local/Caskroom
-                         /Library/Developer/CommandLineTools
-
-      - name: Check installed Xcodes
-        run: ls /Applications/Xcode*.app
-
-      - name: Use newer Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_15.2.app/Contents/Developer
+        run: sudo rm -rf /opt/homebrew /Applications/Xcode.app /Library/Developer/CommandLineTools
 
       - run: bin/strap.sh
         env:
@@ -80,6 +68,7 @@ jobs:
       - run: brew install --formula xz
 
   docker:
+    needs: style
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
@@ -109,21 +98,6 @@ jobs:
           username: mikemcquaid
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      # We don't give Dependabot access to tokens.
-      - if: github.actor != 'dependabot[bot]'
-        name: Login to DigitalOcean
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DIGITAL_OCEAN_TOKEN }}
-
-      # We don't give Dependabot access to tokens.
-      - if: github.actor != 'dependabot[bot]'
-        run: doctl registry login --expiry-seconds 300
-
-      # We don't give Dependabot access to tokens.
-      - if: github.actor != 'dependabot[bot]'
-        run: doctl registry garbage-collection start --include-untagged-manifests --force
-
       - uses: docker/build-push-action@v6
         with:
           push: ${{ github.ref == 'refs/heads/main' }}
@@ -134,8 +108,28 @@ jobs:
             ghcr.io/mikemcquaid/strap:latest
             ghcr.io/mikemcquaid/strap:main
             ghcr.io/mikemcquaid/strap:master
-            registry.digitalocean.com/mikemcquaid/strap:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=ghcr.io/mikemcquaid/strap:cache
+          cache-to: type=registry,ref=ghcr.io/mikemcquaid/strap:cache,mode=max
+          provenance: mode=max
+          sbom: true
           build-args: |
             RUBY_VERSION=${{ env.RUBY_VERSION }}
+
+  deployment:
+    if: github.event_name != 'pull_request'
+    needs: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://strap.mikemcquaid.com
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    steps:
+      - uses: digitalocean/action-doctl@v2.5.1
+        with:
+          token: ${{ secrets.DIGITAL_OCEAN_TOKEN }}
+
+      - name: Deploy to DigitalOcean
+        run: doctl apps create-deployment --wait 5b95141a-ccca-4466-8c8c-501c015fff10

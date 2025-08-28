@@ -172,8 +172,6 @@ get "/strap.sh" do
   erb content, content_type: content_type
 end
 
-private
-
 def env_sub(content, variables, set:)
   variables.each do |key, value|
     next if value.blank?

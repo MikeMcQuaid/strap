@@ -168,6 +168,7 @@ run_dotfile_scripts() {
           else
             "$i"
           fi
+          logk
           break
         fi
       done
@@ -213,12 +214,6 @@ fi
 
 # Set some basic security settings.
 logn "Configuring security settings:"
-sudo_askpass defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled \
-  -bool false
-sudo_askpass defaults write com.apple.Safari \
-  com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles \
-  -bool false
 sudo_askpass defaults write com.apple.screensaver askForPassword -int 1
 sudo_askpass defaults write com.apple.screensaver askForPasswordDelay -int 0
 sudo_askpass defaults write /Library/Preferences/com.apple.alf globalstate -int 1
@@ -304,73 +299,55 @@ fi
 if [ -n "$STRAP_GITHUB_USER" ] && [ "$(git config github.user)" != "$STRAP_GITHUB_USER" ]; then
   git config --global github.user "$STRAP_GITHUB_USER"
 fi
-
-# Squelch git 2.x warning message when pushing
-if ! git config push.default >/dev/null; then
-  git config --global push.default simple
-fi
-
-# Setup GitHub HTTPS credentials.
-if git credential-osxkeychain 2>&1 | grep $Q "git.credential-osxkeychain"; then
-  # Actually execute the credential in case it's a wrapper script for credential-osxkeychain
-  if git "credential-$(git config --global credential.helper 2>/dev/null)" 2>&1 |
-    grep -v $Q "git.credential-osxkeychain"; then
-    git config --global credential.helper osxkeychain
-  fi
-
-  if [ -n "$STRAP_GITHUB_USER" ] && [ -n "$STRAP_GITHUB_TOKEN" ]; then
-    printf 'protocol=https\nhost=github.com\n' | git credential reject
-    printf 'protocol=https\nhost=github.com\nusername=%s\npassword=%s\n' \
-      "$STRAP_GITHUB_USER" "$STRAP_GITHUB_TOKEN" |
-      git credential approve
-  fi
-fi
 logk
 
 # Setup Homebrew directory and permissions.
-logn "Installing Homebrew:"
-HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
-HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
-if [ -z "$HOMEBREW_PREFIX" ] || [ -z "$HOMEBREW_REPOSITORY" ]; then
-  UNAME_MACHINE="$(/usr/bin/uname -m)"
-  if [[ $UNAME_MACHINE == "arm64" ]]; then
-    HOMEBREW_PREFIX="/opt/homebrew"
-    HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}"
-  else
-    HOMEBREW_PREFIX="/usr/local"
-    HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
+if ! command -v "brew" >/dev/null; then
+  logn "Installing Homebrew:"
+
+  HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
+  HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
+  if [ -z "$HOMEBREW_PREFIX" ] || [ -z "$HOMEBREW_REPOSITORY" ]; then
+    UNAME_MACHINE="$(/usr/bin/uname -m)"
+    if [[ $UNAME_MACHINE == "arm64" ]]; then
+      HOMEBREW_PREFIX="/opt/homebrew"
+      HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}"
+    else
+      HOMEBREW_PREFIX="/usr/local"
+      HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
+    fi
   fi
-fi
-[ -d "$HOMEBREW_PREFIX" ] || sudo_askpass mkdir -p "$HOMEBREW_PREFIX"
-if [ "$HOMEBREW_PREFIX" = "/usr/local" ]; then
-  sudo_askpass chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
-fi
-(
-  cd "$HOMEBREW_PREFIX"
-  sudo_askpass mkdir -p Cellar Caskroom Frameworks bin etc include lib opt sbin share var
-  sudo_askpass chown "$USER:admin" Cellar Caskroom Frameworks bin etc include lib opt sbin share var
-)
+  [ -d "$HOMEBREW_PREFIX" ] || sudo_askpass mkdir -p "$HOMEBREW_PREFIX"
+  if [ "$HOMEBREW_PREFIX" = "/usr/local" ]; then
+    sudo_askpass chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
+  fi
+  (
+    cd "$HOMEBREW_PREFIX"
+    sudo_askpass mkdir -p Cellar Caskroom Frameworks bin etc include lib opt sbin share var
+    sudo_askpass chown "$USER:admin" Cellar Caskroom Frameworks bin etc include lib opt sbin share var
+  )
 
-[ -d "$HOMEBREW_REPOSITORY" ] || sudo_askpass mkdir -p "$HOMEBREW_REPOSITORY"
-sudo_askpass chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
+  [ -d "$HOMEBREW_REPOSITORY" ] || sudo_askpass mkdir -p "$HOMEBREW_REPOSITORY"
+  sudo_askpass chown -R "$USER:admin" "$HOMEBREW_REPOSITORY"
 
-if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]; then
-  ln -sf "$HOMEBREW_REPOSITORY/bin/brew" "$HOMEBREW_PREFIX/bin/brew"
+  if [ $HOMEBREW_PREFIX != $HOMEBREW_REPOSITORY ]; then
+    ln -sf "$HOMEBREW_REPOSITORY/bin/brew" "$HOMEBREW_PREFIX/bin/brew"
+  fi
+
+  # Download Homebrew.
+  export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
+  git init $Q
+  git config remote.origin.url "https://github.com/Homebrew/brew"
+  git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+  git fetch $Q --tags --force
+  git reset $Q --hard origin/master
+  unset GIT_DIR GIT_WORK_TREE
+  logk
 fi
-
-# Download Homebrew.
-export GIT_DIR="$HOMEBREW_REPOSITORY/.git" GIT_WORK_TREE="$HOMEBREW_REPOSITORY"
-git init $Q
-git config remote.origin.url "https://github.com/Homebrew/brew"
-git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-git fetch $Q --tags --force
-git reset $Q --hard origin/master
-unset GIT_DIR GIT_WORK_TREE
-logk
 
 # Update Homebrew.
 export PATH="$HOMEBREW_PREFIX/bin:$PATH"
-logn "Updating Homebrew:"
+log "Updating Homebrew:"
 brew update --quiet
 logk
 
@@ -381,12 +358,14 @@ if softwareupdate -l 2>&1 | grep $Q "No new software available."; then
 else
   echo
   log "Installing software updates:"
-  if [ -z "$STRAP_CI" ]; then
+  if [ -z "$STRAP_CI" ] && [ -z "$STRAP_NO_SOFTWAREUPDATE" ]; then
     sudo_askpass softwareupdate --install --all
     xcode_license
     logk
-  else
+  elif [ -n "$STRAP_CI" ]; then
     echo "SKIPPED (for CI)"
+  else
+    echo "SKIPPED (by STRAP_NO_SOFTWAREUPDATE)"
   fi
 fi
 
@@ -400,6 +379,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
       log "Cloning to ~/.dotfiles:"
       git clone $Q "$DOTFILES_URL" ~/.dotfiles
     else
+      logn "Updating ~/.dotfiles:"
       (
         cd ~/.dotfiles
         git pull $Q --rebase --autostash
@@ -421,6 +401,7 @@ if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brew
       git clone $Q "$HOMEBREW_BREWFILE_URL" ~/.homebrew-brewfile
       logk
     else
+      log "Updating ~/.homebrew-brewfile:"
       (
         cd ~/.homebrew-brewfile
         git pull $Q
@@ -433,8 +414,15 @@ fi
 
 # Install from local Brewfile
 if [ -f "$HOME/.Brewfile" ]; then
-  log "Installing from user Brewfile on GitHub:"
+  log "Installing from ~/.Brewfile:"
   brew bundle check --global &>/dev/null || brew bundle --global
+  logk
+fi
+
+# Add GitHub credentials if missing
+if command -v "gh" >/dev/null && ! gh auth token &>/dev/null; then
+  logn "Configuring GitHub CLI:"
+  gh auth login --git-protocol https --hostname github.com --web
   logk
 fi
 

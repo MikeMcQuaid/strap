@@ -3,10 +3,6 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-(command -v bundle >/dev/null 2>&1 && bundle -v >/dev/null 2>&1) || {
-  gem install bundler
-}
-
 bundle check >/dev/null 2>&1 || {
   bundle install
 }

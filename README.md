@@ -9,7 +9,6 @@ Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com
 ## Features
 
 - Enables `sudo` using TouchID
-- Disables Java in Safari (for better security)
 - Enables the macOS screensaver password immediately (for better security)
 - Enables the macOS application firewall (for better security)
 - Adds a `Found this computer?` message to the login screen (for machine recovery)
@@ -17,9 +16,6 @@ Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com
 - Installs the Xcode Command Line Tools (for compilers and Unix tools)
 - Agree to the Xcode license (for using compilers without prompts)
 - Installs [Homebrew](https://brew.sh) (for installing command-line software)
-- Installs [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle) (for `bundler`-like `Brewfile` support)
-- Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
-- Installs [Homebrew Cask](https://github.com/Homebrew/homebrew-cask) (for installing graphical software)
 - Installs the latest macOS software updates (for better security)
 - Installs dotfiles from a user's `https://github.com/username/dotfiles` repository. If they exist and are executable: runs `script/setup` to configure the dotfiles and `script/strap-after-setup` after setting up everything else.
 - Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
