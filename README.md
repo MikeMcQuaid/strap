@@ -1,30 +1,29 @@
-# 👢 Strap
+# Strap
 
-A script to bootstrap a minimal macOS development system with the minimal set of settings and software every macOS developer will want.
+A script to bootstrap a minimal macOS development system. This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
 
 ## Motivation
 
-Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com/) with a better tool (see [mikemcquaid.com/replacing-boxen](https://mikemcquaid.com/replacing-boxen/)).
-
-## ☕️ Workbrew
-
-In 2023 I started a company, ☕️ Workbrew, to provide the missing features and support for companies using Homebrew.
-Workbrew is now available in public beta and has a **Workbrew Bootstrap** feature that's basically Strap v2.
-Additionally, Workbrew provides MDM integration, fleet configuration, remote `brew` command execution and much more.
-Please [try it out](https://console.workbrew.com) or [book a demo](https://workbrew.com/demo).
+Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com/) with a better tool. This post outlines the problems with Boxen and requirements for Strap and other tools used by GitHub: <https://mikemcquaid.com/2016/06/15/replacing-boxen/>
 
 ## Features
 
 - Enables `sudo` using TouchID
+- Disables Java in Safari (for better security)
 - Enables the macOS screensaver password immediately (for better security)
 - Enables the macOS application firewall (for better security)
+- Adds a `Found this computer?` message to the login screen (for machine recovery)
 - Enables full-disk encryption and saves the FileVault Recovery Key to the Desktop (for better security)
 - Installs the Xcode Command Line Tools (for compilers and Unix tools)
 - Agree to the Xcode license (for using compilers without prompts)
-- Installs [Homebrew](https://brew.sh) unless you already have [Workbrew](https://workbrew.com) installed (for installing software)
+- Installs [Homebrew](https://brew.sh) (for installing command-line software)
+- Installs [Homebrew Bundle](https://github.com/Homebrew/homebrew-bundle) (for `bundler`-like `Brewfile` support)
+- Installs [Homebrew Services](https://github.com/Homebrew/homebrew-services) (for managing Homebrew-installed services)
+- Installs [Homebrew Cask](https://github.com/Homebrew/homebrew-cask) (for installing graphical software)
 - Installs the latest macOS software updates (for better security)
-- Updates dotfiles in a `~/.dotfiles` Git repository. If they exist and are executable: runs `script/setup` to configure the dotfiles and `script/strap-after-setup` after setting up everything else.
-- Installs software from a user's `Brewfile` in their `~/.homebrew-brewfile` Git repository or `.Brewfile` in their home directory.
+- Installs dotfiles from a user's `https://github.com/username/dotfiles` repository. If they exist and are executable: runs `script/setup` to configure the dotfiles and `script/strap-after-setup` after setting up everything else.
+- Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
+- A simple web application to set Git's name, email and GitHub token (needs authorised on any organisations you wish to access)
 - Idempotent
 
 ## Out of Scope Features
@@ -33,34 +32,51 @@ Please [try it out](https://console.workbrew.com) or [book a demo](https://workb
 - Installing Homebrew formulae by default for everyone in an organisation (install them with `Brewfile`s in project repositories instead of mandating formulae for the whole organisation)
 - Opting-out of any macOS updates (Apple's security updates and macOS updates are there for a reason)
 - Disabling security features (these are a minimal set of best practises)
-- Most other things: Strap is now considered feature-complete
+- Add phone number to security screen message (want to avoid prompting users for information on installation)
 
 ## Usage
 
-Open [strap.mikemcquaid.com](https://strap.mikemcquaid.com) in your web browser.
+Open <https://strap.mikemcquaid.com/> in your web browser.
 
 Instead, to run Strap locally run:
 
-```console
+```bash
 git clone https://github.com/MikeMcQuaid/strap
 cd strap
-bash strap.sh # or bash strap.sh --debug for more debugging output
+bash bin/strap.sh # or bash bin/strap.sh --debug for more debugging output
 ```
 
 Instead, to run the web application locally run:
 
-```console
+```bash
 git clone https://github.com/MikeMcQuaid/strap
 cd strap
 ./script/bootstrap
-./script/server
+GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
 ```
+
+Strap is also available as a Docker image on [Docker Hub (`mikemcquaid/strap`)](https://hub.docker.com/repository/docker/mikemcquaid/strap) and [GitHub Packages (`ghcr.io/mikemcquaid/strap`)](https://github.com/users/MikeMcQuaid/packages/container/package/strap).
+
+## Web Application Configuration Environment Variables
+
+- `GITHUB_KEY`: the GitHub.com Application Client ID.
+- `GITHUB_SECRET`: the GitHub.com Application Client Secret.
+- `SESSION_SECRET`: the secret used for cookie session storage.
+- `WEB_CONCURRENCY`: the number of Puma (web server) threads to run (defaults to 3).
+- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to no URL).
+- `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
+- `CUSTOM_HOMEBREW_TAP`: an optional Homebrew tap to install with `brew tap`. Specify multiple arguments to brew tap by separating values with spaces.
+- `CUSTOM_BREW_COMMAND`: a single `brew` command that is run after all other stages have completed.
 
 ## Status
 
-Feature complete. No further development planned.
+Stable and in active development.
+
+## Contact
+
+[Mike McQuaid](mailto:mike@mikemcquaid.com)
 
 ## License
 
-Licensed under the [AGPLv3 License](https://en.wikipedia.org/wiki/Affero_General_Public_License).
+Licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/main/LICENSE.txt).

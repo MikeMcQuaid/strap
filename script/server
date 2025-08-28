@@ -3,4 +3,5 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
-bundle exec jekyll serve --watch --incremental --strict_front_matter
+export PORT="${PORT:-3000}"
+bundle exec puma --port "$PORT" --config web/puma.rb

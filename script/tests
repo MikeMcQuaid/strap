@@ -3,4 +3,23 @@ set -xeuo pipefail
 
 cd "$(dirname "$0")/.."
 
-bundle exec jekyll build --incremental --strict_front_matter
+export PUMA_PIDFILE="puma.pid"
+
+tests_cleanup() {
+  if [[ -n ${SERVER_PID-} ]]; then
+    kill "${SERVER_PID}"
+  fi
+}
+
+trap "tests_cleanup" EXIT
+
+script/bootstrap
+script/server &
+sleep 5
+
+SERVER_PID=$(cat "${PUMA_PIDFILE}")
+
+curl -O http://localhost:3000/strap.sh
+curl -sSL -D - -o /dev/null http://localhost:3000/strap.sh | grep -i "x-frame-options: DENY"
+
+kill "$SERVER_PID"

@@ -11,3 +11,27 @@ updates:
       github-actions:
         patterns:
           - "*"
+
+  - package-ecosystem: bundler
+    directory: /
+    schedule:
+      interval: daily
+      time: "07:30"
+      timezone: "Europe/London"
+    allow:
+      - dependency-type: all
+    groups:
+      bundler:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "08:00"
+      timezone: "Europe/London"
+    groups:
+      docker:
+        patterns:
+          - "*"

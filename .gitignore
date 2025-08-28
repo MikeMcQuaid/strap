@@ -1,6 +1,8 @@
+/.env
 /.bundle/
-/bin/
+/.vagrant/
+/bin/*
+!/bin/strap.sh
 /vendor/
-/_site/
-/Gemfile.lock
-/.jekyll-metadata
+Vagrantfile
+strap.sh
