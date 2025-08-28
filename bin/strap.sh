@@ -1,5 +1,5 @@
 #!/bin/bash
-#/ Usage: strap.sh [--debug]
+#/ Usage: bin/strap.sh [--debug]
 #/ Install development dependencies on macOS.
 set -e
 
@@ -26,6 +26,8 @@ cleanup() {
     fi
     if [ -z "$STRAP_DEBUG" ]; then
       echo "!!! Run '$0 --debug' for debugging output." >&2
+      echo "!!! If you're stuck: file an issue with debugging output at:" >&2
+      echo "!!!   $STRAP_ISSUES_URL" >&2
     fi
   fi
 }
@@ -41,6 +43,15 @@ fi
 
 STDIN_FILE_DESCRIPTOR="0"
 [ -t "$STDIN_FILE_DESCRIPTOR" ] && STRAP_INTERACTIVE="1"
+
+# Set by web/app.rb
+# STRAP_GIT_NAME=
+# STRAP_GIT_EMAIL=
+# STRAP_GITHUB_USER=
+# STRAP_GITHUB_TOKEN=
+# CUSTOM_HOMEBREW_TAP=
+# CUSTOM_BREW_COMMAND=
+STRAP_ISSUES_URL='https://github.com/MikeMcQuaid/strap/issues/new'
 
 # We want to always prompt for sudo password at least once rather than doing
 # root stuff unexpectedly.
@@ -207,6 +218,14 @@ sudo_askpass defaults write com.apple.screensaver askForPassword -int 1
 sudo_askpass defaults write com.apple.screensaver askForPasswordDelay -int 0
 sudo_askpass defaults write /Library/Preferences/com.apple.alf globalstate -int 1
 sudo_askpass launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
+
+if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
+  LOGIN_TEXT=$(escape "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL.")
+  echo "$LOGIN_TEXT" | grep -q '[()]' && LOGIN_TEXT="'$LOGIN_TEXT'"
+  sudo_askpass defaults write /Library/Preferences/com.apple.loginwindow \
+    LoginwindowText \
+    "$LOGIN_TEXT"
+fi
 logk
 
 # Check and enable full-disk encryption.
@@ -267,9 +286,25 @@ xcode_license() {
 }
 xcode_license
 
-logn "Installing Homebrew:"
-if [[ ! -f "/opt/workbrew/bin/brew" ]]; then
-  # Setup Homebrew directory and permissions.
+# Setup Git configuration.
+logn "Configuring Git:"
+if [ -n "$STRAP_GIT_NAME" ] && ! git config user.name >/dev/null; then
+  git config --global user.name "$STRAP_GIT_NAME"
+fi
+
+if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
+  git config --global user.email "$STRAP_GIT_EMAIL"
+fi
+
+if [ -n "$STRAP_GITHUB_USER" ] && [ "$(git config github.user)" != "$STRAP_GITHUB_USER" ]; then
+  git config --global github.user "$STRAP_GITHUB_USER"
+fi
+logk
+
+# Setup Homebrew directory and permissions.
+if ! command -v "brew" >/dev/null; then
+  logn "Installing Homebrew:"
+
   HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
   HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
   if [ -z "$HOMEBREW_PREFIX" ] || [ -z "$HOMEBREW_REPOSITORY" ]; then
@@ -308,8 +343,6 @@ if [[ ! -f "/opt/workbrew/bin/brew" ]]; then
   git reset $Q --hard origin/master
   unset GIT_DIR GIT_WORK_TREE
   logk
-else
-  logskip "Workbrew is already installed so not trying to install Homebrew."
 fi
 
 # Update Homebrew.
@@ -325,41 +358,88 @@ if softwareupdate -l 2>&1 | grep $Q "No new software available."; then
 else
   echo
   log "Installing software updates:"
-  if [ -z "$STRAP_CI" ]; then
+  if [ -z "$STRAP_CI" ] && [ -z "$STRAP_NO_SOFTWAREUPDATE" ]; then
     sudo_askpass softwareupdate --install --all
     xcode_license
     logk
-  else
+  elif [ -n "$STRAP_CI" ]; then
     echo "SKIPPED (for CI)"
+  else
+    echo "SKIPPED (by STRAP_NO_SOFTWAREUPDATE)"
   fi
 fi
 
 # Setup dotfiles
-if [ -d "$HOME/.dotfiles/.git" ]; then
-  logn "Updating ~/.dotfiles:"
-  (
-    cd ~/.dotfiles
-    git pull $Q --rebase --autostash
-  )
-  logk
-  run_dotfile_scripts script/setup script/bootstrap
+if [ -n "$STRAP_GITHUB_USER" ]; then
+  DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
+
+  if git ls-remote "$DOTFILES_URL" &>/dev/null; then
+    log "Fetching $STRAP_GITHUB_USER/dotfiles from GitHub:"
+    if [ ! -d "$HOME/.dotfiles" ]; then
+      log "Cloning to ~/.dotfiles:"
+      git clone $Q "$DOTFILES_URL" ~/.dotfiles
+    else
+      logn "Updating ~/.dotfiles:"
+      (
+        cd ~/.dotfiles
+        git pull $Q --rebase --autostash
+      )
+    fi
+    run_dotfile_scripts script/setup script/bootstrap
+    logk
+  fi
 fi
 
 # Setup Brewfile
-if [ -d "$HOME/.homebrew-brewfile/.git" ]; then
-  log "Updating ~/.homebrew-brewfile:"
-  (
-    cd ~/.homebrew-brewfile
-    git pull $Q
-  )
-  ln -sf ~/.homebrew-brewfile/Brewfile ~/.Brewfile
-  logk
+if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ]; }; then
+  HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
+
+  if git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
+    log "Fetching $STRAP_GITHUB_USER/homebrew-brewfile from GitHub:"
+    if [ ! -d "$HOME/.homebrew-brewfile" ]; then
+      log "Cloning to ~/.homebrew-brewfile:"
+      git clone $Q "$HOMEBREW_BREWFILE_URL" ~/.homebrew-brewfile
+      logk
+    else
+      log "Updating ~/.homebrew-brewfile:"
+      (
+        cd ~/.homebrew-brewfile
+        git pull $Q
+      )
+    fi
+    ln -sf ~/.homebrew-brewfile/Brewfile ~/.Brewfile
+    logk
+  fi
 fi
 
 # Install from local Brewfile
 if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from ~/.Brewfile:"
   brew bundle check --global &>/dev/null || brew bundle --global
+  logk
+fi
+
+# Add GitHub credentials if missing
+if command -v "gh" >/dev/null && ! gh auth token &>/dev/null; then
+  logn "Configuring GitHub CLI:"
+  gh auth login --git-protocol https --hostname github.com --web
+  logk
+fi
+
+# Tap a custom Homebrew tap
+if [ -n "$CUSTOM_HOMEBREW_TAP" ]; then
+  read -ra CUSTOM_HOMEBREW_TAP <<<"$CUSTOM_HOMEBREW_TAP"
+  log "Running 'brew tap ${CUSTOM_HOMEBREW_TAP[*]}':"
+  brew tap "${CUSTOM_HOMEBREW_TAP[@]}"
+  logk
+fi
+
+# Run a custom `brew` command
+if [ -n "$CUSTOM_BREW_COMMAND" ]; then
+  log "Executing 'brew $CUSTOM_BREW_COMMAND':"
+  # Want to expand even if empty or multiple arguments
+  # shellcheck disable=SC2086
+  brew $CUSTOM_BREW_COMMAND
   logk
 fi
 
