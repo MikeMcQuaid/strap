@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
 jobs:
   style:
     runs-on: ubuntu-latest
@@ -13,20 +17,33 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v5
 
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@main
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Run RuboCop linting
+        run: bin/rubocop
+
+      - name: Run Sorbet type checking (continue on error)
+        run: bin/srb tc
+
+  rspec:
+    runs-on: ubuntu-latest
+    needs: style
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v5
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
 
-      - name: Install shfmt
-        run: brew install shfmt
+      - name: Run RSpec tests
+        run: bin/rspec
 
-      - run: script/style
-
-  tests:
+  strap_sh:
     runs-on: macos-15
     steps:
       - name: Set up Git repository
@@ -49,37 +66,21 @@ jobs:
 
       - run: brew doctor
 
-      - name: Install Ruby dependencies
-        run: brew install gmp openssl libyaml
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
-      - run: script/bootstrap
-
-      - run: script/tests
-
-      - run: brew install --build-from-source --formula libfaketime
-
-      - run: brew install --cask orka
-
-      - run: brew install --formula xz
+      - name: Test various brew installations
+        run: |
+          brew install --build-from-source --formula libfaketime
+          brew install --cask orka
+          brew install --formula xz
 
   docker:
-    needs: style
+    needs: [style, rspec]
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v4
 
       - name: Set RUBY_VERSION
-        run: |
-          set -xeuo pipefail
-
-          RUBY_VERSION=$(cat .ruby-version)
-          echo "RUBY_VERSION=${RUBY_VERSION}" >> "${GITHUB_ENV}"
+        run: echo RUBY_VERSION="$(cat .ruby-version)" >> "${GITHUB_ENV}"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -98,6 +99,11 @@ jobs:
           username: mikemcquaid
           password: ${{ secrets.DOCKER_TOKEN }}
 
+      # Dependabot doesn't have access to push to the GHCR cache
+      - if: github.actor != 'dependabot[bot]'
+        name: Set up Docker cache
+        run: echo DOCKER_CACHE_TO="type=registry,ref=ghcr.io/mikemcquaid/strap:cache,mode=max" >> "${GITHUB_ENV}"
+
       - uses: docker/build-push-action@v6
         with:
           push: ${{ github.ref == 'refs/heads/main' }}
@@ -109,7 +115,7 @@ jobs:
             ghcr.io/mikemcquaid/strap:main
             ghcr.io/mikemcquaid/strap:master
           cache-from: type=registry,ref=ghcr.io/mikemcquaid/strap:cache
-          cache-to: type=registry,ref=ghcr.io/mikemcquaid/strap:cache,mode=max
+          cache-to: ${{ env.DOCKER_CACHE_TO }}
           provenance: mode=max
           sbom: true
           build-args: |

@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github
+
+# Documentation
+README.md
+LICENSE.txt
+
+# Development files
+.env
+.env.local
+
+# Dependencies
+node_modules
+vendor/bundle
+
+# Logs
+log
+tmp/log
+
+# Test files
+spec
+test
+coverage
+
+# Development cache
+tmp/cache
+tmp/pids
+.sorbet
+
+# Editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Ruby/Rails specific
+.byebug_history
+.irb_history
+.rubocop.yml
+
+# Ignore the existing Brewfile and related Mac setup files
+Brewfile

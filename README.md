@@ -55,14 +55,14 @@ Strap is also available as a Docker image on [Docker Hub (`mikemcquaid/strap`)](
 
 ## Web Application Configuration Environment Variables
 
-- `GITHUB_KEY`: the GitHub.com Application Client ID.
-- `GITHUB_SECRET`: the GitHub.com Application Client Secret.
-- `SESSION_SECRET`: the secret used for cookie session storage.
-- `WEB_CONCURRENCY`: the number of Puma (web server) threads to run (defaults to 3).
-- `STRAP_ISSUES_URL`: the URL where users should file issues (defaults to no URL).
-- `STRAP_BEFORE_INSTALL`: instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
-- `CUSTOM_HOMEBREW_TAP`: an optional Homebrew tap to install with `brew tap`. Specify multiple arguments to brew tap by separating values with spaces.
-- `CUSTOM_BREW_COMMAND`: a single `brew` command that is run after all other stages have completed.
+- `GITHUB_KEY` (required in production): the GitHub.com Application Client ID.
+- `GITHUB_SECRET` (required in production): the GitHub.com Application Client Secret.
+- `SESSION_SECRET` (required in production): the secret used for cookie session storage.
+- `WEB_CONCURRENCY` (optional): the number of Puma (web server) threads to run (defaults to 3).
+- `STRAP_ISSUES_URL` (optional): the URL where users should file issues (defaults to no URL).
+- `STRAP_BEFORE_INSTALL` (optional): instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
+- `CUSTOM_HOMEBREW_TAP` (optional): an optional Homebrew tap to install with `brew tap`. Specify multiple arguments to brew tap by separating values with spaces.
+- `CUSTOM_BREW_COMMAND` (optional): a single `brew` command that is run after all other stages have completed.
 
 ## Status
 

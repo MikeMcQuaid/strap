@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css">
+    <title>👢 Strap</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg bg-primary pt-4 pb-2 mb-4">
+      <div class="container">
+        <h1 class="display-1 text-white">👢 Strap</h1>
+      </div>
+    </nav>
+
+    <div class="container">
+      <%= yield %>
+    </div>
+
+    <%= link_to "https://github.com/MikeMcQuaid/strap" do %>
+      <img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.io/fork-me-on-github-retina-ribbons/right-red@2x.png" alt="Fork me on GitHub">
+    <% end %>
+
+    <%# Spacer to avoid bottom navbar overlapping. %>
+    <div class="py-4 mb-4"></div>
+
+    <nav class="navbar bg-primary fixed-bottom text-white">
+      <span class="navbar-brand">👢</span>
+      <span>Made with ❤️ by&nbsp;<a class="text-white" href="https://mikemcquaid.com">Mike McQuaid</a></span>
+    </nav>
+  </body>
+</html>
