@@ -46,6 +46,8 @@ USER strap
 
 # Setup production environment
 ENV RAILS_ENV=production \
+  BUNDLE_DEPLOYMENT=1 \
+  BUNDLE_WITHOUT=development,test \
   PORT="3000"
 
 # Setup healthcheck route
