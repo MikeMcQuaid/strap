@@ -26,8 +26,10 @@ cleanup() {
     fi
     if [ -z "$STRAP_DEBUG" ]; then
       echo "!!! Run '$0 --debug' for debugging output." >&2
-      echo "!!! If you're stuck: file an issue with debugging output at:" >&2
-      echo "!!!   $STRAP_ISSUES_URL" >&2
+      if [ -n "$STRAP_ISSUES_URL" ]; then
+        echo "!!! If you're stuck: file an issue with debugging output at:" >&2
+        echo "!!!   $STRAP_ISSUES_URL" >&2
+      fi
     fi
   fi
 }
@@ -48,10 +50,9 @@ STDIN_FILE_DESCRIPTOR="0"
 # STRAP_GIT_NAME=
 # STRAP_GIT_EMAIL=
 # STRAP_GITHUB_USER=
-# STRAP_GITHUB_TOKEN=
 # CUSTOM_HOMEBREW_TAP=
 # CUSTOM_BREW_COMMAND=
-STRAP_ISSUES_URL='https://github.com/MikeMcQuaid/strap/issues/new'
+# STRAP_ISSUES_URL=
 
 # We want to always prompt for sudo password at least once rather than doing
 # root stuff unexpectedly.
@@ -302,6 +303,12 @@ fi
 logk
 
 # Setup Homebrew directory and permissions.
+if [[ "$(uname -m)" == "arm64" ]]; then
+  export PATH="/opt/homebrew/bin:$PATH"
+else
+  export PATH="/usr/local/bin:$PATH"
+fi
+
 if ! command -v "brew" >/dev/null; then
   logn "Installing Homebrew:"
 

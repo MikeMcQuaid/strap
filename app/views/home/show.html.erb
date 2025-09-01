@@ -1,0 +1,44 @@
+<p class="lead">
+  Strap is a script to bootstrap a minimal macOS development system.
+  This does not assume you're doing Ruby/Rails/web development but installs the minimal set of software every macOS developer will want.
+</p>
+
+To Strap your system:
+<ol>
+  <%= before_install_list_item %>
+
+  <% authenticated = session[:auth].present? %>
+  <li>
+    <%= login_step(authenticated:) %>
+  </li>
+
+  <li>
+    <%= download_step(authenticated:) %>
+  </li>
+
+  <li>
+    Run Strap in Terminal.app with <%= content_tag(:code, "bash ~/Downloads/strap.sh") %>.
+  </li>
+
+  <li>
+    If something failed, run Strap with more debugging output in
+    Terminal.app with <%= content_tag(:code, "bash ~/Downloads/strap.sh --debug") %> and
+    <%= debugging_text %>.
+  </li>
+
+  <li>
+    Delete the customised <%= content_tag(:code, "strap.sh") %> (it has a GitHub token
+    in it) in Terminal.app with
+    <%= content_tag(:code, "rm -f ~/Downloads/strap.sh") %>
+  </li>
+
+  <li>
+    Install additional software with
+    <%= content_tag(:code, "brew install") %>.
+  </li>
+</ol>
+
+<p class="lead">
+  I maintain 👢 Strap in my spare time and am self-employed.
+  Please <%= link_to "sponsor me on GitHub Sponsors", "https://github.com/sponsors/MikeMcQuaid" %>, thanks ❤️!
+</p>
