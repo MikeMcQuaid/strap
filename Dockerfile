@@ -48,8 +48,9 @@ COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /app /app
 
 # Create dedicated user
-RUN groupadd -r strap && useradd -r -g strap strap
-RUN chown -R strap:strap /app
+RUN groupadd -r strap && useradd -r -g strap -m -d /home/strap strap
+RUN chown -R strap:strap /app /home/strap
+ENV HOME=/home/strap
 USER strap
 
 # Setup healthcheck route
