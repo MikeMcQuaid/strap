@@ -187,6 +187,10 @@ GEM
       prettyprint
     prettyprint (0.2.0)
     prism (1.4.0)
+    propshaft (1.2.1)
+      actionpack (>= 7.0.0)
+      activesupport (>= 7.0.0)
+      rack
     psych (5.2.6)
       date
       stringio
@@ -328,6 +332,15 @@ GEM
       sorbet-static-and-runtime (>= 0.5.10187)
       thor (>= 0.19.2)
     stringio (3.1.7)
+    tailwindcss-rails (4.3.0)
+      railties (>= 7.0.0)
+      tailwindcss-ruby (~> 4.0)
+    tailwindcss-ruby (4.1.12-aarch64-linux-gnu)
+    tailwindcss-ruby (4.1.12-aarch64-linux-musl)
+    tailwindcss-ruby (4.1.12-arm64-darwin)
+    tailwindcss-ruby (4.1.12-x86_64-darwin)
+    tailwindcss-ruby (4.1.12-x86_64-linux-gnu)
+    tailwindcss-ruby (4.1.12-x86_64-linux-musl)
     tapioca (0.17.7)
       benchmark
       bundler (>= 2.2.25)
@@ -376,6 +389,7 @@ DEPENDENCIES
   octokit
   omniauth-github
   omniauth-rails_csrf_protection
+  propshaft
   puma
   rails (>= 8)
   rspec-rails
@@ -388,6 +402,7 @@ DEPENDENCIES
   sorbet
   sorbet-runtime
   sorbet-static-and-runtime
+  tailwindcss-rails
   tapioca (>= 0.17)
 
 RUBY VERSION

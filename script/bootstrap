@@ -1,8 +1,13 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-bundle check >/dev/null 2>&1 || {
-  bundle install
-}
+echo "==> Installing Ruby dependencies..."
+bundle check || bundle install
+echo
+
+if command -v brew &>/dev/null; then
+  echo "==> Installing Homebrew dependencies..."
+  brew bundle check || brew bundle
+fi

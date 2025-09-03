@@ -4,32 +4,37 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <title>👢 Strap</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
   </head>
-  <body>
-    <nav class="navbar navbar-expand-lg bg-primary pt-4 pb-2 mb-4">
-      <div class="container">
-        <h1 class="display-1 text-white">👢 Strap</h1>
+  <body class="text-gray-800">
+    <nav class="pt-7 pb-7 mb-6 bg-blue-600">
+      <div class="max-w-6xl mx-auto px-4">
+        <h1 class="text-8xl font-light text-white leading-none mb-0">👢 Strap</h1>
       </div>
     </nav>
 
-    <div class="container">
+    <div class="max-w-6xl mx-auto px-4">
       <%= yield %>
     </div>
 
     <%= link_to "https://github.com/MikeMcQuaid/strap" do %>
-      <img style="position: absolute; top: 0; right: 0; border: 0; width: 149px; height: 149px;" src="//aral.github.io/fork-me-on-github-retina-ribbons/right-red@2x.png" alt="Fork me on GitHub">
+      <%= image_tag "fork-me-on-github-right-red.png",
+                    alt: "Fork me on GitHub",
+                    class: "absolute top-0 right-0 border-0 w-36 h-36 object-contain" %>
     <% end %>
 
     <%# Spacer to avoid bottom navbar overlapping. %>
     <div class="py-4 mb-4"></div>
 
-    <nav class="navbar bg-primary fixed-bottom text-white">
-      <span class="navbar-brand">👢</span>
-      <span>Made with ❤️ by&nbsp;<a class="text-white" href="https://mikemcquaid.com">Mike McQuaid</a></span>
+    <nav class="fixed bottom-0 w-full text-white p-2 flex justify-between items-center bg-blue-600">
+      <span class="text-xl font-semibold">👢</span>
+      <span>
+        Made with ❤️ by
+        <%= strap_link_to "Mike McQuaid", "https://mikemcquaid.com", classes: "text-white hover:text-gray-200" %>
+      </span>
     </nav>
   </body>
 </html>

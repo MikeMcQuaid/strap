@@ -29,6 +29,11 @@ RUN bundle install --retry 3
 # Copy application code
 COPY . .
 
+# Precompile Tailwind CSS and other assets
+RUN export GITHUB_KEY=stub GITHUB_SECRET=stub && \
+    bin/rails tailwindcss:build && \
+    bin/rails assets:precompile
+
 # Exclude Sorbet RBI files and setup clean Bootsnap cache
 RUN rm -rf sorbet/rbi tmp/bootsnap* && \
     bin/bootsnap precompile app/
