@@ -3,16 +3,22 @@
 
 # Don't worry: these credentials are not sensitive but just use for
 # "Strap (development)" with the URL and callback both set to localhost.
-GITHUB_KEY = T.let(if Rails.env.production?
-                     ENV.fetch("GITHUB_KEY")
-                   else
-                     ENV.fetch("GITHUB_KEY", "b28d0c47b8925e999e49")
-end, String)
-GITHUB_SECRET = T.let(if Rails.env.production?
-                        ENV.fetch("GITHUB_SECRET")
-                      else
-                        ENV.fetch("GITHUB_SECRET", "037ac891e2e0b8bc91558d5ff358d2ff4fa1beb7")
-end, String)
+GITHUB_KEY = T.let(
+  if Rails.env.production?
+    ENV.fetch("GITHUB_KEY")
+  else
+    ENV.fetch("GITHUB_KEY", "b28d0c47b8925e999e49")
+  end,
+  String
+)
+GITHUB_SECRET = T.let(
+  if Rails.env.production?
+    ENV.fetch("GITHUB_SECRET")
+  else
+    ENV.fetch("GITHUB_SECRET", "037ac891e2e0b8bc91558d5ff358d2ff4fa1beb7")
+  end,
+  String
+)
 
 # In some configurations, the full host may need to be set to something other
 # than the canonical URL.

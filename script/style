@@ -82,6 +82,24 @@ ruby_style() {
   bin/srb tc
 }
 
+erb_style() {
+  if [[ -n ${STYLE_FIX-} ]]; then
+    local erb_lint_args="--autocorrect"
+  fi
+
+  bin/erb_lint --lint-all ${erb_lint_args-}
+
+}
+
+github_actions_style() {
+  if [[ -n ${STYLE_FIX-} ]]; then
+    local zizmor_args="--fix"
+  fi
+
+  zizmor ${zizmor_args-} .
+  actionlint
+}
+
 script/bootstrap >/dev/null
 
 sudo_askpass_style
@@ -91,3 +109,7 @@ ruby_version_style Gemfile.lock
 shell_style bin/strap.sh script/*
 
 ruby_style
+
+erb_style
+
+github_actions_style

@@ -12,13 +12,16 @@ gem:
     - base64
     - benchmark
     - bigdecimal
+    - bootsnap
     - builder
     - connection_pool
     - crass
     - date
     - diff-lcs
+    - docile
     - drb
     - erb
+    - erb_lint
     - faraday-net_http
     - globalid
     - io-console
@@ -29,6 +32,7 @@ gem:
     - mail
     - marcel
     - mini_mime
+    - msgpack
     - multi_xml
     - net-http
     - net-imap
@@ -53,6 +57,7 @@ gem:
     - reline
     - require-hooks
     - rexml
+    - rubocop-capybara
     - rubocop-performance
     - rubocop-rails
     - rubocop-rspec_rails
@@ -60,8 +65,13 @@ gem:
     - ruby-progressbar
     - sawyer
     - securerandom
+    - simplecov
+    - simplecov-html
+    - simplecov_json_formatter
     - snaky_hash
     - stringio
+    - tailwindcss-ruby
+    - tailwindcss-rails
     - timeout
     - tzinfo
     - unicode-display_width

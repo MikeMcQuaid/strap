@@ -5,7 +5,15 @@ require "rails_helper"
 RSpec.describe "Home" do
   define_method(:app) { Rails.application }
 
-  before { get "/" }
+  let(:config_overrides) { {} }
+
+  before do
+    config_overrides.each do |key, value|
+      Rails.application.config.public_send("#{key}=", value)
+    end
+
+    get "/"
+  end
 
   it "returns successful response" do
     expect(last_response.status).to eq(200)
@@ -25,5 +33,23 @@ RSpec.describe "Home" do
 
   it "has GitHub OAuth form action" do
     expect(last_response.body).to include('action="/auth/github"')
+  end
+
+  context "when strap_issues_url is configured" do
+    let(:strap_issues_url) { "https://github.com/example/strap/issues" }
+    let(:config_overrides) { { strap_issues_url: } }
+
+    it "includes custom issues URL in debugging text" do
+      expect(last_response.body).to include(strap_issues_url)
+    end
+  end
+
+  context "when strap_before_install is configured" do
+    let(:strap_before_install) { "Run system updates first" }
+    let(:config_overrides) { { strap_before_install: } }
+
+    it "displays custom before install instructions" do
+      expect(last_response.body).to include(strap_before_install)
+    end
   end
 end

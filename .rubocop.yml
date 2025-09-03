@@ -1,4 +1,5 @@
 plugins:
+  - rubocop-capybara
   - rubocop-performance
   - rubocop-rspec
   - rubocop-sorbet
@@ -7,11 +8,19 @@ plugins:
 
 AllCops:
   TargetRubyVersion: 3.4
+  ActiveSupportExtensionsEnabled: true
   NewCops: enable
+  EnabledByDefault: true
   Exclude:
-    - "/bin/*"
+    - "**/bin/*"
     - "**/vendor/**/*"
     - "**/sorbet/rbi/annotations/**/*.rbi"
+
+Bundler/GemComment:
+  Enabled: false
+
+Bundler/GemVersion:
+  Enabled: false
 
 Layout/EndAlignment:
   EnforcedStyleAlignWith: start_of_line
@@ -23,11 +32,27 @@ Layout/HashAlignment:
 Layout/LineLength:
   Max: 118
 
+Layout/MultilineAssignmentLayout:
+  EnforcedStyle: same_line
+
+Lint/ConstantResolution:
+  Enabled: false
+
+Lint/NumberConversion:
+  Enabled: false
+
 Metrics/AbcSize:
   Max: 35
 
 Metrics/MethodLength:
   Max: 30
+
+Rails/EnvironmentVariableAccess:
+  Exclude:
+    - "**/config/initializers/*.rb"
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 6
 
 # System tests use Rack::Test which doesn't support have_http_status matcher
 RSpecRails/HaveHttpStatus:
@@ -38,13 +63,31 @@ RSpecRails/HttpStatus:
   Exclude:
     - "**/spec/system/**/*.rb"
 
+Style/MethodCallWithArgsParentheses:
+  Enabled: false
+
+Sorbet/IgnoreSigil:
+  Enabled: false
+
+Sorbet/HasSigil:
+  Enabled: false
+
 # This is already the default
 Sorbet/FalseSigil:
+  Enabled: false
+
+Sorbet/ForbidSig:
+  Enabled: false
+
+Sorbet/ForbidTLet:
   Enabled: false
 
 # T::Sig is monkey-patched into Module
 Sorbet/RedundantExtendTSig:
   Enabled: true
+
+Sorbet/StrongSigil:
+  Enabled: false
 
 Sorbet/StrictSigil:
   Enabled: true
@@ -58,11 +101,30 @@ Sorbet/TrueSigil:
     - "**/config/{routes,puma}.rb"
     - "**/spec/**/*.rb"
 
+Style/ConstantVisibility:
+  Enabled: false
+
+Style/Copyright:
+  Enabled: false
+
 Style/Documentation:
+  Enabled: false
+
+Style/DocumentationMethod:
+  Enabled: false
+
+Style/DisableCopsWithinSourceCodeDirective:
+  Enabled: false
+
+Style/MissingElse:
   Enabled: false
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
+
+Style/StringHashKeys:
+  Exclude:
+    - "**/config/environments/*.rb"
 
 Style/TrailingCommaInArrayLiteral:
   EnforcedStyleForMultiline: consistent_comma

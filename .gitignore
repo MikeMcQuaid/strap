@@ -19,15 +19,19 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
+# Ignore generated assets
 /public/assets
 /app/assets/builds
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 
+# Ignore vendored files
 /vendor/
 
+# Ignore downloaded strap.sh script
 strap.sh
 
-# RSpec example status persistence file
+# Ignore temporary test files
+/coverage/
 /spec/examples.txt
