@@ -9,9 +9,11 @@ gem "faraday-retry"
 gem "octokit"
 gem "omniauth-github"
 gem "omniauth-rails_csrf_protection"
+gem "propshaft"
 gem "puma"
 gem "rails", ">= 8"
 gem "sorbet-runtime"
+gem "tailwindcss-rails"
 
 group :development, :test do
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"

@@ -45,7 +45,7 @@ RSpec.describe "GitHub OAuth" do
     end
 
     it "shows script download option" do
-      expect(last_response.body).to include("Download the <code>strap.sh</code> script")
+      expect(last_response.body).to match("Download the <code [^>]+>strap.sh</code> script")
     end
   end
 end

@@ -22,11 +22,9 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Run RuboCop linting
-        run: bin/rubocop
+      - run: sudo apt-get install -y shfmt
 
-      - name: Run Sorbet type checking (continue on error)
-        run: bin/srb tc
+      - run: script/style
 
   rspec:
     runs-on: ubuntu-latest
@@ -39,6 +37,9 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+
+      - name: Build Tailwind CSS
+        run: bin/rails tailwindcss:build
 
       - name: Run RSpec tests
         run: bin/rspec

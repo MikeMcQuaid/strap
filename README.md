@@ -76,3 +76,7 @@ Stable and in active development.
 
 Licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/main/LICENSE.txt).
+
+[Fork me on GitHub Retina Ribbons](https://github.com/aral/fork-me-on-github-retina-ribbons)
+are vendored in [`app/assets/images`](/app/assets/images)
+and also licensed under the [MIT License](https://github.com/aral/fork-me-on-github-retina-ribbons/blob/master/LICENSE)

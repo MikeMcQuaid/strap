@@ -78,10 +78,11 @@ ruby_style() {
     local rubocop_args="--autocorrect-all"
   fi
 
-  bundle exec rubocop --format quiet ${rubocop_args-}
+  bin/rubocop --format quiet ${rubocop_args-}
+  bin/srb tc
 }
 
-script/bootstrap
+script/bootstrap >/dev/null
 
 sudo_askpass_style
 
