@@ -31,8 +31,8 @@ end
 
 Rails.application.config.middleware.use OmniAuth::Builder do |builder|
   options = {
-    # access is given for gh cli, packages, git client setup and repo checkouts
-    scope:        "user:email, repo, workflow, write:packages, read:packages, read:org, read:discussions",
+    # only need email for embedding in the strap.sh script
+    scope:        "user:email",
     allow_signup: false,
   }
   options[:provider_ignores_state] = true if Rails.env.development?
