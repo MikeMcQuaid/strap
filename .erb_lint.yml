@@ -1,0 +1,28 @@
+---
+linters:
+  DeprecatedClasses:
+    enabled: true
+  ErbSafety:
+    enabled: true
+    better_html_config: .better-html.yml
+  PartialInstanceVariable:
+    enabled: true
+  RequireScriptNonce:
+    enabled: true
+  Rubocop:
+    enabled: true
+    rubocop_config:
+      inherit_from: .rubocop.yml
+      Layout/InitialIndentation:
+        Enabled: false
+      Layout/TrailingEmptyLines:
+        Enabled: false
+      Lint/UselessAssignment:
+        Enabled: false
+      Style/FrozenStringLiteralComment:
+        Enabled: false
+  StrictLocals:
+    enabled: true
+
+exclude:
+  - "**/vendor/**/*"

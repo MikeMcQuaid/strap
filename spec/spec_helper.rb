@@ -1,6 +1,20 @@
 # typed: true
 # frozen_string_literal: true
 
+require "simplecov"
+SimpleCov.start "rails" do
+  minimum_coverage 100
+  enable_coverage :branch
+  primary_coverage :line
+  enable_coverage_for_eval
+
+  add_filter "/bin/"
+  add_filter "/config/"
+  add_filter "/sorbet/"
+  add_filter "/spec/"
+  add_filter "/vendor/"
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     # This option will default to `true` in RSpec 4. It makes the `description`

@@ -46,7 +46,7 @@ fi
 STDIN_FILE_DESCRIPTOR="0"
 [ -t "$STDIN_FILE_DESCRIPTOR" ] && STRAP_INTERACTIVE="1"
 
-# Set by web/app.rb
+# Set by app/controllers/script_controller.rb
 # STRAP_GIT_NAME=
 # STRAP_GIT_EMAIL=
 # STRAP_GITHUB_USER=
