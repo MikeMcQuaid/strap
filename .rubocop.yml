@@ -82,6 +82,10 @@ Sorbet/ForbidSig:
 Sorbet/ForbidTLet:
   Enabled: false
 
+Sorbet/ForbidTSig:
+  Exclude:
+    - "config/initializers/sorbet.rb"
+
 # T::Sig is monkey-patched into Module
 Sorbet/RedundantExtendTSig:
   Enabled: true
