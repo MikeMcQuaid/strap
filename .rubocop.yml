@@ -47,6 +47,9 @@ Metrics/AbcSize:
 Metrics/MethodLength:
   Max: 30
 
+Rails/Env:
+  Enabled: false
+
 Rails/EnvironmentVariableAccess:
   Exclude:
     - "**/config/initializers/*.rb"
