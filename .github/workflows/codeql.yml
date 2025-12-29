@@ -25,11 +25,11 @@ jobs:
           persist-credentials: false
 
       - name: Set up CodeQL
-        uses: github/codeql-action/init@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
+        uses: github/codeql-action/init@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
         with:
           languages: ruby
           queries: security-and-quality
           config-file: ./.github/codeql.yml
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
+        uses: github/codeql-action/analyze@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
