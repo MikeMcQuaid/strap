@@ -3,3 +3,4 @@ rules:
     config:
       policies:
         Homebrew/actions/*: ref-pin
+        ruby/setup-ruby: ref-pin
