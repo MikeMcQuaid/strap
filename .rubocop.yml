@@ -123,6 +123,10 @@ Style/DocumentationMethod:
 Style/DisableCopsWithinSourceCodeDirective:
   Enabled: false
 
+# Doesn't play nicely with Sorbet use of .fetch
+Style/HashLookupMethod:
+  Enabled: false
+
 Style/MissingElse:
   Enabled: false
 
