@@ -22,20 +22,22 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
       - name: Set up Homebrew
-        id: setup-homebrew
         uses: Homebrew/actions/setup-homebrew@main
         with:
           core: false
           cask: false
-          test-bot: false
 
-      - run: brew bundle
+      - name: Cache Homebrew prefix
+        uses: Homebrew/actions/cache-homebrew-prefix@main
+        with:
+          brewfile: true
+          uninstall: true
+
+      - name: Set up Ruby
+        uses: Homebrew/actions/setup-ruby@main
+        with:
+          bundler-cache: true
 
       - run: script/style
         env:
@@ -51,8 +53,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up Homebrew
+        id: setup-homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+        with:
+          core: false
+          cask: false
+
+      - name: Cache Homebrew prefix
+        uses: Homebrew/actions/cache-homebrew-prefix@main
+        with:
+          brewfile: true
+          uninstall: true
+
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: Homebrew/actions/setup-ruby@main
         with:
           bundler-cache: true
 
