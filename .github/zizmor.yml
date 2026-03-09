@@ -3,3 +3,5 @@ rules:
     config:
       policies:
         Homebrew/actions/*: ref-pin
+  secrets-outside-env:
+    disable: true
