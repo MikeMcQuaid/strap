@@ -3,4 +3,4 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-bin/rails server
+exec bin/rails server "$@"
