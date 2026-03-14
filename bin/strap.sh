@@ -222,7 +222,9 @@ sudo_askpass launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.pl
 
 if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
   LOGIN_TEXT=$(escape "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL.")
-  echo "$LOGIN_TEXT" | grep -q '[()]' && LOGIN_TEXT="'$LOGIN_TEXT'"
+  if [[ $LOGIN_TEXT == *"("* || $LOGIN_TEXT == *")"* ]]; then
+    LOGIN_TEXT="'$LOGIN_TEXT'"
+  fi
   sudo_askpass defaults write /Library/Preferences/com.apple.loginwindow \
     LoginwindowText \
     "$LOGIN_TEXT"
@@ -304,26 +306,17 @@ logk
 
 # Setup Homebrew directory and permissions.
 if [[ "$(uname -m)" == "arm64" ]]; then
+  HOMEBREW_PREFIX="/opt/homebrew"
+  HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}"
   export PATH="/opt/homebrew/bin:$PATH"
 else
+  HOMEBREW_PREFIX="/usr/local"
+  HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
   export PATH="/usr/local/bin:$PATH"
 fi
 
-if ! command -v "brew" >/dev/null; then
+if ! command -v brew &>/dev/null; then
   logn "Installing Homebrew:"
-
-  HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
-  HOMEBREW_REPOSITORY="$(brew --repository 2>/dev/null || true)"
-  if [ -z "$HOMEBREW_PREFIX" ] || [ -z "$HOMEBREW_REPOSITORY" ]; then
-    UNAME_MACHINE="$(/usr/bin/uname -m)"
-    if [[ $UNAME_MACHINE == "arm64" ]]; then
-      HOMEBREW_PREFIX="/opt/homebrew"
-      HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}"
-    else
-      HOMEBREW_PREFIX="/usr/local"
-      HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
-    fi
-  fi
   [ -d "$HOMEBREW_PREFIX" ] || sudo_askpass mkdir -p "$HOMEBREW_PREFIX"
   if [ "$HOMEBREW_PREFIX" = "/usr/local" ]; then
     sudo_askpass chown "root:wheel" "$HOMEBREW_PREFIX" 2>/dev/null || true
@@ -353,7 +346,6 @@ if ! command -v "brew" >/dev/null; then
 fi
 
 # Update Homebrew.
-export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 log "Updating Homebrew:"
 brew update --quiet
 logk
@@ -387,10 +379,7 @@ if [ -n "$STRAP_GITHUB_USER" ]; then
       git clone $Q "$DOTFILES_URL" ~/.dotfiles
     else
       logn "Updating ~/.dotfiles:"
-      (
-        cd ~/.dotfiles
-        git pull $Q --rebase --autostash
-      )
+      git -C ~/.dotfiles pull $Q --rebase --autostash
     fi
     run_dotfile_scripts script/setup script/bootstrap
     logk
@@ -409,10 +398,7 @@ if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brew
       logk
     else
       log "Updating ~/.homebrew-brewfile:"
-      (
-        cd ~/.homebrew-brewfile
-        git pull $Q
-      )
+      git -C ~/.homebrew-brewfile pull $Q
     fi
     ln -sf ~/.homebrew-brewfile/Brewfile ~/.Brewfile
     logk
