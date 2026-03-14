@@ -44,7 +44,7 @@ EOS
 
 ruby_version_style() {
   local ruby_version
-  ruby_version="$(cat .ruby-version)"
+  ruby_version="$(<.ruby-version)"
 
   for file in "$@"; do
     if ! git grep --quiet "ruby.${ruby_version}" HEAD -- "${file}"; then
@@ -61,7 +61,7 @@ shell_style() {
     for file in "$@"; do
       # Want to expand shfmt_args
       # shellcheck disable=SC2086
-      shfmt ${shfmt_args} --write "${file}" "${file}"
+      shfmt ${shfmt_args} --write "${file}"
       shellcheck --format=diff "${file}" | patch -p1
     done
   fi
