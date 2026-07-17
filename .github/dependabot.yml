@@ -1,45 +1,49 @@
+# This file is synced from `MikeMcQuaid/.github`, do not modify it directly.
+---
 version: 2
-
-multi-ecosystem-groups:
-  all:
-    schedule:
-      interval: weekly
-      day: "friday"
-      time: "08:00"
-      timezone: "Etc/UTC"
-
 updates:
-  - package-ecosystem: github-actions
-    directory: /
-    multi-ecosystem-group: all
-    patterns:
+- package-ecosystem: bundler
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: friday
+    time: '08:00'
+    timezone: Etc/UTC
+  groups:
+    bundler:
+      patterns:
       - "*"
-    allow:
-      - dependency-type: all
-    cooldown:
-      default-days: 7
-
-  - package-ecosystem: bundler
-    directory: /
-    multi-ecosystem-group: all
-    patterns:
+  allow:
+  - dependency-type: all
+  cooldown:
+    default-days: 7
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: friday
+    time: '08:00'
+    timezone: Etc/UTC
+  groups:
+    docker:
+      patterns:
       - "*"
-    allow:
-      - dependency-type: all
-    cooldown:
-      default-days: 7
-      semver-major-days: 14
-      semver-minor-days: 7
-      semver-patch-days: 1
-      include:
-        - "*"
-
-  - package-ecosystem: "docker"
-    directory: /
-    multi-ecosystem-group: all
-    patterns:
+  allow:
+  - dependency-type: all
+  cooldown:
+    default-days: 7
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+    day: friday
+    time: '08:00'
+    timezone: Etc/UTC
+  groups:
+    github-actions:
+      patterns:
       - "*"
-    allow:
-      - dependency-type: all
-    cooldown:
-      default-days: 7
+  allow:
+  - dependency-type: all
+  cooldown:
+    default-days: 7
