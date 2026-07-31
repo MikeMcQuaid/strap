@@ -3,4 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+source script/bootstrap
+bundle_bootstrap
+
 exec bin/rails server "$@"

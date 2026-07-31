@@ -1,13 +1,21 @@
 #!/bin/bash
-set -euo pipefail
+bundle_bootstrap() {
+  if [[ ${HOMEBREW_INSIDE_BUNDLE:-} != "1" ]] && command -v brew &>/dev/null; then
+    export HOMEBREW_NO_AUTO_UPDATE=1
+    eval "$(brew bundle --check --install env)"
+  fi
 
-cd "$(dirname "$0")/.."
+  # Share installed gems between worktrees belonging to the same repository.
+  local shared_bundle_path
+  shared_bundle_path="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/vendor/bundle"
+  export BUNDLE_AUTO_INSTALL=1
+  export BUNDLE_CLEAN=false
+  export BUNDLE_PATH="${shared_bundle_path}"
+}
 
-echo "==> Installing Ruby dependencies..."
-bundle check || bundle install
-echo
-
-if command -v brew &>/dev/null; then
-  echo "==> Installing Homebrew dependencies..."
-  brew bundle check || brew bundle
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  set -euo pipefail
+  cd "$(dirname "$0")/.."
+  bundle_bootstrap
+  bundle check || bundle install
 fi
