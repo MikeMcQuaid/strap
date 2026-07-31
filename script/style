@@ -100,7 +100,8 @@ github_actions_style() {
   actionlint
 }
 
-script/bootstrap >/dev/null
+source script/bootstrap
+bundle_bootstrap &>/dev/null
 
 sudo_askpass_style
 
