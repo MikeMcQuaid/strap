@@ -5,22 +5,18 @@ require "rails_helper"
 RSpec.describe "/strap.sh" do
   define_method(:app) { Rails.application }
 
-  # Needs to be strings for OmniAuth
-  # rubocop:disable Style/StringHashKeys
   let(:omniauth_auth) do
     {
-      "info"        => {
-        "name"     => "Test User",
-        "email"    => "test@example.com",
-        "nickname" => "testuser",
+      info:        {
+        name:     "Test User",
+        email:    "test@example.com",
+        nickname: "testuser",
       },
-      "credentials" => {
-        "token" => "test_github_token",
+      credentials: {
+        token: "test_github_token",
       },
     }
   end
-  let(:env) { { "omniauth.auth" => omniauth_auth } }
-  # rubocop:enable Style/StringHashKeys
 
   before do
     OmniAuth.config.test_mode = true
@@ -36,7 +32,7 @@ RSpec.describe "/strap.sh" do
     let(:config_overrides) { {} }
 
     before do
-      get "/auth/github/callback", env: env
+      get "/auth/github/callback"
       follow_redirect!
 
       config_overrides.each do |key, value|
@@ -95,20 +91,15 @@ RSpec.describe "/strap.sh" do
       let(:custom_brew_command) { "install custom-package"                                          }
       let(:config_overrides)    { { strap_issues_url:, custom_homebrew_tap:, custom_brew_command: } }
 
-      # Want to check all three configurations are present
-      # rubocop:disable RSpec/MultipleExpectations
       it "includes all custom configurations" do
-        expect(last_response.body).to include(strap_issues_url)
-        expect(last_response.body).to include(custom_homebrew_tap)
-        expect(last_response.body).to include(custom_brew_command)
+        expect(last_response.body).to include(strap_issues_url, custom_homebrew_tap, custom_brew_command)
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
   end
 
   describe "viewing script as text when authenticated" do
     before do
-      get "/auth/github/callback", env: env
+      get "/auth/github/callback"
       follow_redirect!
       get "/strap.sh?text=1"
     end
