@@ -120,9 +120,6 @@ Style/Documentation:
 Style/DocumentationMethod:
   Enabled: false
 
-Style/DisableCopsWithinSourceCodeDirective:
-  Enabled: false
-
 # Doesn't play nicely with Sorbet use of .fetch
 Style/HashLookupMethod:
   Enabled: false

@@ -5,27 +5,23 @@ require "rails_helper"
 RSpec.describe "GitHub OAuth" do
   define_method(:app) { Rails.application }
 
-  # Needs to be strings for OmniAuth
-  # rubocop:disable Style/StringHashKeys
   let(:omniauth_auth) do
     {
-      "info"        => {
-        "name"     => "Test User",
-        "email"    => "test@example.com",
-        "nickname" => "testuser",
+      info:        {
+        name:     "Test User",
+        email:    "test@example.com",
+        nickname: "testuser",
       },
-      "credentials" => {
-        "token" => "test_github_token",
+      credentials: {
+        token: "test_github_token",
       },
     }
   end
-  let(:env) { { "omniauth.auth" => omniauth_auth } }
-  # rubocop:enable Style/StringHashKeys
 
   before do
     OmniAuth.config.test_mode = true
     OmniAuth.config.mock_auth[:github] = OmniAuth::AuthHash.new(omniauth_auth)
-    get "/auth/github/callback", env: env
+    get "/auth/github/callback"
   end
 
   after do

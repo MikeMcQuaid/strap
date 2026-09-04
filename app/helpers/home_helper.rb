@@ -2,7 +2,6 @@
 # frozen_string_literal: true
 
 # Helper methods for the home page
-# html_safe usage is safe in this file because none of the strings are user-provided
 module HomeHelper
   include ActionView::Helpers::FormHelper
   include ActionView::Helpers::TagHelper
@@ -44,43 +43,42 @@ module HomeHelper
     content_tag(:code, text, class: "font-mono text-sm px-1 text-pink-600")
   end
 
-  # None of the below methods return user-provided strings,
-  # so we can safely use html_safe.
-  # rubocop:disable Rails/OutputSafety
   sig { returns(ActiveSupport::SafeBuffer) }
-  def download_button_text = "Download the #{strap_code_tag('strap.sh')} script".html_safe
+  def download_button_text
+    safe_join(["Download the ", strap_code_tag("strap.sh"), " script"], "")
+  end
 
-  sig { params(authenticated: T::Boolean).returns(ActiveSupport::SafeBuffer) }
+  sig { params(authenticated: T::Boolean).returns(T.any(String, ActiveSupport::SafeBuffer)) }
   def login_step(authenticated:)
-    return "You authorized Strap on GitHub ✅".html_safe if authenticated
+    return "You authorized Strap on GitHub ✅" if authenticated
 
-    form_tag("/auth/github", method: :post) do
-      authorize_button = submit_tag("Authorize Strap on GitHub", class: primary_button_classes)
-      git_clone_code = strap_code_tag("git clone")
-      strap_sh_code = strap_code_tag("strap.sh")
+    explanation = [
+      submit_tag("Authorize Strap on GitHub", class: primary_button_classes),
+      " which will prompt for access to your email, public and private repositories; " \
+      "you'll need to provide access to any organizations whose repositories you need to be able to ",
+      strap_code_tag("git clone"),
+      ". This is used to add a GitHub access token to the ",
+      strap_code_tag("strap.sh"),
+      " script and is not otherwise used by this web application or stored anywhere.",
+    ]
 
-      <<~HTML.html_safe
-        #{authorize_button}
-        which will prompt for access to your email, public and private repositories;
-        you'll need to provide access to any organizations whose repositories you need to be able to
-        #{git_clone_code}.
-        This is used to add a GitHub access token to the #{strap_sh_code}
-        script and is not otherwise used by this web application or stored anywhere.
-      HTML
-    end
+    form_tag("/auth/github", method: :post) { safe_join(explanation, "") }
   end
 
   sig { params(authenticated: T::Boolean).returns(ActiveSupport::SafeBuffer) }
   def download_step(authenticated:)
-    if authenticated
-      download_button = link_to(download_button_text, "/strap.sh", class: primary_button_classes)
-      view_link = strap_link_to("view it in your browser", "/strap.sh?text=1")
-
-      "#{download_button} that's been customised for your GitHub user (or #{view_link} first)."
+    download = if authenticated
+      link_to(download_button_text, "/strap.sh", class: primary_button_classes)
     else
-      view_link = strap_link_to("view the uncustomised version in your browser", "/strap.sh?text=1")
-      "#{download_button_text} that's been customised for your GitHub user (or #{view_link} first)."
-    end.html_safe
+      download_button_text
+    end
+    view_link_text = if authenticated
+      "view it in your browser"
+    else
+      "view the uncustomised version in your browser"
+    end
+    view_link = strap_link_to(view_link_text, "/strap.sh?text=1")
+
+    safe_join([download, " that's been customised for your GitHub user (or ", view_link, " first)."], "")
   end
-  # rubocop:enable Rails/OutputSafety
 end
