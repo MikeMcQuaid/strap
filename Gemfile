@@ -7,6 +7,8 @@ ruby file: ".ruby-version"
 gem "better_html"
 gem "bootsnap"
 gem "faraday-retry"
+# TODO: Bump json to > 3 once Rails supports JSON 3 keyword arguments.
+gem "json", "< 3"
 gem "octokit", ">= 10"
 gem "omniauth-github"
 gem "omniauth-rails_csrf_protection"
