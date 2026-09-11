@@ -102,6 +102,8 @@ github_actions_style() {
 
 source script/bootstrap
 bundle_bootstrap &>/dev/null
+export BUNDLE_FORCE_RUBY_PLATFORM=false
+export BUNDLE_WITH=development
 
 sudo_askpass_style
 
