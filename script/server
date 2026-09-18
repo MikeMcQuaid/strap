@@ -6,4 +6,5 @@ cd "$(dirname "$0")/.."
 source script/bootstrap
 bundle_bootstrap
 
-exec bin/rails server "$@"
+script/build
+exec bundle exec jekyll serve --strict_front_matter --host 127.0.0.1 --port 3000 "$@"

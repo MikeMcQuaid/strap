@@ -1,37 +1,7 @@
-# Ignore all environment files.
 /.env*
-
-# Ignore all logfiles and tempfiles.
-/log/*
-/tmp/*
-!/log/.keep
-!/tmp/.keep
-
-# Ignore pidfiles, but keep the directory.
-/tmp/pids/*
-!/tmp/pids/
-!/tmp/pids/.keep
-
-# Ignore storage (uploaded files in development and any SQLite databases).
-/storage/*
-!/storage/.keep
-/tmp/storage/*
-!/tmp/storage/
-!/tmp/storage/.keep
-
-# Ignore generated assets
-/public/assets
-/app/assets/builds
-
-# Ignore master key for decrypting credentials and more.
-/config/master.key
-
-# Ignore vendored files
+/.bundle/
+/.jekyll-cache/
+/.jekyll-metadata
+/_site/
+/strap.sh
 /vendor/
-
-# Ignore downloaded strap.sh script
-strap.sh
-
-# Ignore temporary test files
-/coverage/
-/spec/examples.txt

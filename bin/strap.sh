@@ -1,9 +1,74 @@
 #!/bin/bash
-#/ Usage: bin/strap.sh [--debug]
+#/ Usage: bin/strap.sh [options]
 #/ Install development dependencies on macOS.
 set -e
 
-[[ $1 == "--debug" || -o xtrace ]] && STRAP_DEBUG="1"
+# Reserve empty values for explicitly skipped fields.
+for STRAP_VALUE in STRAP_GIT_NAME STRAP_GIT_EMAIL STRAP_GITHUB_USER; do
+  if [ -z "${!STRAP_VALUE}" ]; then
+    unset "$STRAP_VALUE"
+  fi
+done
+if [ "${STRAP_NO_GIT_NAME:-0}" = "1" ]; then
+  STRAP_GIT_NAME=""
+fi
+if [ "${STRAP_NO_GIT_EMAIL:-0}" = "1" ]; then
+  STRAP_GIT_EMAIL=""
+fi
+if [ "${STRAP_NO_GITHUB_USER:-0}" = "1" ]; then
+  STRAP_GITHUB_USER=""
+fi
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+  --debug) STRAP_DEBUG="1" ;;
+  --no-github) STRAP_NO_GITHUB="1" ;;
+  --no-git-name) STRAP_GIT_NAME="" ;;
+  --no-git-email) STRAP_GIT_EMAIL="" ;;
+  --no-github-user) STRAP_GITHUB_USER="" ;;
+  --git-name | --git-email | --github-user)
+    if [ "$#" -lt 2 ] || [ -z "$2" ] || [[ $2 == --* ]]; then
+      echo "!!! $1 requires a value (use --no-${1#--} to skip it)." >&2
+      exit 1
+    fi
+    case "$1" in
+    --git-name) STRAP_GIT_NAME="$2" ;;
+    --git-email) STRAP_GIT_EMAIL="$2" ;;
+    --github-user) STRAP_GITHUB_USER="$2" ;;
+    *) exit 1 ;;
+    esac
+    shift
+    ;;
+  --help | -h)
+    cat <<'HELP'
+Usage: strap.sh [options]
+  --debug             Enable debugging output (STRAP_DEBUG=1).
+  --no-github          Skip GitHub login and profile lookup (STRAP_NO_GITHUB=1).
+  --git-name NAME      Set Git's name (STRAP_GIT_NAME).
+  --no-git-name        Skip Git's name (STRAP_NO_GIT_NAME=1).
+  --git-email EMAIL    Set Git's email (STRAP_GIT_EMAIL).
+  --no-git-email       Skip Git's email (STRAP_NO_GIT_EMAIL=1).
+  --github-user USER   Select the dotfiles/Brewfile owner (STRAP_GITHUB_USER).
+  --no-github-user     Skip the owner lookup and fetch (STRAP_NO_GITHUB_USER=1).
+  --help              Show this help.
+
+Flags override environment variables; the last flag for a field wins.
+Use --no-* flags to skip fields without changing existing Git settings.
+Empty environment values are ignored.
+Existing Git name/email are preserved unless explicitly overridden.
+GitHub login is optional and is never prompted for in unattended or CI runs.
+GH_TOKEN or GITHUB_TOKEN can supply existing GitHub credentials.
+HELP
+    exit 0
+    ;;
+  *)
+    echo "!!! Unknown option: $1. Run '$0 --help' for usage." >&2
+    exit 1
+    ;;
+  esac
+  shift
+done
+[[ -o xtrace ]] && STRAP_DEBUG="1"
 STRAP_SUCCESS=""
 
 sudo_askpass() {
@@ -45,14 +110,6 @@ fi
 
 STDIN_FILE_DESCRIPTOR="0"
 [ -t "$STDIN_FILE_DESCRIPTOR" ] && STRAP_INTERACTIVE="1"
-
-# Set by app/controllers/script_controller.rb
-# STRAP_GIT_NAME=
-# STRAP_GIT_EMAIL=
-# STRAP_GITHUB_USER=
-# CUSTOM_HOMEBREW_TAP=
-# CUSTOM_BREW_COMMAND=
-# STRAP_ISSUES_URL=
 
 # We want to always prompt for sudo password at least once rather than doing
 # root stuff unexpectedly.
@@ -131,14 +188,14 @@ abort() {
 
 log() {
   STRAP_STEP="$*"
-  sudo_refresh
   echo "--> $*"
+  sudo_refresh
 }
 
 logn() {
   STRAP_STEP="$*"
-  sudo_refresh
   printf -- "--> %s " "$*"
+  sudo_refresh
 }
 
 logk() {
@@ -164,11 +221,7 @@ run_dotfile_scripts() {
       for i in "$@"; do
         if [ -f "$i" ] && [ -x "$i" ]; then
           log "Running dotfiles $i:"
-          if [ -z "$STRAP_DEBUG" ]; then
-            "$i" 2>/dev/null
-          else
-            "$i"
-          fi
+          "$i"
           logk
           break
         fi
@@ -220,15 +273,6 @@ sudo_askpass defaults write com.apple.screensaver askForPasswordDelay -int 0
 sudo_askpass defaults write /Library/Preferences/com.apple.alf globalstate -int 1
 sudo_askpass launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist 2>/dev/null
 
-if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
-  LOGIN_TEXT=$(escape "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL.")
-  if [[ $LOGIN_TEXT == *"("* || $LOGIN_TEXT == *")"* ]]; then
-    LOGIN_TEXT="'$LOGIN_TEXT'"
-  fi
-  sudo_askpass defaults write /Library/Preferences/com.apple.loginwindow \
-    LoginwindowText \
-    "$LOGIN_TEXT"
-fi
 logk
 
 # Check and enable full-disk encryption.
@@ -296,21 +340,6 @@ xcode_license() {
 }
 xcode_license
 
-# Setup Git configuration.
-logn "Configuring Git:"
-if [ -n "$STRAP_GIT_NAME" ] && ! git config user.name >/dev/null; then
-  git config --global user.name "$STRAP_GIT_NAME"
-fi
-
-if [ -n "$STRAP_GIT_EMAIL" ] && ! git config user.email >/dev/null; then
-  git config --global user.email "$STRAP_GIT_EMAIL"
-fi
-
-if [ -n "$STRAP_GITHUB_USER" ] && [ "$(git config github.user)" != "$STRAP_GITHUB_USER" ]; then
-  git config --global github.user "$STRAP_GITHUB_USER"
-fi
-logk
-
 # Setup Homebrew directory and permissions.
 if [[ "$(uname -m)" == "arm64" ]]; then
   HOMEBREW_PREFIX="/opt/homebrew"
@@ -357,6 +386,82 @@ log "Updating Homebrew:"
 brew update --quiet
 logk
 
+# Set up GitHub before accessing dotfiles or Brewfiles.
+if [ -z "${STRAP_GIT_NAME+x}" ]; then
+  STRAP_GIT_NAME=$(git config user.name) || unset STRAP_GIT_NAME
+fi
+if [ -z "${STRAP_GIT_EMAIL+x}" ]; then
+  STRAP_GIT_EMAIL=$(git config user.email) || unset STRAP_GIT_EMAIL
+fi
+
+STRAP_GITHUB_AUTHENTICATED=""
+if [ "${STRAP_NO_GITHUB:-0}" != "1" ] && [ -z "$STRAP_CI" ]; then
+  if command -v gh &>/dev/null && gh auth status --active --hostname github.com &>/dev/null; then
+    STRAP_GITHUB_AUTHENTICATED="1"
+  else
+    STRAP_GITHUB_SETUP=""
+    if [ -n "${GH_TOKEN:+1}" ] || [ -n "${GITHUB_TOKEN:+1}" ]; then
+      STRAP_GITHUB_SETUP="1"
+    elif [ -n "$STRAP_INTERACTIVE" ]; then
+      read -rp "--> Log in to GitHub to configure Git and fetch your dotfiles? [Y/n] " STRAP_GITHUB_SETUP || STRAP_GITHUB_SETUP="n"
+      case "$STRAP_GITHUB_SETUP" in
+      "" | y | Y | yes | YES) STRAP_GITHUB_SETUP="1" ;;
+      *) STRAP_GITHUB_SETUP="" ;;
+      esac
+    fi
+
+    if [ -n "$STRAP_GITHUB_SETUP" ]; then
+      if ! command -v gh &>/dev/null; then
+        log "Installing GitHub CLI:"
+        brew install gh
+      fi
+      if [ -n "${GH_TOKEN:+1}" ] || [ -n "${GITHUB_TOKEN:+1}" ]; then
+        if gh auth status --active --hostname github.com &>/dev/null; then
+          STRAP_GITHUB_AUTHENTICATED="1"
+        fi
+      else
+        STRAP_GITHUB_LOGIN_ARGS=(--hostname github.com --git-protocol https --web)
+        if [ -z "${STRAP_GIT_EMAIL+x}" ]; then
+          STRAP_GITHUB_LOGIN_ARGS+=(--scopes user:email)
+        fi
+        if gh auth login "${STRAP_GITHUB_LOGIN_ARGS[@]}"; then
+          STRAP_GITHUB_AUTHENTICATED="1"
+        fi
+      fi
+      if [ -z "$STRAP_GITHUB_AUTHENTICATED" ]; then
+        logskip "GitHub authentication failed; continuing without GitHub profile lookup."
+      fi
+    fi
+  fi
+fi
+
+if [ -n "$STRAP_GITHUB_AUTHENTICATED" ]; then
+  gh auth setup-git --hostname github.com
+  if [ -z "${STRAP_GITHUB_USER+x}" ]; then
+    STRAP_GITHUB_USER=$(gh api user --hostname github.com --jq .login) || true
+  fi
+  if [ -z "${STRAP_GIT_NAME+x}" ]; then
+    STRAP_GIT_NAME=$(gh api user --hostname github.com --jq '.name // empty') || true
+  fi
+  if [ -z "${STRAP_GIT_EMAIL+x}" ]; then
+    STRAP_GIT_EMAIL=$(gh api user/emails --hostname github.com --paginate --jq '.[] | select(.primary and .verified) | .email') ||
+      logskip "Set --git-email explicitly or grant email access with 'gh auth refresh --hostname github.com --scopes user:email'."
+  fi
+fi
+
+# Setup Git configuration.
+logn "Configuring Git:"
+if [ -n "$STRAP_GIT_NAME" ] && [ "$(git config user.name)" != "$STRAP_GIT_NAME" ]; then
+  git config --global user.name "$STRAP_GIT_NAME"
+fi
+if [ -n "$STRAP_GIT_EMAIL" ] && [ "$(git config user.email)" != "$STRAP_GIT_EMAIL" ]; then
+  git config --global user.email "$STRAP_GIT_EMAIL"
+fi
+if [ -n "$STRAP_GITHUB_USER" ] && [ "$(git config github.user)" != "$STRAP_GITHUB_USER" ]; then
+  git config --global github.user "$STRAP_GITHUB_USER"
+fi
+logk
+
 # Check and install any remaining software updates.
 logn "Checking for software updates:"
 if softwareupdate -l 2>&1 | grep $Q "No new software available."; then
@@ -375,11 +480,23 @@ else
   fi
 fi
 
+if [ -n "$STRAP_GIT_NAME" ] && [ -n "$STRAP_GIT_EMAIL" ]; then
+  logn "Configuring login-screen message:"
+  LOGIN_TEXT=$(escape "Found this computer? Please contact $STRAP_GIT_NAME at $STRAP_GIT_EMAIL.")
+  if [[ $LOGIN_TEXT == *"("* || $LOGIN_TEXT == *")"* ]]; then
+    LOGIN_TEXT="'$LOGIN_TEXT'"
+  fi
+  sudo_askpass defaults write /Library/Preferences/com.apple.loginwindow \
+    LoginwindowText \
+    "$LOGIN_TEXT"
+  logk
+fi
+
 # Setup dotfiles
 if [ -n "$STRAP_GITHUB_USER" ]; then
   DOTFILES_URL="https://github.com/$STRAP_GITHUB_USER/dotfiles"
 
-  if git ls-remote "$DOTFILES_URL" &>/dev/null; then
+  if GIT_TERMINAL_PROMPT=0 git ls-remote "$DOTFILES_URL" &>/dev/null; then
     log "Fetching $STRAP_GITHUB_USER/dotfiles from GitHub:"
     if [ ! -d "$HOME/.dotfiles" ]; then
       log "Cloning to ~/.dotfiles:"
@@ -397,7 +514,7 @@ fi
 if [ -n "$STRAP_GITHUB_USER" ] && { [ ! -f "$HOME/.Brewfile" ] || [ "$HOME/.Brewfile" -ef "$HOME/.homebrew-brewfile/Brewfile" ]; }; then
   HOMEBREW_BREWFILE_URL="https://github.com/$STRAP_GITHUB_USER/homebrew-brewfile"
 
-  if git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
+  if GIT_TERMINAL_PROMPT=0 git ls-remote "$HOMEBREW_BREWFILE_URL" &>/dev/null; then
     log "Fetching $STRAP_GITHUB_USER/homebrew-brewfile from GitHub:"
     if [ ! -d "$HOME/.homebrew-brewfile" ]; then
       log "Cloning to ~/.homebrew-brewfile:"
@@ -416,13 +533,6 @@ fi
 if [ -f "$HOME/.Brewfile" ]; then
   log "Installing from ~/.Brewfile:"
   brew bundle check --global &>/dev/null || brew bundle --global
-  logk
-fi
-
-# Add GitHub credentials if missing
-if command -v "gh" >/dev/null && ! gh auth token &>/dev/null; then
-  logn "Configuring GitHub CLI:"
-  gh auth login --git-protocol https --hostname github.com --web
   logk
 fi
 

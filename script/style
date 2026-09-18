@@ -42,18 +42,6 @@ EOS
   fi
 }
 
-ruby_version_style() {
-  local ruby_version
-  ruby_version="$(<.ruby-version)"
-
-  for file in "$@"; do
-    if ! git grep --quiet "ruby.${ruby_version}" HEAD -- "${file}"; then
-      echo "Error: ${file} does not contain 'ruby ${ruby_version}'!" >&2
-      exit 1
-    fi
-  done
-}
-
 shell_style() {
   local shfmt_args="--indent 2 --simplify --language-dialect=bash"
 
@@ -73,24 +61,6 @@ shell_style() {
   shellcheck "$@"
 }
 
-ruby_style() {
-  if [[ -n ${STYLE_FIX-} ]]; then
-    local rubocop_args="--autocorrect-all"
-  fi
-
-  bin/rubocop --format quiet ${rubocop_args-}
-  bin/srb tc
-}
-
-erb_style() {
-  if [[ -n ${STYLE_FIX-} ]]; then
-    local erb_lint_args="--autocorrect"
-  fi
-
-  bin/erb_lint --lint-all ${erb_lint_args-}
-
-}
-
 github_actions_style() {
   if [[ -n ${STYLE_FIX-} ]]; then
     local zizmor_args="--fix"
@@ -100,19 +70,8 @@ github_actions_style() {
   actionlint
 }
 
-source script/bootstrap
-bundle_bootstrap &>/dev/null
-export BUNDLE_FORCE_RUBY_PLATFORM=false
-export BUNDLE_WITH=development
-
 sudo_askpass_style
 
-ruby_version_style Gemfile.lock
-
-shell_style bin/strap.sh script/*
-
-ruby_style
-
-erb_style
+shell_style bin/strap.sh script/* tests/*.sh
 
 github_actions_style
