@@ -1,5 +1,0 @@
---dir
-.
---ignore=spec/
---ignore=tmp/
---ignore=vendor/

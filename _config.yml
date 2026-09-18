@@ -1,0 +1,5 @@
+source: public
+destination: _site
+keep_files:
+  - strap.sh
+  - strap.sh.txt

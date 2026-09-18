@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A script to bootstrap a minimal macOS development system.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <title>👢 Strap</title>
+  </head>
+  <body>
+    <header>
+      <h1>👢 Strap</h1>
+    </header>
+    <main>
+      <p class="lead">
+        Strap is a script to bootstrap a minimal macOS development system.
+        This does not assume you're doing Ruby/Rails/web development but installs
+        the minimal set of software every macOS developer will want.
+      </p>
+      <p>To Strap your system:</p>
+      <ol>
+        <li>
+          <a class="button" href="strap.sh" download>Download the <code>strap.sh</code> script</a>
+          (or <a href="strap.sh.txt">view it in your browser</a> first).
+        </li>
+        <li>Run it in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.</li>
+        <li>
+          After installing Homebrew, Strap offers to log in to GitHub using the GitHub CLI.
+          This sets up Git and fetches your dotfiles and Brewfile. You can decline the prompt,
+          or skip GitHub setup with <code>bash ~/Downloads/strap.sh --no-github</code>.
+        </li>
+        <li>
+          If something failed, run <code>bash ~/Downloads/strap.sh --debug</code>
+          for more debugging output.
+        </li>
+        <li>Install additional software with <code>brew install</code>.</li>
+      </ol>
+      <section id="configuration">
+        <h2>Configure your Mac</h2>
+        <p>
+          Pass options to the downloaded script or set environment variables in your terminal.
+          For example, to skip email lookup and configuration:
+        </p>
+        <pre><code>bash ~/Downloads/strap.sh --no-git-email</code></pre>
+        <p>The equivalent environment variable is:</p>
+        <pre><code>STRAP_NO_GIT_EMAIL=1 bash ~/Downloads/strap.sh</code></pre>
+        <div class="table-scroll" role="region" aria-label="Installer options" tabindex="0">
+          <table>
+            <thead>
+              <tr><th scope="col">Option</th><th scope="col">Environment variable</th><th scope="col">Behaviour</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>--no-github</code></td><td><code>STRAP_NO_GITHUB=1</code></td>
+                <td>Skip GitHub login and profile lookup, including an existing login. Supplied values still apply.</td>
+              </tr>
+              <tr>
+                <td><code>--git-name NAME</code></td><td><code>STRAP_GIT_NAME</code></td>
+                <td>Set Git's name and the name in the login-screen recovery message.</td>
+              </tr>
+              <tr>
+                <td><code>--no-git-name</code></td><td><code>STRAP_NO_GIT_NAME=1</code></td>
+                <td>Skip name lookup and configuration.</td>
+              </tr>
+              <tr>
+                <td><code>--git-email EMAIL</code></td><td><code>STRAP_GIT_EMAIL</code></td>
+                <td>Set Git's email and the email in the login-screen recovery message.</td>
+              </tr>
+              <tr>
+                <td><code>--no-git-email</code></td><td><code>STRAP_NO_GIT_EMAIL=1</code></td>
+                <td>Skip email lookup and configuration.</td>
+              </tr>
+              <tr>
+                <td><code>--github-user USER</code></td><td><code>STRAP_GITHUB_USER</code></td>
+                <td>Set Git's GitHub username and select the owner of dotfiles and Brewfile repositories.</td>
+              </tr>
+              <tr>
+                <td><code>--no-github-user</code></td><td><code>STRAP_NO_GITHUB_USER=1</code></td>
+                <td>Skip GitHub username lookup and configuration, and fetching dotfiles and Brewfile repositories.</td>
+              </tr>
+              <tr>
+                <td><code>--debug</code></td><td><code>STRAP_DEBUG=1</code></td>
+                <td>Show debugging output.</td>
+              </tr>
+              <tr>
+                <td><code>--help</code></td><td>None</td>
+                <td>Show help without changing your Mac.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>To supply your details and skip GitHub login:</p>
+        <pre><code>bash ~/Downloads/strap.sh --no-github \
+  --git-name "Your Name" \
+  --git-email "you@example.com" \
+  --github-user "username"</code></pre>
+        <p>You can also supply all of these through environment variables:</p>
+        <pre><code>STRAP_NO_GITHUB=1 \
+STRAP_GIT_NAME="Your Name" \
+STRAP_GIT_EMAIL="you@example.com" \
+STRAP_GITHUB_USER="username" \
+bash ~/Downloads/strap.sh</code></pre>
+        <p>
+          Flags override environment variables; the last flag for a field wins.
+          A <code>STRAP_NO_*=1</code> variable overrides the corresponding environment value.
+          Empty environment values are ignored; use a <code>--no-*</code> flag to skip a field.
+          Skipping leaves existing Git settings and any existing login-screen message untouched.
+          Existing Git name and email are otherwise preserved unless you supply replacements;
+          missing values are fetched from GitHub.
+          The login-screen recovery message is only updated when both name and email are available.
+        </p>
+        <h3>GitHub authentication</h3>
+        <p>
+          Strap reuses your active GitHub CLI login or offers to log in after installing Homebrew.
+          GitHub CLI is installed if needed when you accept or supply a token. You can decline;
+          installation continues without automatic profile lookup if you decline or login fails.
+          Credentials stay on your Mac and are never embedded in the downloaded script.
+        </p>
+        <p>
+          When email lookup is needed, login requests <code>user:email</code> permission to read
+          your primary verified email, even if it is private. If an existing login lacks this
+          permission, supply <code>--git-email</code>, skip with <code>--no-git-email</code> or run
+          <code>gh auth refresh --hostname github.com --scopes user:email</code> before retrying.
+          Private repositories must be accessible to your active account, including any
+          organisation authorisation required for GitHub CLI.
+        </p>
+        <p>
+          Unattended runs never prompt for GitHub login. They can reuse an existing login or use
+          <code>GH_TOKEN</code> (preferred) or <code>GITHUB_TOKEN</code> from the environment.
+          Repositories that Git cannot access are skipped without terminal credential prompts.
+          Skipping a GitHub username still allows your local <code>~/.Brewfile</code> and an
+          existing <code>~/.dotfiles/script/strap-after-setup</code> to run.
+        </p>
+        <h3>Additional environment variables</h3>
+        <dl>
+          <dt><code>STRAP_ISSUES_URL</code></dt>
+          <dd>An optional support URL printed when installation fails.</dd>
+          <dt><code>CUSTOM_HOMEBREW_TAP</code></dt>
+          <dd>An optional tap to install with <code>brew tap</code>. Separate multiple arguments with spaces.</dd>
+          <dt><code>CUSTOM_BREW_COMMAND</code></dt>
+          <dd>An optional command to run with <code>brew</code> after the other installation stages.</dd>
+          <dt><code>STRAP_NO_SOFTWAREUPDATE=1</code></dt>
+          <dd>Skip installing remaining software updates. The update check still runs.</dd>
+          <dt><code>STRAP_CI=1</code></dt>
+          <dd>For disposable CI machines: skip GitHub setup and remaining software-update installation.</dd>
+        </dl>
+      </section>
+      <p class="lead">
+        I maintain 👢 Strap in my spare time and am self-employed.
+        Please <a href="https://github.com/sponsors/MikeMcQuaid">sponsor me on GitHub Sponsors</a>,
+        thanks ❤️!
+      </p>
+    </main>
+    <a href="https://github.com/MikeMcQuaid/strap">
+      <img class="ribbon" src="fork-me-on-github-right-red.png" alt="Fork me on GitHub" width="144" height="144">
+    </a>
+    <footer>
+      <span>👢</span>
+      <span>Made with ❤️ by <a href="https://mikemcquaid.com">Mike McQuaid</a></span>
+    </footer>
+  </body>
+</html>
