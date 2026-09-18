@@ -254,13 +254,20 @@ if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]; then
   CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
   sudo_askpass touch "$CLT_PLACEHOLDER"
 
-  CLT_PACKAGE=$(softwareupdate -l |
-    grep -B 1 "Command Line Tools" |
-    awk -F"*" '/^ *\*/ {print $2}' |
-    sed -e 's/^ *Label: //' -e 's/^ *//' |
-    sort -V |
-    tail -n1)
-  sudo_askpass softwareupdate -i "$CLT_PACKAGE"
+  for CLT_RETRY_DELAY in 0 10 20; do
+    sleep "$CLT_RETRY_DELAY"
+    CLT_PACKAGE=$(softwareupdate -l |
+      tee /dev/stderr |
+      grep -B 1 "Command Line Tools" |
+      awk -F"*" '/^ *\*/ {print $2}' |
+      sed -e 's/^ *Label: //' -e 's/^ *//' |
+      sort -V |
+      tail -n1)
+    if [ -n "$CLT_PACKAGE" ]; then
+      sudo_askpass softwareupdate -i "$CLT_PACKAGE"
+      break
+    fi
+  done
   sudo_askpass rm -f "$CLT_PLACEHOLDER"
   if ! [ -f "/Library/Developer/CommandLineTools/usr/bin/git" ]; then
     if [ -n "$STRAP_INTERACTIVE" ]; then
