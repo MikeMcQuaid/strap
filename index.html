@@ -27,9 +27,8 @@
         </li>
         <li>Run it in Terminal.app with <code>bash ~/Downloads/strap.sh</code>.</li>
         <li>
-          After installing Homebrew, Strap offers to log in to GitHub using the GitHub CLI.
-          This sets up Git and fetches your dotfiles and Brewfile. You can decline the prompt,
-          or run without prompts with <code>bash ~/Downloads/strap.sh --non-interactive</code>.
+          After installing Homebrew, follow the GitHub CLI login prompt to configure Git
+          and fetch your dotfiles and Brewfile. Strap reuses an existing login.
         </li>
         <li>
           If something failed, run <code>bash ~/Downloads/strap.sh --debug</code>
@@ -37,55 +36,11 @@
         </li>
         <li>Install additional software with <code>brew install</code>.</li>
       </ol>
-      <section id="configuration">
-        <h2>Configure your Mac</h2>
-        <p>
-          Set environment variables in your terminal to supply your Git identity and the owner
-          of your dotfiles and Brewfile repositories:
-        </p>
-        <pre><code>STRAP_GIT_NAME="Your Name" \
-STRAP_GIT_EMAIL="you@example.com" \
-STRAP_GITHUB_USER="username" \
-bash ~/Downloads/strap.sh</code></pre>
-        <p>
-          Existing Git name and email are preserved unless you supply replacements; missing
-          values are fetched from GitHub when authenticated. Empty environment values are ignored.
-          The login-screen recovery message is only updated when both name and email are available
-          and the message has changed.
-        </p>
-        <p>
-          Use <code>--non-interactive</code> or <code>STRAP_NONINTERACTIVE=1</code> to run without
-          prompts, <code>--debug</code> for debugging output or <code>--help</code> for usage.
-          Non-interactive mode is automatic when standard input is not a TTY or <code>CI=1</code>.
-          Non-interactive runs can reuse an existing GitHub login but never start a new login.
-          Privileged operations require sudo access without a password prompt, such as a
-          previously authenticated sudo session.
-        </p>
-        <h3>GitHub authentication</h3>
-        <p>
-          Strap reuses your active GitHub CLI login or offers to log in after installing Homebrew.
-          GitHub CLI is installed if needed when you accept or supply a token. You can decline;
-          installation continues without automatic profile lookup if you decline or login fails.
-          Credentials stay on your Mac and are never embedded in the downloaded script.
-        </p>
-        <p>
-          When email lookup is needed, login requests <code>user:email</code> permission to read
-          your primary verified email, even if it is private. If an existing login lacks this
-          permission, set <code>STRAP_GIT_EMAIL</code> or run
-          <code>gh auth refresh --hostname github.com --scopes user:email</code> before retrying.
-          Private repositories must be accessible to your active account, including any
-          organisation authorisation required for GitHub CLI.
-        </p>
-        <p>
-          Unattended runs never prompt for GitHub login. They can reuse an existing login or use
-          <code>GH_TOKEN</code> (preferred) or <code>GITHUB_TOKEN</code> from the environment.
-          Repositories that Git cannot access are skipped without terminal credential prompts.
-          Without a GitHub username, your local <code>~/.Brewfile</code> and an
-          existing <code>~/.dotfiles/script/strap-after-setup</code> still run.
-        </p>
-      </section>
+      <p>
+        See the <a href="https://github.com/MikeMcQuaid/strap#configuration-environment-variables-and-flags">README</a>
+        for local configuration environment variables and flags.
+      </p>
       <p class="lead">
-        I maintain 👢 Strap in my spare time and am self-employed.
         Please <a href="https://github.com/sponsors/MikeMcQuaid">sponsor me on GitHub Sponsors</a>,
         thanks ❤️!
       </p>
