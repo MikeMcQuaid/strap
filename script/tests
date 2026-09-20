@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+/bin/bash tests/strap.sh
+script/build
+exec /bin/bash tests/site.sh

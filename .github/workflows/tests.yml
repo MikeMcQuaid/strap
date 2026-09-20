@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   style:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: Set up Git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,54 +28,34 @@ jobs:
           core: false
           cask: false
 
-      - name: Cache Homebrew prefix
-        uses: Homebrew/actions/cache-homebrew-prefix@main
-        with:
-          brewfile: true
-          uninstall: true
-
-      - name: Set up Ruby
-        uses: Homebrew/actions/setup-ruby@main
-        with:
-          bundler-cache: true
+      - run: brew bundle install
 
       - run: script/style
         env:
           # Used by zizmor
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  rspec:
-    runs-on: ubuntu-latest
+  build:
     needs: style
+    runs-on: ubuntu-slim
     steps:
       - name: Set up Git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Set up Homebrew
-        id: setup-homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-        with:
-          core: false
-          cask: false
-
-      - name: Cache Homebrew prefix
-        uses: Homebrew/actions/cache-homebrew-prefix@main
-        with:
-          brewfile: true
-          uninstall: true
-
       - name: Set up Ruby
-        uses: Homebrew/actions/setup-ruby@main
+        uses: Homebrew/actions/setup-ruby@848c272c7bfe984a197bd4d16383f4c106ec61e6 # main
         with:
+          setup-homebrew: true
           bundler-cache: true
 
-      - name: Build Tailwind CSS
-        run: bin/rails tailwindcss:build
+      - run: script/tests
 
-      - name: Run RSpec tests
-        run: bin/rspec
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+        with:
+          path: _site
 
   strap_sh:
     runs-on: macos-15
@@ -109,7 +89,7 @@ jobs:
           brew install --formula xz
 
   docker:
-    needs: [style, rspec]
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -120,12 +100,24 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set RUBY_VERSION
-        run: echo RUBY_VERSION="$(cat .ruby-version)" >> "${GITHUB_ENV}"
+      - name: Download static site
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/strap-site
+
+      - name: Extract static site
+        run: |
+          mkdir _site
+          tar -xf "${RUNNER_TEMP}/strap-site/artifact.tar" -C _site
 
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
+      - name: Build and test static webserver
+        run: script/test-docker
+
       - name: Login to GitHub Packages
+        if: github.actor != 'dependabot[bot]' && !(github.event.repository.fork || github.event.pull_request.head.repo.fork)
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
@@ -133,7 +125,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # We don't give Dependabot access to tokens.
-      - if: github.actor != 'dependabot[bot]'
+      - if: github.actor != 'dependabot[bot]' && !(github.event.repository.fork || github.event.pull_request.head.repo.fork)
         name: Login to Docker Hub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
@@ -141,13 +133,14 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       # Dependabot doesn't have access to push to the GHCR cache
-      - if: github.actor != 'dependabot[bot]'
+      - if: github.actor != 'dependabot[bot]' && !(github.event.repository.fork || github.event.pull_request.head.repo.fork)
         name: Set up Docker cache
         run: echo DOCKER_CACHE_TO="type=registry,ref=ghcr.io/mikemcquaid/strap:cache,mode=max" >> "${GITHUB_ENV}"
 
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
-          push: ${{ github.ref == 'refs/heads/main' }}
+          context: .
+          push: ${{ github.ref == 'refs/heads/main' && github.actor != 'dependabot[bot]' && !github.event.repository.fork }}
           tags: |
             mikemcquaid/strap:latest
             mikemcquaid/strap:main
@@ -159,24 +152,25 @@ jobs:
           cache-to: ${{ env.DOCKER_CACHE_TO }}
           provenance: mode=max
           sbom: true
-          build-args: |
-            RUBY_VERSION=${{ env.RUBY_VERSION }}
 
   deployment:
-    if: github.event_name != 'pull_request'
-    needs: docker
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    if: github.ref == 'refs/heads/main' && github.actor != 'dependabot[bot]' && !github.event.repository.fork
+    needs: [build, strap_sh]
+    runs-on: ubuntu-slim
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
     environment:
-      name: production
-      url: https://strap.mikemcquaid.com
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     concurrency:
-      group: production
+      group: github-pages
       cancel-in-progress: false
     steps:
-      - uses: digitalocean/action-doctl@3cb3953159719656269e044e0e24ca16dd2a690f # v2.5.2
-        with:
-          token: ${{ secrets.DIGITAL_OCEAN_TOKEN }}
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
-      - name: Deploy to DigitalOcean
-        run: doctl apps create-deployment --wait 5b95141a-ccca-4466-8c8c-501c015fff10
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

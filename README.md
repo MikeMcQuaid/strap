@@ -19,7 +19,7 @@ Replacing [Boxen](https://github.com/boxen/boxen) in [GitHub](https://github.com
 - Installs the latest macOS software updates (for better security)
 - Installs dotfiles from a user's `https://github.com/username/dotfiles` repository. If they exist and are executable: runs `script/setup` to configure the dotfiles and `script/strap-after-setup` after setting up everything else.
 - Installs software from a user's `Brewfile` in their `https://github.com/username/homebrew-brewfile` repository or `.Brewfile` in their home directory.
-- A simple web application to set Git's name, email and GitHub token (needs authorised on any organisations you wish to access)
+- Configures Git's name, email and GitHub access using optional local GitHub CLI login or environment variables
 - Idempotent
 
 ## Out of Scope Features
@@ -48,21 +48,22 @@ Instead, to run the web application locally run:
 git clone https://github.com/MikeMcQuaid/strap
 cd strap
 ./script/bootstrap
-GITHUB_KEY="..." GITHUB_SECRET="..." ./script/server
+./script/server
 ```
 
 Strap is also available as a Docker image on [Docker Hub (`mikemcquaid/strap`)](https://hub.docker.com/repository/docker/mikemcquaid/strap) and [GitHub Packages (`ghcr.io/mikemcquaid/strap`)](https://github.com/users/MikeMcQuaid/packages/container/package/strap).
 
-## Web Application Configuration Environment Variables
+## Configuration Environment Variables and Flags
 
-- `GITHUB_KEY` (required in production): the GitHub.com Application Client ID.
-- `GITHUB_SECRET` (required in production): the GitHub.com Application Client Secret.
-- `SESSION_SECRET` (required in production): the secret used for cookie session storage.
-- `WEB_CONCURRENCY` (optional): the number of Puma (web server) threads to run (defaults to 3).
-- `STRAP_ISSUES_URL` (optional): the URL where users should file issues (defaults to no URL).
-- `STRAP_BEFORE_INSTALL` (optional): instructions displayed in the web application for users to follow before installing Strap (wrapped in `<li>` tags).
-- `CUSTOM_HOMEBREW_TAP` (optional): an optional Homebrew tap to install with `brew tap`. Specify multiple arguments to brew tap by separating values with spaces.
-- `CUSTOM_BREW_COMMAND` (optional): a single `brew` command that is run after all other stages have completed.
+Use these when running `bin/strap.sh` locally or the downloaded script:
+
+- `STRAP_GIT_NAME`: override Git's name and the name in the login-screen recovery message. If unset or empty, use the existing Git name, then the authenticated GitHub profile name.
+- `STRAP_GIT_EMAIL`: override Git's email and the email in the login-screen recovery message. If unset or empty, use the existing Git email, then the authenticated GitHub account's primary verified email.
+- `STRAP_GITHUB_USER`: override Git's GitHub username and the owner of dotfiles and Brewfile repositories. If unset or empty, use the authenticated GitHub username when available.
+- `GH_TOKEN` or `GITHUB_TOKEN`: optional GitHub CLI credentials. `GH_TOKEN` takes precedence; an existing local login is otherwise reused.
+- `STRAP_DEBUG=1` or `--debug`: enable debugging output.
+- `STRAP_NONINTERACTIVE=1`, `CI=1` or `--non-interactive`: run without interactive prompts; automatic without a TTY. Never starts a GitHub login and requires sudo access without a password prompt.
+- `--help`: print usage without changing your Mac.
 
 ## Status
 
@@ -78,5 +79,5 @@ Licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/main/LICENSE.txt).
 
 [Fork me on GitHub Retina Ribbons](https://github.com/aral/fork-me-on-github-retina-ribbons)
-are vendored in [`app/assets/images`](/app/assets/images)
+are vendored in [`images`](images)
 and also licensed under the [MIT License](https://github.com/aral/fork-me-on-github-retina-ribbons/blob/master/LICENSE)

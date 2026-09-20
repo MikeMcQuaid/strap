@@ -3,7 +3,4 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-source script/bootstrap
-bundle_bootstrap
-
-exec bin/rails server "$@"
+exec bundle exec jekyll serve --watch --strict_front_matter "$@"

@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+docker build --tag strap:test .
+STRAP_TEST_DIR=$(mktemp -d)
+STRAP_TEST_CONTAINER=""
+trap 'if [ -n "$STRAP_TEST_CONTAINER" ]; then docker rm --force "$STRAP_TEST_CONTAINER" || true; fi; rm -rf "$STRAP_TEST_DIR"' EXIT
+STRAP_TEST_CONTAINER=$(docker run --detach --publish 127.0.0.1::3000 strap:test)
+STRAP_TEST_URL="http://$(docker port "$STRAP_TEST_CONTAINER" 3000/tcp)"
+docker cp "$STRAP_TEST_CONTAINER:/srv/_site" "$STRAP_TEST_DIR/site"
+/bin/bash tests/site.sh "$STRAP_TEST_DIR/site"
+
+curl --fail --retry 10 --retry-connrefused --retry-delay 1 "$STRAP_TEST_URL/" --output "$STRAP_TEST_DIR/index.html"
+cmp "$STRAP_TEST_DIR/site/index.html" "$STRAP_TEST_DIR/index.html"
+for path in strap.sh strap.sh.txt; do
+  curl --fail "$STRAP_TEST_URL/$path" --output "$STRAP_TEST_DIR/$path"
+  cmp bin/strap.sh "$STRAP_TEST_DIR/$path"
+done

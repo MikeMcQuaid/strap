@@ -1,0 +1,17 @@
+title: 👢 Strap
+description: A script to bootstrap a minimal macOS development system.
+url: https://strap.mikemcquaid.com
+
+exclude:
+  - AGENTS.md
+  - Brewfile
+  - Dockerfile
+  - Gemfile*
+  - LICENSE.txt
+  - README.md
+  - bin/dev
+  - bin/setup
+  - config
+  - script
+  - tests
+  - vendor
