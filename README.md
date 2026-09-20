@@ -55,12 +55,10 @@ Strap is also available as a Docker image on [Docker Hub (`mikemcquaid/strap`)](
 
 ## Configuration Environment Variables and Flags
 
-Use these when running `bin/strap.sh` locally or the downloaded script:
-
-- `STRAP_GIT_NAME`: override Git's name and the name in the login-screen recovery message. If unset or empty, use the existing Git name, then the authenticated GitHub profile name.
-- `STRAP_GIT_EMAIL`: override Git's email and the email in the login-screen recovery message. If unset or empty, use the existing Git email, then the authenticated GitHub account's primary verified email.
-- `STRAP_GITHUB_USER`: override Git's GitHub username and the owner of dotfiles and Brewfile repositories. If unset or empty, use the authenticated GitHub username when available.
-- `GH_TOKEN` or `GITHUB_TOKEN`: optional GitHub CLI credentials. `GH_TOKEN` takes precedence; an existing local login is otherwise reused.
+- `STRAP_GIT_NAME`: override Git's name and the name in the login-screen recovery message (defaults to the existing Git name, then the authenticated GitHub profile name; empty values are ignored).
+- `STRAP_GIT_EMAIL`: override Git's email and the email in the login-screen recovery message (defaults to the existing Git email, then the authenticated GitHub account's primary verified email; empty values are ignored).
+- `STRAP_GITHUB_USER`: override Git's GitHub username and the owner of dotfiles and Brewfile repositories (defaults to the authenticated GitHub username; empty values are ignored).
+- `GH_TOKEN` or `GITHUB_TOKEN`: GitHub CLI credentials (`GH_TOKEN` takes precedence; defaults to an existing local login).
 - `STRAP_DEBUG=1` or `--debug`: enable debugging output.
 - `STRAP_NONINTERACTIVE=1`, `CI=1` or `--non-interactive`: run without interactive prompts; automatic without a TTY. Never starts a GitHub login and requires sudo access without a password prompt.
 - `--help`: print usage without changing your Mac.
@@ -79,5 +77,5 @@ Licensed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
 The full license text is available in [LICENSE.txt](https://github.com/MikeMcQuaid/strap/blob/main/LICENSE.txt).
 
 [Fork me on GitHub Retina Ribbons](https://github.com/aral/fork-me-on-github-retina-ribbons)
-are vendored in [`images`](images)
+are vendored in [`images`](/images)
 and also licensed under the [MIT License](https://github.com/aral/fork-me-on-github-retina-ribbons/blob/master/LICENSE)
