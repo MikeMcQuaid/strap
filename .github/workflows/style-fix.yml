@@ -1,0 +1,99 @@
+name: Style Fix
+
+on:
+  schedule:
+    - cron: '23 6 * * 1-5'
+  workflow_dispatch:
+  push:
+    paths:
+      - script/style
+      - .github/workflows/style-fix.yml
+
+defaults:
+  run:
+    shell: bash -euo pipefail {0}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: style-fix
+  cancel-in-progress: false
+
+jobs:
+  style-fix:
+    if: github.repository == 'MikeMcQuaid/strap' && (github.event_name == 'push' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      STRAP_FIX_BRANCH: ci-style-fixes
+      BUNDLE_PATH: vendor/bundle
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@e99025eb970cfa124b8284a35463d87426917478 # 2026.09.28.1
+        with:
+          core: false
+          cask: false
+
+      - name: Configure Git user
+        if: github.event_name != 'push'
+        uses: Homebrew/actions/git-user-config@e99025eb970cfa124b8284a35463d87426917478 # 2026.09.28.1
+        with:
+          username: github-actions[bot]
+
+      - name: Prepare fix branch
+        if: github.event_name != 'push'
+        run: |
+          git remote set-head origin --auto
+          git switch --no-track -C "$STRAP_FIX_BRANCH" origin/HEAD
+
+      - name: Fix style
+        run: script/style --fix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate fixes
+        run: |
+          eval "$(brew bundle env)"
+          script/tests
+          git diff --check
+
+      - name: Commit fixes
+        id: commit
+        if: github.event_name != 'push'
+        run: |
+          git add -- .ruby-version Gemfile.lock .github/workflows bin/strap.sh script tests
+          if git diff --cached --quiet; then
+            echo 'No style fixes needed.'
+            exit 0
+          fi
+          git -c commit.gpgsign=false commit -m 'Fix style'
+          echo 'committed=true' >> "$GITHUB_OUTPUT"
+
+      - name: Push fixes
+        if: github.event_name != 'push' && steps.commit.outputs.committed == 'true'
+        uses: Homebrew/actions/git-try-push@e99025eb970cfa124b8284a35463d87426917478 # 2026.09.28.1
+        with:
+          token: ${{ secrets.CI_FIX_TOKEN }}
+          branch: ${{ env.STRAP_FIX_BRANCH }}
+          force: true
+          no_lease: true
+
+      - name: Open a pull request
+        if: github.event_name != 'push' && steps.commit.outputs.committed == 'true'
+        run: |
+          STRAP_FIX_PR=$(gh pr list --base main --head "$STRAP_FIX_BRANCH" \
+            --state open --json number --jq '.[0].number // empty')
+          if [[ -n "$STRAP_FIX_PR" ]]; then
+            echo "Updated style fix PR #$STRAP_FIX_PR."
+            exit 0
+          fi
+          gh pr create --base main --head "$STRAP_FIX_BRANCH" --fill
+        env:
+          GH_TOKEN: ${{ secrets.CI_FIX_TOKEN }}

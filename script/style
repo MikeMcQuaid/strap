@@ -44,6 +44,11 @@ EOS
 }
 
 ruby_version_style() {
+  if [[ -n ${STYLE_FIX-} ]]; then
+    brew bundle install
+    brew bundle exec -- bundle install
+  fi
+
   local ruby_version
   ruby_version="$(<.ruby-version)"
 
@@ -63,7 +68,8 @@ shell_style() {
       # Want to expand shfmt_args
       # shellcheck disable=SC2086
       shfmt ${shfmt_args} --write "${file}"
-      shellcheck --format=diff "${file}" | patch -p1
+      # ShellCheck returns 1 when it emits fixes; patch must still succeed.
+      shellcheck --format=diff "${file}" | patch -p1 || [[ ${PIPESTATUS[*]} == "1 0" ]] || return 1
     done
   fi
 
@@ -76,10 +82,11 @@ shell_style() {
 
 github_actions_style() {
   if [[ -n ${STYLE_FIX-} ]]; then
-    local zizmor_args="--fix"
+    # Version comment fixes require review, so zizmor classifies them as unsafe.
+    zizmor --fix=all .github/workflows
   fi
 
-  zizmor ${zizmor_args-} .
+  zizmor .
   actionlint
 }
 
