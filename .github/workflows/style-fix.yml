@@ -25,6 +25,9 @@ jobs:
     if: github.repository == 'MikeMcQuaid/strap' && (github.event_name == 'push' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
     env:
       STRAP_FIX_BRANCH: ci-style-fixes
       BUNDLE_PATH: vendor/bundle
@@ -80,7 +83,7 @@ jobs:
         if: github.event_name != 'push' && steps.commit.outputs.committed == 'true'
         uses: Homebrew/actions/git-try-push@e99025eb970cfa124b8284a35463d87426917478 # 2026.09.28.1
         with:
-          token: ${{ secrets.CI_FIX_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ env.STRAP_FIX_BRANCH }}
           force: true
           no_lease: true
@@ -96,4 +99,4 @@ jobs:
           fi
           gh pr create --base main --head "$STRAP_FIX_BRANCH" --fill
         env:
-          GH_TOKEN: ${{ secrets.CI_FIX_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
