@@ -1,4 +1,4 @@
-FROM busybox:1.37.0-musl
+FROM busybox:1.38.0-musl
 
 WORKDIR /srv
 COPY . ./
