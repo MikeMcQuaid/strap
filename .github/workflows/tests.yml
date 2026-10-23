@@ -45,7 +45,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: Homebrew/actions/setup-ruby@e99025eb970cfa124b8284a35463d87426917478 # 2026.09.28.1
+        uses: Homebrew/actions/setup-ruby@4790763c0a3ba4036f72634dc079c4a7dfcd4878 # 2026.10.19.1
         with:
           setup-homebrew: true
           bundler-cache: true
