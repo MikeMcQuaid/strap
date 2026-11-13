@@ -177,6 +177,41 @@ for placeholder in '' /tmp/strap-test-placeholder; do
   fi
 done
 
+test_case "A successful Homebrew update is not retried"
+run_setup
+assert_status 0
+[[ $(grep -c '^brew update --quiet$' "$STRAP_TEST_DIR/stdout") == 1 ]] || fail "Expected one Homebrew update"
+
+test_case "A transient Homebrew update failure is retried"
+STRAP_TEST_BREW_UPDATE_FAILURES=1 run_setup
+assert_status 0
+assert_contains stderr 'Failed to download Homebrew API data!'
+assert_contains stdout "Your system is now Strap'd!"
+
+test_case "Persistent Homebrew update failures stop setup after one retry"
+STRAP_TEST_BREW_UPDATE_FAILURES=3 run_setup
+assert_status 1
+[[ $(grep -c '^brew update --quiet$' "$STRAP_TEST_DIR/stdout") == 2 ]] || fail "Expected two Homebrew updates"
+assert_absent stdout 'Configuring Git:'
+
+test_case "Homebrew can be installed from a repository with only a main branch"
+git init --quiet --initial-branch=main "$STRAP_TEST_DIR/homebrew-origin"
+git -C "$STRAP_TEST_DIR/homebrew-origin" -c user.name=Strap -c user.email=strap@example.com \
+  -c commit.gpgsign=false commit --quiet --allow-empty -m 'Homebrew main'
+git config --file "$STRAP_TEST_DIR/homebrew-gitconfig" \
+  url."$STRAP_TEST_DIR/homebrew-origin".insteadOf https://github.com/Homebrew/brew
+mkdir "$STRAP_TEST_DIR/homebrew"
+sed -n '/^  # Download Homebrew\./,/^  unset GIT_DIR GIT_WORK_TREE/p' bin/strap.sh >"$STRAP_TEST_DIR/homebrew.sh"
+STRAP_TEST_STATUS=0
+GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL="$STRAP_TEST_DIR/homebrew-gitconfig" \
+  HOMEBREW_REPOSITORY="$STRAP_TEST_DIR/homebrew" /bin/bash -e -c '
+    Q=-q
+    source "$1"
+  ' strap-test "$STRAP_TEST_DIR/homebrew.sh" \
+  >"$STRAP_TEST_DIR/stdout" 2>"$STRAP_TEST_DIR/stderr" || STRAP_TEST_STATUS=$?
+assert_status 0
+[[ $(git -C "$STRAP_TEST_DIR/homebrew" rev-parse HEAD) == "$(git -C "$STRAP_TEST_DIR/homebrew-origin" rev-parse main)" ]] || fail "Expected Homebrew main to be checked out"
+
 test_case "Login-screen sudo follows the update check and its own heading"
 run_setup
 assert_status 0

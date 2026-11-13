@@ -45,7 +45,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Ruby
-        uses: Homebrew/actions/setup-ruby@c262868c096d909fc278daa87ed9772967331ea3 # 2026.11.02.1
+        uses: Homebrew/actions/setup-ruby@63a2d4d8d4193eab3e62b1b782ff3ab8408f5b29 # 2026.11.09.1
         with:
           setup-homebrew: true
           bundler-cache: true
@@ -58,7 +58,7 @@ jobs:
           path: _site
 
   strap_sh:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Set up Git repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -118,7 +118,7 @@ jobs:
 
       - name: Login to GitHub Packages
         if: github.actor != 'dependabot[bot]' && !(github.event.repository.fork || github.event.pull_request.head.repo.fork)
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: mikemcquaid
@@ -127,7 +127,7 @@ jobs:
       # We don't give Dependabot access to tokens.
       - if: github.actor != 'dependabot[bot]' && !(github.event.repository.fork || github.event.pull_request.head.repo.fork)
         name: Login to Docker Hub
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: mikemcquaid
           password: ${{ secrets.DOCKER_TOKEN }}
