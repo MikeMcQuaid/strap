@@ -356,14 +356,14 @@ if ! command -v brew &>/dev/null; then
   git config remote.origin.url "https://github.com/Homebrew/brew"
   git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
   git fetch $Q --tags --force
-  git reset $Q --hard origin/master
+  git reset $Q --hard origin/main
   unset GIT_DIR GIT_WORK_TREE
   logk
 fi
 
 # Update Homebrew.
 log "Checking Homebrew is up to date:"
-brew update --quiet
+brew update --quiet || brew update --quiet
 logk
 
 # Set up GitHub before accessing dotfiles or Brewfiles.

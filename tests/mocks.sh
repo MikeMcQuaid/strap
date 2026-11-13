@@ -36,7 +36,14 @@ defaults() {
   fi
 }
 launchctl() { [ "$*" = 'print system/com.apple.alf' ] && [ "${STRAP_TEST_FIREWALL_LOADED-0}" = 1 ]; }
-brew() { echo "brew $*"; }
+brew() {
+  echo "brew $*"
+  if [ "$*" = 'update --quiet' ] && [ "${STRAP_TEST_BREW_UPDATE_FAILURES-0}" -gt 0 ]; then
+    STRAP_TEST_BREW_UPDATE_FAILURES=$((STRAP_TEST_BREW_UPDATE_FAILURES - 1))
+    echo 'Failed to download Homebrew API data!' >&2
+    return 1
+  fi
+}
 softwareupdate() { echo 'No new software available.'; }
 ln() { :; }
 run_dotfile_scripts() { :; }
